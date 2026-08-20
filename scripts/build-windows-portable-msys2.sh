@@ -43,7 +43,10 @@ if [[ ! -f "$exe_path" ]]; then
   echo "No se generó $exe_path" >&2
   exit 1
 fi
-windeployqt6 --release --qmldir "$root_dir/qml" --dir "$portable_dir/bin" "$exe_path"
+# Qt's CMake install script already ran windeployqt and created qt.conf,
+# plugins and QML modules under package/. Running windeployqt a second time
+# against the copied tree is redundant and fails on MSYS2 when qmlimportscanner
+# cannot be started from the mixed Windows/POSIX path environment.
 cp "$root_dir/PORTABLE-LEEME.txt" "$portable_dir/"
 
 pushd "$root_dir"
