@@ -58,7 +58,7 @@ target_link_libraries(CgPhone PRIVATE
     Qt6::Core Qt6::Gui Qt6::Quick Qt6::QuickControls2 Qt6::Multimedia Qt6::Widgets
 )
 if(WIN32)
-    target_link_libraries(CgPhone PRIVATE Shell32 Crypt32 Ole32 Uuid)
+    target_link_libraries(CgPhone PRIVATE Shell32 Crypt32 Advapi32 Ole32 Uuid)
 endif()
 
 include(GNUInstallDirs)
