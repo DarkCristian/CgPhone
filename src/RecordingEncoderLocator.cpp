@@ -21,4 +21,10 @@ RecordingEncoderLocator::Result RecordingEncoderLocator::locateLame() {
         if (!QFileInfo::exists(candidate.path)) continue;
         QLibrary library(candidate.path);
         if (!library.load()) continue; // Also rejects an incompatible architecture.
+        library.unload();
+        return {candidate.path, candidate.source, true};
+    }
+
+    return {};
+}
  

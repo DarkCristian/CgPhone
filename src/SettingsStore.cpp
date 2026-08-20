@@ -81,6 +81,23 @@ static QString unprotectMachineSecret(const QByteArray &encoded) {
     LocalFree(output.pbData);
     return secret;
 }
+
+static bool currentProcessIsAdministrator() {
+    SID_IDENTIFIER_AUTHORITY ntAuthority = SECURITY_NT_AUTHORITY;
+    PSID administratorsGroup = nullptr;
+    if (!AllocateAndInitializeSid(&ntAuthority, 2,
+                                  SECURITY_BUILTIN_DOMAIN_RID,
+                                  DOMAIN_ALIAS_RID_ADMINS,
+                                  0, 0, 0, 0, 0, 0,
+                                  &administratorsGroup)) {
+        return false;
+    }
+
+    BOOL isMember = FALSE;
+    const BOOL checked = CheckTokenMembership(nullptr, administratorsGroup, &isMember);
+    FreeSid(administratorsGroup);
+    return checked && isMember;
+}
 #endif
 
 SipAccountConfig SettingsStore::loadAccount() const {
@@ -123,7 +140,7 @@ bool SettingsStore::saveAccount(const SipAccountConfig &c) {
 
 bool SettingsStore::isRunningElevated() {
 #ifdef Q_OS_WIN
-    return IsUserAnAdmin();
+    return currentProcessIsAdministrator();
 #else
     return geteuid() == 0;
 #endif
