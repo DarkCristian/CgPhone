@@ -7,10 +7,8 @@ jobs:
   build:
     runs-on: windows-2022
     timeout-minutes: 90
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -21,14 +19,13 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-ntldd
             mingw-w64-x86_64-qt6-base
             mingw-w64-x86_64-qt6-declarative
             mingw-w64-x86_64-qt6-multimedia
-
       - name: Compilar CgPhone y PJPROJECT
         shell: msys2 {0}
         run: bash scripts/build-windows-portable-msys2.sh
-
       - uses: actions/upload-artifact@v4
         with:
           name: CgPhone-0.2.10-windows-x64-portable
