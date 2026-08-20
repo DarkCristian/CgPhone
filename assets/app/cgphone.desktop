@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=CgPhone
+Comment=Softphone SIP para Asterisk y Neotel
+Exec=CgPhone
+Icon=cgphone
+Terminal=false
+Categories=Network;Telephony;

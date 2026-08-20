@@ -1,0 +1,54 @@
+CgPhone 0.2.10 - portable SIP experimental
+===========================================
+
+Este build utiliza PJSUA2/PJPROJECT y realiza registro y llamadas SIP reales.
+No es la alpha HTA. Está destinado únicamente a pruebas controladas contra
+Asterisk y Neotel antes de crear el instalador MSI/EXE.
+
+Configuración inicial:
+1. Ejecute bin\CgPhone.exe normalmente.
+2. Pulse el engranaje y acepte UAC.
+3. Ingrese interno, contraseña y servidor de Asterisk.
+4. Pulse Guardar y volver. La ventana normal detectará el cambio y registrará.
+
+La cuenta se guarda por equipo con QSettings::SystemScope. En Windows la
+contraseña se cifra con DPAPI en alcance de máquina. Cambiar de usuario de
+dominio no cambia el interno configurado para el box.
+
+Los dos controles redondeados del discador modifican el volumen del dispositivo
+de comunicaciones predeterminado de Windows: salida del headset y nivel del
+micrófono. No son una ecualización interna de CgPhone. Si Windows no tiene un
+dispositivo de comunicaciones, se utiliza el dispositivo predeterminado general.
+
+Pruebas mínimas:
+- indicador Online / código de error de registro;
+- llamada saliente y audio en ambos sentidos;
+- prueba local de micrófono/headset sin modificar permanentemente la opción global "Escuchar este dispositivo" de Windows;
+- llamada entrante, atender y rechazar;
+- DTMF durante llamada;
+- transferencia ciega mediante SIP REFER;
+- DND (486) y autorespuesta.
+- anuncio de campaña/cola enviado por la central: Autoanswer no reproduce
+  ringtone local, acepta RTP después del 200 OK y early media en 183 + SDP;
+- verificar que el anuncio se escuche completo y que el micrófono solo comience
+  a transmitir después de establecerse la llamada.
+
+CgPhone no incorpora una locución de campaña local. Asterisk/Neotel determinan
+qué anuncio reproducir, cuánto dura y cuándo realizan el bridge con el cliente.
+
+El encabezado y el tooltip del tray muestran el interno SIP configurado para el
+box. "Iniciar con el SO" es una preferencia administrativa por equipo: usa HKLM
+Run en Windows y /etc/xdg/autostart/CgPhone.desktop en Linux. Se ejecuta al
+iniciar sesión gráfica; CgPhone no funciona como servicio antes del login.
+
+Limitaciones de esta compilación experimental:
+- UDP y una sola cuenta;
+- sin TLS/SRTP ni video;
+- sin selección de dispositivos de audio;
+- sin validación específica de NAT/firewall;
+- grabación todavía no funcional;
+- no usar en producción ni con una campaña activa.
+
+Para diagnosticar, correlacione el estado mostrado con el log de Asterisk:
+  pjsip set logger on
+  core set verbose 5
