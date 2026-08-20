@@ -62,6 +62,38 @@ for runtime_dll in "${mingw_runtime_dlls[@]}"; do
   fi
 done
 
+# Collect every transitive MinGW dependency, including codecs and OpenSSL used
+# indirectly by Qt Multimedia/PJSIP. A fixed DLL list is insufficient because
+# these dependencies change when the MSYS2 packages are updated.
+dependency_report="$portable_dir/DEPENDENCIES.txt"
+ntldd -R "$exe_path" | tee "$dependency_report"
+
+while IFS= read -r dependency_line; do
+  dependency_path="$(printf '%s\n' "$dependency_line" |
+    sed -n 's/^.*=>[[:space:]]*\(.*\)[[:space:]]*(0x[[:xdigit:]]*)$/\1/p')"
+  [[ -n "$dependency_path" ]] || continue
+
+  dependency_unix_path="$(cygpath -u "$dependency_path" 2>/dev/null || true)"
+  if [[ "$dependency_unix_path" == */mingw64/bin/*.dll ]] &&
+     [[ -f "$dependency_unix_path" ]]; then
+    cp -f "$dependency_unix_path" "$portable_dir/bin/"
+  fi
+done < "$dependency_report"
+
+# Re-scan using the portable directory first. Any unresolved non-system DLL
+# means the artifact is incomplete and must not be uploaded.
+export PATH="$portable_dir/bin:/mingw64/bin:$PATH"
+validation_report="$portable_dir/DEPENDENCIES-VALIDATED.txt"
+ntldd -R "$exe_path" | tee "$validation_report"
+if grep -Eiq '=>[[:space:]]*(not found|missing)|not found|could not find' "$validation_report"; then
+  echo "El portable conserva dependencias sin resolver" >&2
+  exit 1
+fi
+if grep -Eiq '[\\/]+mingw64[\\/]+bin[\\/]' "$validation_report"; then
+  echo "El portable todavía depende de DLL externas de MSYS2" >&2
+  exit 1
+fi
+
 # Qt's CMake install script already ran windeployqt and created qt.conf,
 # plugins and QML modules under package/. Running windeployqt a second time
 # against the copied tree is redundant and fails on MSYS2 when qmlimportscanner
