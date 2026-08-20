@@ -43,6 +43,25 @@ if [[ ! -f "$exe_path" ]]; then
   echo "No se generó $exe_path" >&2
   exit 1
 fi
+# windeployqt deploys Qt modules but the CMake-driven invocation used by this
+# workflow does not copy the MinGW runtime DLLs. Keep them beside CgPhone.exe;
+# Windows does not search the portable's parent directories for these files.
+mingw_runtime_dlls=(
+  libstdc++-6.dll
+  libgcc_s_seh-1.dll
+  libwinpthread-1.dll
+  libssp-0.dll
+)
+for runtime_dll in "${mingw_runtime_dlls[@]}"; do
+  runtime_path="/mingw64/bin/$runtime_dll"
+  if [[ -f "$runtime_path" ]]; then
+    cp -f "$runtime_path" "$portable_dir/bin/"
+  elif [[ "$runtime_dll" != "libssp-0.dll" ]]; then
+    echo "Falta el runtime obligatorio de MinGW: $runtime_path" >&2
+    exit 1
+  fi
+done
+
 # Qt's CMake install script already ran windeployqt and created qt.conf,
 # plugins and QML modules under package/. Running windeployqt a second time
 # against the copied tree is redundant and fails on MSYS2 when qmlimportscanner
