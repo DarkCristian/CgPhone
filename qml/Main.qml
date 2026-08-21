@@ -82,8 +82,20 @@ ApplicationWindow {
             Label { Layout.fillWidth: true; text: "La central está llamando"; color: "#64748B"; horizontalAlignment: Text.AlignHCenter }
             RowLayout {
                 Layout.fillWidth: true; spacing: 10
-                Button { Layout.fillWidth: true; text: "Atender"; onClicked: appController.answer(); background: Rectangle { radius: 12; color: "#16A34A" }; contentItem: Label { text: parent.text; color: "white"; horizontalAlignment: Text.AlignHCenter } }
-                Button { Layout.fillWidth: true; text: "Rechazar"; onClicked: appController.hangup(); background: Rectangle { radius: 12; color: "#DC2626" }; contentItem: Label { text: parent.text; color: "white"; horizontalAlignment: Text.AlignHCenter } }
+                Button {
+                    Layout.fillWidth: true
+                    text: "Atender"
+                    onClicked: { appController.answer() }
+                    background: Rectangle { radius: 12; color: "#16A34A" }
+                    contentItem: Label { text: parent.text; color: "white"; horizontalAlignment: Text.AlignHCenter }
+                }
+                Button {
+                    Layout.fillWidth: true
+                    text: "Rechazar"
+                    onClicked: { appController.hangup() }
+                    background: Rectangle { radius: 12; color: "#DC2626" }
+                    contentItem: Label { text: parent.text; color: "white"; horizontalAlignment: Text.AlignHCenter }
+                }
             }
         }
     }
