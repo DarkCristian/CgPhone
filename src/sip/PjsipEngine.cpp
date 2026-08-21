@@ -65,7 +65,7 @@ PjsipEngine::~PjsipEngine() {
 void PjsipEngine::initializeEndpoint() {
     if (m_initialized) return;
     m_endpoint->libCreate();
-    EpConfig ep; ep.uaConfig.userAgent = "CgPhone/0.2.10"; ep.uaConfig.threadCnt = 1; ep.logConfig.level = 4;
+    EpConfig ep; ep.uaConfig.userAgent = "CgPhone/0.3.0"; ep.uaConfig.threadCnt = 1; ep.logConfig.level = 4;
     m_endpoint->libInit(ep);
     TransportConfig udp; udp.port = 0;
     m_endpoint->transportCreate(PJSIP_TRANSPORT_UDP, udp);
@@ -77,6 +77,17 @@ void PjsipEngine::configure(const SipAccountConfig &config) { m_config = config;
 void PjsipEngine::registerAccount() {
     try {
         initializeEndpoint();
+        const auto codecs = m_endpoint->codecEnum2();
+        for (const auto &codec : codecs) m_endpoint->codecSetPriority(codec.codecId, 0);
+        unsigned priority = 255;
+        for (const auto &wanted : m_config.enabledCodecs) {
+            for (const auto &codec : codecs) {
+                if (QString::fromStdString(codec.codecId).compare(wanted, Qt::CaseInsensitive) == 0) {
+                    m_endpoint->codecSetPriority(codec.codecId, priority--);
+                    break;
+                }
+            }
+        }
         m_call.reset(); m_account = std::make_unique<AccountImpl>(this);
         AccountConfig ac;
         const auto server = m_config.server.trimmed();
@@ -91,6 +102,8 @@ void PjsipEngine::registerAccount() {
 
 void PjsipEngine::makeCall(const QString &destination) {
     if (!m_account) { reportError(tr("La cuenta SIP no está registrada")); return; }
+    if (destination.trimmed().isEmpty()) { reportError(tr("Ingresá un número")); return; }
+    if (m_call) { reportError(tr("Todavía hay una llamada en curso")); return; }
     try {
         m_call = std::make_unique<CallImpl>(*m_account, this);
         const QString uri = destination.startsWith("sip:") ? destination : QString("sip:%1@%2").arg(destination, m_config.server);
@@ -131,6 +144,47 @@ void PjsipEngine::sendDtmf(const QString &digits) {
     if (!m_call || digits.isEmpty()) return;
     try { m_call->dialDtmf(digits.toStdString()); }
     catch (const Error &e) { reportError(QString::fromStdString(e.info())); }
+}
+
+void PjsipEngine::setHold(bool enabled) {
+    if (!m_call) return;
+    try {
+        CallOpParam op(true);
+        if (enabled) m_call->setHold(op);
+        else { op.opt.flag = PJSUA_CALL_UNHOLD; m_call->reinvite(op); }
+    } catch (const Error &e) { reportError(QString::fromStdString(e.info())); }
+}
+
+bool PjsipEngine::startRecording(const QString &path) {
+    if (!m_call || path.isEmpty() || m_recorder) return false;
+    try {
+        m_recorder = std::make_unique<AudioMediaRecorder>();
+        m_recorder->createRecorder(path.toStdString());
+        const auto ci = m_call->getInfo();
+        for (unsigned i = 0; i < ci.media.size(); ++i) {
+            if (ci.media[i].type == PJMEDIA_TYPE_AUDIO && ci.media[i].status == PJSUA_CALL_MEDIA_ACTIVE) {
+                m_call->getAudioMedia(i).startTransmit(*m_recorder);
+                Endpoint::instance().audDevManager().getCaptureDevMedia().startTransmit(*m_recorder);
+                return true;
+            }
+        }
+    } catch (const Error &e) { reportError(QString::fromStdString(e.info())); }
+    m_recorder.reset();
+    return false;
+}
+
+void PjsipEngine::stopRecording() {
+    if (!m_recorder) return;
+    try {
+        if (m_call) {
+            const auto ci = m_call->getInfo();
+            for (unsigned i = 0; i < ci.media.size(); ++i)
+                if (ci.media[i].type == PJMEDIA_TYPE_AUDIO)
+                    m_call->getAudioMedia(i).stopTransmit(*m_recorder);
+            Endpoint::instance().audDevManager().getCaptureDevMedia().stopTransmit(*m_recorder);
+        }
+    } catch (...) {}
+    m_recorder.reset();
 }
 
 bool PjsipEngine::setLocalAudioMonitor(bool enabled) {
@@ -186,7 +240,7 @@ void PjsipEngine::reportError(const QString &message) {
 }
 
 void PjsipEngine::releaseDisconnectedCall(CallImpl *call) {
-    if (m_call.get() == call) m_call.reset();
+    if (m_call.get() == call) { stopRecording(); m_call.reset(); }
 }
 
 void PjsipEngine::reportRegistration(bool active, int code, const std::string &reason) {
