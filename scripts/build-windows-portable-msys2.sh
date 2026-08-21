@@ -62,28 +62,38 @@ for runtime_dll in "${mingw_runtime_dlls[@]}"; do
   fi
 done
 
-# Collect every transitive MinGW dependency, including codecs and OpenSSL used
-# indirectly by Qt Multimedia/PJSIP. A fixed DLL list is insufficient because
-# these dependencies change when the MSYS2 packages are updated.
+# Qt Multimedia backends are loaded dynamically, so they never appear in the
+# dependency tree of CgPhone.exe. Ensure that the backend exists in the exact
+# plugin tree referenced by qt.conf before collecting DLL dependencies.
+qt_multimedia_plugins="/mingw64/share/qt6/plugins/multimedia"
+portable_plugins="$portable_dir/share/qt6/plugins"
+if [[ ! -d "$qt_multimedia_plugins" ]]; then
+  echo "MSYS2 no instaló ningún backend de Qt Multimedia" >&2
+  exit 1
+fi
+mkdir -p "$portable_plugins/multimedia"
+cp -Rf "$qt_multimedia_plugins/"* "$portable_plugins/multimedia/"
+
+# Collect every transitive MinGW dependency, including dependencies of plugins
+# loaded at runtime. Repeat because a plugin dependency may itself add DLLs.
 dependency_report="$portable_dir/DEPENDENCIES.txt"
-ntldd -R "$exe_path" | tee "$dependency_report"
-
-while IFS= read -r dependency_line; do
-  dependency_path="$(printf '%s\n' "$dependency_line" |
-    sed -n 's/^.*=>[[:space:]]*\(.*\)[[:space:]]*(0x[[:xdigit:]]*)$/\1/p')"
-  # The greedy capture above retains the separator space before "(0x...)".
-  # Trim both ends or cygpath receives a filename ending in a space and the
-  # copy is silently skipped.
-  dependency_path="${dependency_path#"${dependency_path%%[![:space:]]*}"}"
-  dependency_path="${dependency_path%"${dependency_path##*[![:space:]]}"}"
-  [[ -n "$dependency_path" ]] || continue
-
-  dependency_unix_path="$(cygpath -u "$dependency_path" 2>/dev/null || true)"
-  if [[ "$dependency_unix_path" == */mingw64/bin/*.dll ]] &&
-     [[ -f "$dependency_unix_path" ]]; then
-    cp -f "$dependency_unix_path" "$portable_dir/bin/"
-  fi
-done < "$dependency_report"
+: > "$dependency_report"
+for dependency_pass in 1 2 3; do
+  while IFS= read -r binary; do
+    ntldd -R "$binary" 2>/dev/null || true
+  done < <(find "$portable_dir" -type f \( -iname '*.exe' -o -iname '*.dll' \)) | tee -a "$dependency_report" > "$dependency_report.pass"
+  while IFS= read -r dependency_line; do
+    dependency_path="$(printf '%s\n' "$dependency_line" | sed -n 's/^.*=>[[:space:]]*\(.*\)[[:space:]]*(0x[[:xdigit:]]*)$/\1/p')"
+    dependency_path="${dependency_path#"${dependency_path%%[![:space:]]*}"}"
+    dependency_path="${dependency_path%"${dependency_path##*[![:space:]]}"}"
+    [[ -n "$dependency_path" ]] || continue
+    dependency_unix_path="$(cygpath -u "$dependency_path" 2>/dev/null || true)"
+    if [[ "$dependency_unix_path" == */mingw64/bin/*.dll ]] && [[ -f "$dependency_unix_path" ]]; then
+      cp -f "$dependency_unix_path" "$portable_dir/bin/"
+    fi
+  done < "$dependency_report.pass"
+done
+rm -f "$dependency_report.pass"
 
 # Re-scan using the portable directory first. Any unresolved non-system DLL
 # means the artifact is incomplete and must not be uploaded.
@@ -119,6 +129,6 @@ done
 cp "$root_dir/PORTABLE-LEEME.txt" "$portable_dir/"
 
 pushd "$root_dir"
-rm -f CgPhone-0.2.10-windows-x64-portable.zip
-zip -qr CgPhone-0.2.10-windows-x64-portable.zip CgPhone-portable
+rm -f CgPhone-0.3.0-windows-x64-portable.zip
+zip -qr CgPhone-0.3.0-windows-x64-portable.zip CgPhone-portable
 popd
