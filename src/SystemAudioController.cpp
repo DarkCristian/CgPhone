@@ -82,6 +82,44 @@ bool SystemAudioController::applyVolume(bool capture, int value) const {
     return false;
 }
 
+bool SystemAudioController::queryMute(bool *ok) const {
+    *ok = false;
+#ifdef Q_OS_WIN
+    if (auto *endpoint = openEndpoint(true)) {
+        BOOL muted = FALSE;
+        const HRESULT result = endpoint->GetMute(&muted);
+        endpoint->Release();
+        if (SUCCEEDED(result)) { *ok = true; return muted == TRUE; }
+    }
+#elif defined(Q_OS_LINUX)
+    QProcess process;
+    process.start(QStringLiteral("pactl"), {QStringLiteral("get-source-mute"), QStringLiteral("@DEFAULT_SOURCE@")});
+    if (process.waitForFinished(1200)) {
+        const QString output = QString::fromUtf8(process.readAllStandardOutput());
+        if (output.contains(QStringLiteral("yes"), Qt::CaseInsensitive) || output.contains(QStringLiteral("no"), Qt::CaseInsensitive)) {
+            *ok = true;
+            return output.contains(QStringLiteral("yes"), Qt::CaseInsensitive);
+        }
+    }
+#endif
+    return false;
+}
+
+bool SystemAudioController::applyMute(bool muted) const {
+#ifdef Q_OS_WIN
+    if (auto *endpoint = openEndpoint(true)) {
+        const HRESULT result = endpoint->SetMute(muted ? TRUE : FALSE, nullptr);
+        endpoint->Release();
+        return SUCCEEDED(result);
+    }
+#elif defined(Q_OS_LINUX)
+    return QProcess::execute(QStringLiteral("pactl"), {QStringLiteral("set-source-mute"), QStringLiteral("@DEFAULT_SOURCE@"), muted ? QStringLiteral("1") : QStringLiteral("0")}) == 0;
+#else
+    Q_UNUSED(muted)
+#endif
+    return false;
+}
+
 void SystemAudioController::setOutputVolume(int value) {
     value = qBound(0, value, 100);
     if (!applyVolume(false, value)) return;
@@ -94,12 +132,21 @@ void SystemAudioController::setMicrophoneVolume(int value) {
     if (m_microphoneVolume != value) { m_microphoneVolume = value; emit microphoneVolumeChanged(); }
 }
 
+void SystemAudioController::toggleMicrophoneMute() {
+    const bool requested = !m_microphoneMuted;
+    if (!applyMute(requested)) return;
+    m_microphoneMuted = requested;
+    emit microphoneMutedChanged();
+}
+
 void SystemAudioController::refresh() {
-    bool outputOk = false, microphoneOk = false;
+    bool outputOk = false, microphoneOk = false, muteOk = false;
     const int output = queryVolume(false, &outputOk);
     const int microphone = queryVolume(true, &microphoneOk);
+    const bool muted = queryMute(&muteOk);
     const bool nowAvailable = outputOk && microphoneOk;
     if (outputOk && output != m_outputVolume) { m_outputVolume = output; emit outputVolumeChanged(); }
     if (microphoneOk && microphone != m_microphoneVolume) { m_microphoneVolume = microphone; emit microphoneVolumeChanged(); }
+    if (muteOk && muted != m_microphoneMuted) { m_microphoneMuted = muted; emit microphoneMutedChanged(); }
     if (nowAvailable != m_available) { m_available = nowAvailable; emit availableChanged(); }
 }

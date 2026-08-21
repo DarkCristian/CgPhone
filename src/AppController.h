@@ -20,6 +20,7 @@ class AppController final : public QObject {
     Q_PROPERTY(bool incoming READ incoming NOTIFY callChanged)
     Q_PROPERTY(bool held READ held NOTIFY callChanged)
     Q_PROPERTY(bool recording READ recording NOTIFY callChanged)
+    Q_PROPERTY(bool muted READ muted NOTIFY mutedChanged)
     Q_PROPERTY(bool localRecordingEnabled READ localRecordingEnabled NOTIFY accountChanged)
     Q_PROPERTY(bool dnd READ dnd WRITE setDnd NOTIFY dndChanged)
     Q_PROPERTY(bool autoAnswer READ autoAnswer WRITE setAutoAnswer NOTIFY autoAnswerChanged)
@@ -43,6 +44,7 @@ public:
     bool incoming() const { return m_incoming; }
     bool held() const { return m_held; }
     bool recording() const { return m_recording; }
+    bool muted() const { return m_muted; }
     bool localRecordingEnabled() const { return m_loadedAccount.localRecordingEnabled; }
     bool dnd() const { return m_dnd; }
     bool autoAnswer() const { return m_autoAnswer; }
@@ -64,6 +66,7 @@ public:
     Q_INVOKABLE void transfer(const QString &extension);
     Q_INVOKABLE void toggleHold();
     Q_INVOKABLE void toggleRecording();
+    Q_INVOKABLE void setMuted(bool muted);
     Q_INVOKABLE void toggleDebugConsole();
     Q_INVOKABLE void registerAccount();
     Q_INVOKABLE void saveAccount(const QString &user, const QString &password, const QString &server,
@@ -83,26 +86,31 @@ signals:
     void dndChanged(); void autoAnswerChanged(); void registrationChanged();
     void accountChanged();
     void localAudioMonitorChanged();
+    void mutedChanged();
     void toast(const QString &message);
 
 private:
     void onCallState(ISipEngine::CallState state, const QString &peer);
+    void onHoldStateChanged(bool held);
     void refreshAccountIfChanged();
     std::unique_ptr<ISipEngine> m_sip;
     SettingsStore m_settings;
     CallHistoryModel m_history;
     QString m_dialedNumber, m_peer, m_callStatus = tr("Listo");
-    bool m_inCall = false, m_incoming = false, m_held = false, m_recording = false, m_dnd = false, m_autoAnswer = false;
+    bool m_inCall = false, m_incoming = false, m_held = false, m_holdRequested = false, m_recording = false, m_muted = false, m_dnd = false, m_autoAnswer = false;
     bool m_wasConnected = false;
     QString m_callDirection = "saliente";
     bool m_registered = false, m_adminMode = false, m_configurationMode = false;
     bool m_localAudioMonitor = false;
+    bool m_muteWarningShown = false;
     QString m_registrationText = tr("Sin registrar");
     QElapsedTimer m_elapsed;
     QTimer m_durationTimer;
     QTimer m_configRefreshTimer;
     QTimer m_holdTimer;
     QElapsedTimer m_holdElapsed;
+    int m_nextHoldReminder = 30;
+    QTimer m_muteTimer;
     QSoundEffect m_ringtone, m_ringback, m_hangupSound, m_keypadSound;
     SipAccountConfig m_loadedAccount;
 };

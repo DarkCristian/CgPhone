@@ -55,6 +55,7 @@ qt_add_qml_module(CgPhone
         assets/sounds/ringing.wav
         assets/sounds/ringing2.wav
         assets/sounds/ringtone.wav
+        assets/sounds/phone-keypad-button-dial.wav
         assets/app/CgPhone.png
 )
 

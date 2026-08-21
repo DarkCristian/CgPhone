@@ -13,7 +13,7 @@ struct SipAccountConfig {
     QString logoutCode = "*02";
     bool alwaysVisible = false;
     bool startWithOs = false;
-    QStringList enabledCodecs = {"opus/48000/2", "PCMA/8000/1", "PCMU/8000/1", "G722/16000/1"};
+    QStringList enabledCodecs = {"PCMA/8000/1", "PCMU/8000/1"};
     bool localRecordingEnabled = false;
     QString recordingPath;
     QString recordingFormat = "wav";
@@ -45,5 +45,6 @@ public:
 signals:
     void registrationChanged(bool registered, const QString &message);
     void callStateChanged(ISipEngine::CallState state, const QString &peer);
+    void holdStateChanged(bool held);
     void errorOccurred(const QString &message);
 };

@@ -48,7 +48,14 @@ Rectangle {
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 5
-            Rectangle { width: 25; height: 25; radius: 12.5; color: "#EAF3FF"; Text { anchors.centerIn: parent; text: "🎙"; font.pixelSize: 11 } }
+            Button {
+                width: 25; height: 25
+                ToolTip.visible: hovered
+                ToolTip.text: systemAudio.microphoneMuted ? "Activar micrófono" : "Mutear micrófono"
+                background: Rectangle { radius: 12.5; color: systemAudio.microphoneMuted ? "#FEE2E2" : "#EAF3FF"; border.color: systemAudio.microphoneMuted ? "#FCA5A5" : "transparent" }
+                contentItem: Text { text: systemAudio.microphoneMuted ? "🔇" : "🎙"; font.pixelSize: 11; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                onClicked: systemAudio.toggleMicrophoneMute()
+            }
             RoundStepButton { text: "−"; enabled: systemAudio.available; onClicked: systemAudio.microphoneVolume = Math.max(0, systemAudio.microphoneVolume - 5) }
             RoundSlider { Layout.fillWidth: true; enabled: systemAudio.available; value: systemAudio.microphoneVolume; onMoved: systemAudio.microphoneVolume = Math.round(value) }
             RoundStepButton { text: "+"; enabled: systemAudio.available; onClicked: systemAudio.microphoneVolume = Math.min(100, systemAudio.microphoneVolume + 5) }

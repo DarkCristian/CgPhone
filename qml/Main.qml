@@ -58,10 +58,14 @@ ApplicationWindow {
     }
 
     Popup {
-        id: toast; x: (parent.width-width)/2; y: parent.height-height-88; width: Math.min(parent.width-40, 360); height: 48
-        background: Rectangle { radius: 12; color: "#1E293B" }
-        contentItem: Label { id: toastText; color: "white"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; wrapMode: Text.Wrap }
-        Timer { id: toastTimer; interval: 2600; onTriggered: toast.close() }
+        id: toast; x: (parent.width-width)/2; y: Math.max(100, (parent.height-height)/2); width: Math.min(parent.width-32, 372); height: Math.max(62, toastText.implicitHeight + 30)
+        padding: 14; closePolicy: Popup.NoAutoClose
+        background: Rectangle {
+            radius: 16; color: "#FFFFFF"; border.width: 1; border.color: "#BFD6F5"
+            Rectangle { width: 5; radius: 2.5; color: "#2563EB"; anchors { left: parent.left; top: parent.top; bottom: parent.bottom; topMargin: 10; bottomMargin: 10 } }
+        }
+        contentItem: Label { id: toastText; color: "#1E293B"; font.pixelSize: 12; font.weight: Font.DemiBold; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; wrapMode: Text.Wrap }
+        Timer { id: toastTimer; interval: toastText.text.length > 90 ? 5200 : 2800; onTriggered: toast.close() }
     }
     Connections {
         target: appController
@@ -72,10 +76,16 @@ ApplicationWindow {
             } else incomingDialog.close()
         }
     }
+    Connections {
+        target: systemAudio
+        function onMicrophoneMutedChanged() { appController.setMuted(systemAudio.microphoneMuted) }
+    }
 
     Dialog {
         id: incomingDialog; anchors.centerIn: parent; modal: true; closePolicy: Popup.NoAutoClose
         title: "Llamada entrante"
+        width: Math.min(parent.width - 32, 380)
+        background: Rectangle { radius: 18; color: "#FFFFFF"; border.color: "#D8E1EE" }
         contentItem: ColumnLayout {
             spacing: 14
             Label { Layout.fillWidth: true; text: appController.peer || "Asterisk"; font.pixelSize: 20; font.weight: Font.DemiBold; horizontalAlignment: Text.AlignHCenter }

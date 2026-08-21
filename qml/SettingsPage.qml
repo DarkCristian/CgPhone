@@ -36,7 +36,9 @@ Page {
             TextField { id: server; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Servidor, ej. pbx.empresa.com"; text: page.saved.server || "" }
             ToggleCard { id: proxyToggle; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; text: "Usar proxy"; checked: page.saved.proxyEnabled || false }
             TextField { id: proxy; visible: proxyToggle.checked; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Proxy, ej. sip.empresa.com:5060"; text: page.saved.proxy || "" }
-            TextField { id: logoutCode; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Código de deslogueo"; text: page.saved.logoutCode || "*02" }
+            Label { text: "Código de deslogueo de la central"; color: "#334155"; font.pixelSize: 12; Layout.leftMargin: 20 }
+            TextField { id: logoutCode; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Ej. *02"; text: page.saved.logoutCode || "*02" }
+            Label { text: "Se marca desde el menú del tray para cerrar la sesión del agente. Es configurable porque *02 no es universal en Asterisk/Neotel."; color: "#64748B"; font.pixelSize: 10; wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20 }
             ToggleCard { id: alwaysVisibleToggle; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; text: "Siempre visible"; checked: page.saved.alwaysVisible || false }
             ToggleCard { id: startWithOsToggle; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; text: "Iniciar con el SO"; checked: page.saved.startWithOs || false }
             Label { text: "Codecs de audio"; color: "#2563EB"; font.pixelSize: 17; font.weight: Font.DemiBold; Layout.leftMargin: 20 }

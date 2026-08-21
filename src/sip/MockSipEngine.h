@@ -14,7 +14,7 @@ public:
     void hangup() override;
     void transfer(const QString &extension) override;
     void sendDtmf(const QString &digits) override;
-    void setHold(bool) override {}
+    void setHold(bool enabled) override { emit holdStateChanged(enabled); }
     bool startRecording(const QString &) override { return false; }
     void stopRecording() override {}
     bool setLocalAudioMonitor(bool enabled) override;

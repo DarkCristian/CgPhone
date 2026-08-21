@@ -34,7 +34,15 @@ public:
     void onCallMediaState(OnCallMediaStateParam &) override {
         connectActiveAudio();
         try {
-            if (getInfo().state == PJSIP_INV_STATE_EARLY)
+            const auto info = getInfo();
+            bool locallyHeld = false;
+            for (const auto &media : info.media)
+                if (media.type == PJMEDIA_TYPE_AUDIO && media.status == PJSUA_CALL_MEDIA_LOCAL_HOLD)
+                    locallyHeld = true;
+            QMetaObject::invokeMethod(owner, [owner=owner,locallyHeld]{
+                emit owner->holdStateChanged(locallyHeld);
+            }, Qt::QueuedConnection);
+            if (info.state == PJSIP_INV_STATE_EARLY)
                 owner->reportEarlyMedia(this);
         } catch (const Error &e) { owner->reportError(QString::fromStdString(e.info())); }
     }
@@ -45,8 +53,9 @@ class PjsipEngine::AccountImpl final : public Account {
 public:
     explicit AccountImpl(PjsipEngine *owner) : owner(owner) {}
     void onIncomingCall(OnIncomingCallParam &p) override {
-        const int callId = p.callId;
-        QMetaObject::invokeMethod(owner, [owner=owner,callId]{ owner->incoming(callId); }, Qt::QueuedConnection);
+        // El callId sólo es seguro mientras PJSIP conserva la sesión. Crear el
+        // wrapper inmediatamente evita perder INVITEs al demorarlos en Qt.
+        owner->incoming(p.callId);
     }
     void onRegState(OnRegStateParam &) override {
         try { const auto ai=getInfo(); owner->reportRegistration(ai.regIsActive, ai.regStatus, ai.regStatusText); }
@@ -93,6 +102,11 @@ void PjsipEngine::registerAccount() {
         const auto server = m_config.server.trimmed();
         ac.idUri = QString("sip:%1@%2").arg(m_config.user, server).toStdString();
         ac.regConfig.registrarUri = QString("sip:%1").arg(server).toStdString();
+        ac.regConfig.retryIntervalSec = 30;
+        ac.regConfig.firstRetryIntervalSec = 5;
+        ac.natConfig.contactRewriteUse = 1;
+        ac.natConfig.viaRewriteUse = 1;
+        ac.natConfig.sdpNatRewriteUse = 1;
         ac.sipConfig.authCreds.emplace_back("digest", "*", m_config.user.toStdString(), 0, m_config.password.toStdString());
         if (m_config.proxyEnabled && !m_config.proxy.trimmed().isEmpty())
             ac.sipConfig.proxies.push_back(QString("sip:%1;lr").arg(m_config.proxy.trimmed()).toStdString());
@@ -118,18 +132,18 @@ void PjsipEngine::incoming(int callId) {
         return;
     }
     m_call = std::make_unique<CallImpl>(*m_account, this, callId);
+    QString peer;
+    try { peer = QString::fromStdString(m_call->getInfo().remoteUri); } catch (...) {}
+    emit callStateChanged(CallState::Incoming, peer);
     if (m_dnd) {
         CallOpParam op; op.statusCode = PJSIP_SC_BUSY_HERE; m_call->answer(op); return;
     }
-    QString peer;
-    try { peer = QString::fromStdString(m_call->getInfo().remoteUri); } catch (...) {}
     if (m_autoAnswer) {
         // Sin demora artificial ni ringtone local: la central controla el
         // anuncio de campaña/cola y el momento del bridge con el cliente.
         answer();
         return;
     }
-    emit callStateChanged(CallState::Incoming, peer);
 }
 
 void PjsipEngine::answer() { if (!m_call) return; try { CallOpParam op; op.statusCode=PJSIP_SC_OK; m_call->answer(op); } catch (const Error &e) { reportError(QString::fromStdString(e.info())); } }

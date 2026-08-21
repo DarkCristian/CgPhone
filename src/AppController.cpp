@@ -23,6 +23,7 @@ AppController::AppController(QObject *parent)
     m_sip = std::make_unique<MockSipEngine>();
 #endif
     connect(m_sip.get(), &ISipEngine::callStateChanged, this, &AppController::onCallState);
+    connect(m_sip.get(), &ISipEngine::holdStateChanged, this, &AppController::onHoldStateChanged);
     connect(m_sip.get(), &ISipEngine::registrationChanged, this, [this](bool ok, const QString &text) {
         m_registered = ok; m_registrationText = text; emit registrationChanged();
     });
@@ -34,21 +35,29 @@ AppController::AppController(QObject *parent)
     m_hangupSound.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/hangup.wav"));
     // El paquete fuente puede reemplazar este WAV por el sonido corporativo
     // sin cambiar el backend ni el mapeo de teclado/DTMF.
-    m_keypadSound.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/msgout.wav"));
+    m_keypadSound.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/phone-keypad-button-dial.wav"));
     QSettings userSettings;
     m_dnd = userSettings.value("behavior/dnd", false).toBool();
     m_autoAnswer = userSettings.value("behavior/autoAnswer", false).toBool();
+    m_muteWarningShown = userSettings.value("behavior/muteWarningShown", false).toBool();
     m_sip->setDnd(m_dnd); m_sip->setAutoAnswer(m_autoAnswer);
     m_loadedAccount = m_settings.loadAccount();
     m_sip->configure(m_loadedAccount);
     connect(&m_holdTimer, &QTimer::timeout, this, [this] {
         if (!m_held || !m_holdElapsed.isValid()) return;
         const int seconds = int(m_holdElapsed.elapsed() / 1000);
-        if (seconds < 30 || seconds % 30 != 0) return;
-        const QString elapsed = QString("%1:%2").arg(seconds / 60).arg(seconds % 60, 2, 10, QLatin1Char('0'));
+        if (seconds < m_nextHoldReminder) return;
+        const int reminder = m_nextHoldReminder;
+        m_nextHoldReminder += 30;
+        const QString elapsed = QString("%1:%2").arg(reminder / 60).arg(reminder % 60, 2, 10, QLatin1Char('0'));
         emit toast(tr("Hace %1 tenés al cliente holdeado, retomá la llamada").arg(elapsed));
     });
     m_holdTimer.setInterval(1000);
+    connect(&m_muteTimer, &QTimer::timeout, this, [this] {
+        if (m_muted && !m_held)
+            emit toast(tr("Recordá que estás en mute"));
+    });
+    m_muteTimer.setInterval(3000);
     if (!m_configurationMode && !m_loadedAccount.user.trimmed().isEmpty() && !m_loadedAccount.server.trimmed().isEmpty()) m_sip->registerAccount();
     if (!m_configurationMode) {
         connect(&m_configRefreshTimer, &QTimer::timeout, this, &AppController::refreshAccountIfChanged);
@@ -69,11 +78,50 @@ void AppController::answer() { m_sip->answer(); }
 void AppController::hangup() { m_sip->hangup(); }
 void AppController::transfer(const QString &extension) { m_sip->transfer(extension); }
 void AppController::toggleHold() {
-    if (!m_inCall || !m_wasConnected) return;
-    m_held = !m_held; m_sip->setHold(m_held);
-    if (m_held) { m_holdElapsed.restart(); m_holdTimer.start(); m_callStatus = tr("En espera"); }
-    else { m_holdTimer.stop(); m_holdElapsed.invalidate(); m_callStatus = tr("Conectada"); }
+    if (!m_inCall || !m_wasConnected || m_holdRequested) return;
+    m_holdRequested = true;
+    m_sip->setHold(!m_held);
+    m_callStatus = m_held ? tr("Retomando llamada…") : tr("Poniendo en espera…");
     emit callChanged();
+}
+
+void AppController::onHoldStateChanged(bool held) {
+    if (!m_inCall || !m_wasConnected) return;
+    m_holdRequested = false;
+    if (m_held == held) { emit callChanged(); return; }
+    m_held = held;
+    if (held) {
+        m_holdElapsed.restart();
+        m_nextHoldReminder = 30;
+        m_holdTimer.start();
+        m_callStatus = tr("En espera");
+        emit toast(tr("Llamada en espera"));
+    } else {
+        m_holdTimer.stop();
+        m_holdElapsed.invalidate();
+        m_callStatus = tr("Conectada");
+        emit toast(tr("Llamada retomada"));
+    }
+    emit callChanged();
+}
+
+void AppController::setMuted(bool muted) {
+    if (m_muted == muted) return;
+    m_muted = muted;
+    if (muted) {
+        if (!m_muteWarningShown) {
+            emit toast(tr("Mutear el micrófono puede ser una mala práctica, hacer que se pierdan llamados y, según la política del call center, ocasionar sanciones."));
+            m_muteWarningShown = true;
+            QSettings().setValue("behavior/muteWarningShown", true);
+        } else {
+            emit toast(tr("Micrófono muteado"));
+        }
+        m_muteTimer.start();
+    } else {
+        m_muteTimer.stop();
+        emit toast(tr("Micrófono activado"));
+    }
+    emit mutedChanged();
 }
 
 void AppController::toggleRecording() {
@@ -185,12 +233,16 @@ void AppController::onCallState(ISipEngine::CallState state, const QString &peer
     m_peer = peer;
     switch (state) {
     case ISipEngine::CallState::Calling: m_callStatus = tr("Llamando…"); m_inCall = true; m_incoming = false; m_callDirection="saliente"; m_wasConnected=false; m_elapsed.invalidate(); if (!m_ringback.isPlaying()) m_ringback.play(); break;
-    case ISipEngine::CallState::Incoming: m_callStatus = tr("Llamada entrante"); m_inCall = true; m_incoming = true; m_callDirection="entrante"; m_wasConnected=false; m_ringtone.play(); break;
+    case ISipEngine::CallState::Incoming:
+        m_callStatus = m_dnd ? tr("Rechazada por DND") : (m_autoAnswer ? tr("Atendiendo automáticamente…") : tr("Llamada entrante"));
+        m_inCall = true; m_incoming = !m_dnd && !m_autoAnswer; m_callDirection="entrante"; m_wasConnected=false;
+        if (!m_dnd && !m_autoAnswer) m_ringtone.play();
+        break;
     case ISipEngine::CallState::EarlyMedia: m_ringtone.stop(); m_ringback.stop(); m_callStatus = tr("Audio de la central…"); m_inCall = true; m_incoming = false; break;
     case ISipEngine::CallState::Connected: m_ringtone.stop(); m_ringback.stop(); m_callStatus = tr("Conectada"); m_inCall = true; m_incoming = false; m_wasConnected=true; m_elapsed.restart(); m_durationTimer.start(); break;
     case ISipEngine::CallState::Ended:
         m_history.addCall({peer, m_callDirection, QDateTime::currentDateTime(), int(m_elapsed.isValid() ? m_elapsed.elapsed()/1000 : 0), m_callDirection=="entrante" && !m_wasConnected});
-        m_ringtone.stop(); m_ringback.stop(); m_sip->stopRecording(); m_recording=false; m_held=false; m_holdTimer.stop(); m_holdElapsed.invalidate(); m_hangupSound.play(); m_callStatus = tr("Disponible"); m_inCall = false; m_incoming=false; m_durationTimer.stop(); m_elapsed.invalidate(); setDialedNumber({}); m_peer.clear(); break;
+        m_ringtone.stop(); m_ringback.stop(); m_sip->stopRecording(); m_recording=false; m_held=false; m_holdRequested=false; m_holdTimer.stop(); m_holdElapsed.invalidate(); m_hangupSound.play(); m_callStatus = tr("Disponible"); m_inCall = false; m_incoming=false; m_durationTimer.stop(); m_elapsed.invalidate(); setDialedNumber({}); m_peer.clear(); break;
     case ISipEngine::CallState::Error: m_callStatus = tr("Error"); m_inCall = false; m_incoming=false; break;
     case ISipEngine::CallState::Idle: m_callStatus = tr("Listo"); m_inCall = false; m_incoming=false; break;
     }
