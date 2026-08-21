@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(CgPhone VERSION 0.2.10 LANGUAGES CXX)
+project(CgPhone VERSION 0.3.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -20,6 +20,10 @@ qt_add_executable(CgPhone
     src/sip/ISipEngine.h
     src/sip/MockSipEngine.cpp src/sip/MockSipEngine.h
 )
+
+if(WIN32)
+    set_target_properties(CgPhone PROPERTIES WIN32_EXECUTABLE TRUE)
+endif()
 
 if(WIN32)
     target_sources(CgPhone PRIVATE assets/app/CgPhone.rc)
