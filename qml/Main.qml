@@ -11,6 +11,7 @@ ApplicationWindow {
 
     property int selectedTab: 0
     property var tabs: ["Discador", "Historial"]
+    Shortcut { sequence: "Shift+F12"; onActivated: appController.toggleDebugConsole() }
 
     header: ToolBar {
         height: 66
@@ -62,7 +63,30 @@ ApplicationWindow {
         contentItem: Label { id: toastText; color: "white"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; wrapMode: Text.Wrap }
         Timer { id: toastTimer; interval: 2600; onTriggered: toast.close() }
     }
-    Connections { target: appController; function onToast(message) { toastText.text=message; toast.open(); toastTimer.restart() } }
+    Connections {
+        target: appController
+        function onToast(message) { toastText.text=message; toast.open(); toastTimer.restart() }
+        function onCallChanged() {
+            if (appController.incoming) {
+                window.show(); window.raise(); window.requestActivate(); incomingDialog.open()
+            } else incomingDialog.close()
+        }
+    }
+
+    Dialog {
+        id: incomingDialog; anchors.centerIn: parent; modal: true; closePolicy: Popup.NoAutoClose
+        title: "Llamada entrante"
+        contentItem: ColumnLayout {
+            spacing: 14
+            Label { Layout.fillWidth: true; text: appController.peer || "Asterisk"; font.pixelSize: 20; font.weight: Font.DemiBold; horizontalAlignment: Text.AlignHCenter }
+            Label { Layout.fillWidth: true; text: "La central está llamando"; color: "#64748B"; horizontalAlignment: Text.AlignHCenter }
+            RowLayout {
+                Layout.fillWidth: true; spacing: 10
+                Button { Layout.fillWidth: true; text: "Atender"; onClicked: appController.answer(); background: Rectangle { radius: 12; color: "#16A34A" }; contentItem: Label { text: parent.text; color: "white"; horizontalAlignment: Text.AlignHCenter } }
+                Button { Layout.fillWidth: true; text: "Rechazar"; onClicked: appController.hangup(); background: Rectangle { radius: 12; color: "#DC2626" }; contentItem: Label { text: parent.text; color: "white"; horizontalAlignment: Text.AlignHCenter } }
+            }
+        }
+    }
 
     Dialog {
         id: closeConfirm; anchors.centerIn: parent; modal: true; title: appController.configurationMode ? "Descartar cambios" : "Cerrar CgPhone"
