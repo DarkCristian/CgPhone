@@ -28,7 +28,7 @@ jobs:
         run: bash scripts/build-windows-portable-msys2.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-0.2.10-windows-x64-portable
-          path: CgPhone-0.2.10-windows-x64-portable.zip
+          name: CgPhone-0.3.0-windows-x64-portable
+          path: CgPhone-0.3.0-windows-x64-portable.zip
           if-no-files-found: error
           retention-days: 14
