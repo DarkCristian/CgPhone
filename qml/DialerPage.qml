@@ -6,6 +6,13 @@ import "components"
 
 Page {
     id: page
+    focus: true
+    Component.onCompleted: forceActiveFocus()
+    Keys.onPressed: function(event) {
+        if (event.text && /^[0-9*#]$/.test(event.text)) { appController.appendDigit(event.text); event.accepted = true }
+        else if (event.key === Qt.Key_Backspace) { appController.backspace(); event.accepted = true }
+        else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { if (!appController.inCall) appController.call(); event.accepted = true }
+    }
     background: Rectangle { color: "#F6FAFF" }
     property var digits: ["1","2","3","4","5","6","7","8","9","*","0","#"]
 
@@ -28,7 +35,7 @@ Page {
             Layout.fillWidth: true; implicitHeight: 72; radius: 14; color: "#EFF6FF"; border.color: "#C9DDF8"
             Column { anchors.centerIn: parent; spacing: 3
                 Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.inCall ? appController.peer : (appController.dialedNumber || "Ingresá un número"); color: "#111827"; font.pixelSize: 20; font.weight: Font.Bold }
-                Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.callStatus; color: "#2563EB"; font.pixelSize: 12 }
+                Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.callStatus; color: appController.callStatus === "Disponible" ? "#16A34A" : "#2563EB"; font.pixelSize: 12; font.weight: Font.DemiBold }
                 Text { anchors.horizontalCenter: parent.horizontalCenter; visible: appController.inCall; text: appController.duration; color: "#111827"; font.pixelSize: 12; font.weight: Font.DemiBold }
             }
         }
@@ -50,7 +57,12 @@ Page {
             ToggleCard { Layout.fillWidth: true; text: "No molestar"; checked: appController.dnd; onToggled: appController.dnd=checked }
             ToggleCard { Layout.fillWidth: true; text: "Autorespuesta"; checked: appController.autoAnswer; onToggled: appController.autoAnswer=checked }
         }
-        SoftButton { Layout.fillWidth: true; implicitHeight: 38; text: "⇄  Transferir"; enabled: appController.inCall; onClicked: transferDialog.open() }
+        RowLayout {
+            Layout.fillWidth: true; spacing: 6
+            SoftButton { Layout.fillWidth: true; implicitHeight: 38; text: "⇄  Transferir"; enabled: appController.inCall; onClicked: transferDialog.open() }
+            SoftButton { Layout.fillWidth: true; implicitHeight: 38; text: appController.held ? "▶ Retomar" : "⏸ Hold"; enabled: appController.inCall && !appController.incoming; primary: appController.held; accent: "#F59E0B"; onClicked: appController.toggleHold() }
+            SoftButton { visible: appController.localRecordingEnabled; Layout.fillWidth: true; implicitHeight: 38; text: appController.recording ? "■ Detener" : "● Grabar"; enabled: appController.inCall && !appController.incoming; primary: appController.recording; accent: "#DC2626"; onClicked: appController.toggleRecording() }
+        }
         SystemVolumeControl { Layout.fillWidth: true }
         Item { Layout.fillHeight: true }
     }
