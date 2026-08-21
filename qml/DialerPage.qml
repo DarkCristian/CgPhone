@@ -35,8 +35,8 @@ Page {
             Layout.fillWidth: true; implicitHeight: 72; radius: 14; color: "#EFF6FF"; border.color: "#C9DDF8"
             Column { anchors.centerIn: parent; spacing: 3
                 Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.inCall ? appController.peer : (appController.dialedNumber || "Ingresá un número"); color: "#111827"; font.pixelSize: 20; font.weight: Font.Bold }
-                Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.callStatus; color: appController.callStatus === "Disponible" ? "#16A34A" : "#2563EB"; font.pixelSize: 12; font.weight: Font.DemiBold }
-                Text { anchors.horizontalCenter: parent.horizontalCenter; visible: appController.inCall; text: appController.duration; color: "#111827"; font.pixelSize: 12; font.weight: Font.DemiBold }
+                Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.callStatus; color: appController.held ? "#D97706" : (appController.callStatus === "Disponible" ? "#16A34A" : "#2563EB"); font.pixelSize: 12; font.weight: Font.DemiBold }
+                Text { anchors.horizontalCenter: parent.horizontalCenter; visible: appController.inCall; text: appController.duration; color: appController.held ? "#D97706" : "#111827"; font.pixelSize: 12; font.weight: Font.DemiBold }
             }
         }
         GridLayout {
@@ -48,10 +48,10 @@ Page {
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 6
-            SoftButton { visible: !appController.incoming && !appController.inCall; Layout.fillWidth: true; implicitHeight: 38; text: "⌫  Borrar"; onClicked: appController.backspace() }
+            SoftButton { visible: !appController.incoming && !appController.inCall; Layout.fillWidth: true; implicitHeight: 38; text: "Borrar"; iconSource: "qrc:/qt/qml/CgPhone/assets/icons/backspace.svg"; onClicked: appController.backspace() }
             SoftButton { visible: appController.incoming; Layout.fillWidth: true; implicitHeight: 38; primary: true; accent: "#16A34A"; text: "Atender"; onClicked: appController.answer() }
             SoftButton { visible: appController.inCall && !appController.incoming; Layout.fillWidth: true; implicitHeight: 38; text: appController.held ? "▶  Retomar" : "Ⅱ  Hold"; primary: appController.held; accent: "#F59E0B"; onClicked: appController.toggleHold() }
-            SoftButton { Layout.fillWidth: true; implicitHeight: 38; primary: true; accent: appController.inCall ? "#DC2626" : "#2563EB"; text: appController.incoming ? "Rechazar" : (appController.inCall ? "☎  Cortar" : "☎  Llamar"); onClicked: appController.inCall ? appController.hangup() : appController.call() }
+            SoftButton { Layout.fillWidth: true; implicitHeight: 38; primary: true; accent: appController.inCall ? "#DC2626" : "#2563EB"; text: appController.incoming ? "Rechazar" : (appController.inCall ? "Cortar" : "Llamar"); iconSource: appController.incoming ? "" : "qrc:/qt/qml/CgPhone/assets/icons/phone-white.svg"; onClicked: appController.inCall ? appController.hangup() : appController.call() }
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 6
@@ -60,7 +60,7 @@ Page {
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 6
-            SoftButton { Layout.fillWidth: true; implicitHeight: 38; text: "⇄  Transferir"; enabled: appController.inCall; onClicked: transferDialog.open() }
+            SoftButton { Layout.fillWidth: true; implicitHeight: 38; text: "Transferir"; iconSource: "qrc:/qt/qml/CgPhone/assets/icons/transfer.svg"; enabled: appController.inCall; onClicked: transferDialog.open() }
             SoftButton { Layout.fillWidth: true; implicitHeight: 38; text: appController.recording ? "■  Detener" : "●  Grabar"; enabled: appController.localRecordingEnabled && appController.inCall && !appController.incoming; primary: appController.recording; accent: "#DC2626"; ToolTip.visible: hovered && !appController.localRecordingEnabled; ToolTip.text: "Habilitá la grabación local en Configuración"; onClicked: appController.toggleRecording() }
         }
         SystemVolumeControl { Layout.fillWidth: true }

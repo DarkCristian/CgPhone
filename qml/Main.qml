@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 ApplicationWindow {
     id: window
-    width: 360; height: 690; minimumWidth: 340; minimumHeight: 640
+    width: 344; height: 640; minimumWidth: 320; minimumHeight: 600
     visible: true; title: "CgPhone" + (appController.sipUser ? " · " + appController.sipUser : ""); color: "#F6FAFF"
     property bool allowExit: false
     onClosing: function(close) { if (!allowExit) { close.accepted = false; closeConfirm.open() } }
@@ -12,13 +12,24 @@ ApplicationWindow {
     property int selectedTab: 0
     property var tabs: ["Discador", "Historial"]
     Shortcut { sequence: "Shift+F12"; onActivated: appController.toggleDebugConsole() }
+    Shortcut { sequence: "Num+0"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("0") }
+    Shortcut { sequence: "Num+1"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("1") }
+    Shortcut { sequence: "Num+2"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("2") }
+    Shortcut { sequence: "Num+3"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("3") }
+    Shortcut { sequence: "Num+4"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("4") }
+    Shortcut { sequence: "Num+5"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("5") }
+    Shortcut { sequence: "Num+6"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("6") }
+    Shortcut { sequence: "Num+7"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("7") }
+    Shortcut { sequence: "Num+8"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("8") }
+    Shortcut { sequence: "Num+9"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("9") }
+    Shortcut { sequence: "Num+*"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("*") }
 
     header: ToolBar {
-        height: 66
+        height: 50
         background: Rectangle { color: "#FFFFFF"; border.color: "#E7EDF5" }
         RowLayout {
-            anchors.fill: parent; anchors.leftMargin: 20; anchors.rightMargin: 20
-            Rectangle { width: 30; height: 30; radius: 10; color: "#E9F2FF"; Text { anchors.centerIn: parent; text: "☎"; color: "#2563EB"; font.pixelSize: 17 } }
+            anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 11
+            Rectangle { width: 28; height: 28; radius: 9; color: "#E7F1FF"; Image { anchors.centerIn: parent; width: 18; height: 18; source: "qrc:/qt/qml/CgPhone/assets/icons/phone-blue.svg" } }
             Label { text: "CgPhone"; color: "#111827"; font.pixelSize: 18; font.weight: Font.DemiBold }
             Rectangle {
                 implicitWidth: sipBadgeText.implicitWidth + 14; implicitHeight: 28; radius: 10
@@ -26,9 +37,14 @@ ApplicationWindow {
                 Label { id: sipBadgeText; anchors.centerIn: parent; text: appController.sipUser || "SIN SIP"; color: "#2563EB"; font.pixelSize: 18; font.weight: Font.DemiBold }
             }
             Item { Layout.fillWidth: true }
-            ToolButton { visible: !appController.configurationMode; text: "⚙"; font.pixelSize: 17; onClicked: appController.requestAdminConfiguration() }
-            Rectangle { width: 10; height: 10; radius: 5; color: appController.registered ? "#22C55E" : (/SIP [456]/.test(appController.registrationText) ? "#F59E0B" : "#94A3B8") }
-            Label { Layout.maximumWidth: 94; text: appController.registrationText; color: "#64748B"; font.pixelSize: 10; elide: Text.ElideRight }
+            ToolButton { visible: !appController.configurationMode; width: 30; height: 30; onClicked: appController.requestAdminConfiguration(); background: Rectangle { radius: 9; color: "#EDF5FF" }; contentItem: Image { source: "qrc:/qt/qml/CgPhone/assets/icons/gear.svg"; width: 16; height: 16; anchors.centerIn: parent } }
+            Rectangle {
+                implicitWidth: Math.min(112, registrationLabel.implicitWidth + 26); height: 30; radius: 10; color: "#FFFFFF"; border.color: "#DBE4EE"
+                Row { anchors.centerIn: parent; spacing: 5
+                    Rectangle { width: 9; height: 9; radius: 4.5; anchors.verticalCenter: parent.verticalCenter; color: appController.registered ? "#22C55E" : (/SIP [456]/.test(appController.registrationText) ? "#F59E0B" : "#94A3B8") }
+                    Label { id: registrationLabel; text: appController.registrationText; color: "#475569"; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
+                }
+            }
         }
     }
 
@@ -43,7 +59,7 @@ ApplicationWindow {
     SettingsPage { anchors.fill: parent; visible: appController.configurationMode }
 
     TabBar {
-        id: nav; visible: !appController.configurationMode; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 70
+        id: nav; visible: !appController.configurationMode; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 58
         currentIndex: window.selectedTab
         onCurrentIndexChanged: window.selectedTab = currentIndex
         background: Rectangle { color: "#FFFFFF"; border.color: "#E1E8F2" }

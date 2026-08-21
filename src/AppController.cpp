@@ -26,6 +26,9 @@ AppController::AppController(QObject *parent)
     connect(m_sip.get(), &ISipEngine::holdStateChanged, this, &AppController::onHoldStateChanged);
     connect(m_sip.get(), &ISipEngine::registrationChanged, this, [this](bool ok, const QString &text) {
         m_registered = ok; m_registrationText = text; emit registrationChanged();
+        QSettings runtime;
+        runtime.setValue("runtime/registered", ok);
+        runtime.setValue("runtime/registrationText", text);
     });
     connect(m_sip.get(), &ISipEngine::errorOccurred, this, &AppController::toast);
     connect(&m_durationTimer, &QTimer::timeout, this, &AppController::durationChanged);
@@ -42,6 +45,10 @@ AppController::AppController(QObject *parent)
     m_muteWarningShown = userSettings.value("behavior/muteWarningShown", false).toBool();
     m_sip->setDnd(m_dnd); m_sip->setAutoAnswer(m_autoAnswer);
     m_loadedAccount = m_settings.loadAccount();
+    if (m_configurationMode) {
+        m_registered = userSettings.value("runtime/registered", false).toBool();
+        m_registrationText = userSettings.value("runtime/registrationText", tr("Sin registrar")).toString();
+    }
     m_sip->configure(m_loadedAccount);
     connect(&m_holdTimer, &QTimer::timeout, this, [this] {
         if (!m_held || !m_holdElapsed.isValid()) return;
@@ -150,8 +157,8 @@ void AppController::toggleDebugConsole() {
     emit toast(tr("La consola de diagnóstico se controla desde la terminal en Linux"));
 #endif
 }
-void AppController::setDnd(bool value) { if (m_dnd == value) return; m_dnd = value; m_sip->setDnd(value); QSettings().setValue("behavior/dnd", value); emit dndChanged(); }
-void AppController::setAutoAnswer(bool value) { if (m_autoAnswer == value) return; m_autoAnswer = value; m_sip->setAutoAnswer(value); QSettings().setValue("behavior/autoAnswer", value); emit autoAnswerChanged(); }
+void AppController::setDnd(bool value) { if (m_dnd == value) return; m_dnd = value; m_sip->setDnd(value); QSettings().setValue("behavior/dnd", value); emit dndChanged(); emit toast(value ? tr("DND activado · las llamadas entrantes se rechazarán") : tr("DND desactivado · disponible para recibir llamadas")); }
+void AppController::setAutoAnswer(bool value) { if (m_autoAnswer == value) return; m_autoAnswer = value; m_sip->setAutoAnswer(value); QSettings().setValue("behavior/autoAnswer", value); emit autoAnswerChanged(); emit toast(value ? tr("Autorespuesta activada") : tr("Autorespuesta desactivada")); }
 void AppController::registerAccount() { m_sip->configure(m_settings.loadAccount()); m_sip->registerAccount(); }
 
 void AppController::saveAccount(const QString &user, const QString &password, const QString &server, const QString &proxy, bool proxyEnabled, const QString &logoutCode, bool alwaysVisible, bool startWithOs, const QVariantList &enabledCodecs, bool localRecordingEnabled, const QString &recordingPath, const QString &recordingFormat) {
@@ -220,7 +227,8 @@ QVariantMap AppController::account() const {
 }
 
 QString AppController::duration() const {
-    const qint64 seconds = m_elapsed.isValid() ? m_elapsed.elapsed() / 1000 : 0;
+    const qint64 seconds = m_held && m_holdElapsed.isValid() ? m_holdElapsed.elapsed() / 1000
+                                                             : (m_elapsed.isValid() ? m_elapsed.elapsed() / 1000 : 0);
     return QString("%1:%2").arg(seconds / 60, 2, 10, QLatin1Char('0')).arg(seconds % 60, 2, 10, QLatin1Char('0'));
 }
 

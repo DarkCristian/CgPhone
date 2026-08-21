@@ -57,6 +57,11 @@ qt_add_qml_module(CgPhone
         assets/sounds/ringtone.wav
         assets/sounds/phone-keypad-button-dial.wav
         assets/app/CgPhone.png
+        assets/icons/phone-blue.svg
+        assets/icons/phone-white.svg
+        assets/icons/gear.svg
+        assets/icons/transfer.svg
+        assets/icons/backspace.svg
 )
 
 target_link_libraries(CgPhone PRIVATE
