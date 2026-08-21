@@ -100,14 +100,30 @@ while IFS= read -r dependency_line; do
   fi
 done < "$dependency_report"
 
-# Re-scan using the portable directory first. Any unresolved non-system DLL
-# means the artifact is incomplete and must not be uploaded.
+# A plugin inspected as a standalone DLL resolves its dependencies through the
+# MSYS2 PATH instead of the executable directory, even when those DLLs were
+# correctly copied beside CgPhone.exe. Validate the copy by basename here;
+# Windows will use the application directory when CgPhone loads the plugin.
+while IFS= read -r dependency_line; do
+  dependency_path="$(printf '%s\n' "$dependency_line" | sed -n 's/^.*=>[[:space:]]*\(.*\)[[:space:]]*(0x[[:xdigit:]]*)$/\1/p')"
+  dependency_path="${dependency_path#"${dependency_path%%[![:space:]]*}"}"
+  dependency_path="${dependency_path%"${dependency_path##*[![:space:]]}"}"
+  [[ -n "$dependency_path" ]] || continue
+  dependency_unix_path="$(cygpath -u "$dependency_path" 2>/dev/null || true)"
+  if [[ "$dependency_unix_path" == */mingw64/bin/*.dll ]]; then
+    dependency_name="$(basename "$dependency_unix_path")"
+    if [[ ! -f "$portable_dir/bin/$dependency_name" ]]; then
+      echo "No se copió la dependencia del backend multimedia: $dependency_name" >&2
+      exit 1
+    fi
+  fi
+done < "$dependency_report"
+
+# Re-scan the executable in its real loader context. API-set contracts reported
+# as missing are supplied by Windows and are not redistributable files.
 export PATH="$portable_dir/bin:/mingw64/bin:$PATH"
 validation_report="$portable_dir/DEPENDENCIES-VALIDATED.txt"
-: > "$validation_report"
-for binary in "${scan_targets[@]}"; do
-  ntldd -R "$binary" 2>/dev/null || true
-done | tee "$validation_report"
+ntldd -R "$exe_path" 2>/dev/null | tee "$validation_report"
 # ntldd reports Windows API-set contracts (api-ms-*/ext-ms-*) and optional OS
 # components as "not found" even though the Windows loader resolves them. Do
 # not treat those as redistributable DLL failures. The meaningful failure is a
