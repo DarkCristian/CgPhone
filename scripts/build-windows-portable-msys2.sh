@@ -127,6 +127,7 @@ done
 # against the copied tree is redundant and fails on MSYS2 when qmlimportscanner
 # cannot be started from the mixed Windows/POSIX path environment.
 cp "$root_dir/PORTABLE-LEEME.txt" "$portable_dir/"
+bash "$root_dir/scripts/generate-compliance-manifest.sh" "$root_dir" "$portable_dir" "$pj_dir"
 
 pushd "$root_dir"
 rm -f CgPhone-0.3.0-windows-x64-portable.zip
