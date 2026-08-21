@@ -70,5 +70,5 @@ Page {
             Item { height: 18 }
         }
     }
-    FolderDialog { id: recordingFolder; title: "Elegir carpeta de grabaciones"; onAccepted: recordingPath.text = selectedFolder.toString().replace(/^file:\/\//, "") }
+    FolderDialog { id: recordingFolder; title: "Elegir carpeta de grabaciones"; onAccepted: recordingPath.text = decodeURIComponent(selectedFolder.toString()).replace(/^file:\/\/\//, "") }
 }
