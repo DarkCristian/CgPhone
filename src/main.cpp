@@ -11,12 +11,33 @@
 #include <QWindow>
 #include <QCursor>
 #include <QIcon>
+#include <QAbstractNativeEventFilter>
 #ifdef Q_OS_WIN
 #include <shobjidl.h>
 #include <windows.h>
 #endif
 
 namespace {
+#ifdef Q_OS_WIN
+constexpr int DiagnosticHotkeyId = 0x4347;
+
+class DiagnosticHotkeyFilter final : public QAbstractNativeEventFilter {
+public:
+    explicit DiagnosticHotkeyFilter(AppController *controller) : m_controller(controller) {}
+    bool nativeEventFilter(const QByteArray &, void *message, qintptr *) override {
+        const auto *nativeMessage = static_cast<MSG *>(message);
+        if (nativeMessage && nativeMessage->message == WM_HOTKEY &&
+            nativeMessage->wParam == DiagnosticHotkeyId) {
+            QMetaObject::invokeMethod(m_controller, &AppController::toggleDebugConsole, Qt::QueuedConnection);
+            return true;
+        }
+        return false;
+    }
+private:
+    AppController *m_controller;
+};
+#endif
+
 void applyAlwaysOnTop(QWindow *window, bool enabled) {
     if (!window) return;
 #ifdef Q_OS_WIN
@@ -43,6 +64,15 @@ int main(int argc, char *argv[]) {
     app.setWindowIcon(appIcon);
     QQuickStyle::setStyle("Basic");
     AppController controller;
+#ifdef Q_OS_WIN
+    DiagnosticHotkeyFilter diagnosticHotkey(&controller);
+    app.installNativeEventFilter(&diagnosticHotkey);
+    const bool diagnosticHotkeyRegistered =
+        RegisterHotKey(nullptr, DiagnosticHotkeyId, MOD_SHIFT | MOD_NOREPEAT, VK_F12);
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, [diagnosticHotkeyRegistered] {
+        if (diagnosticHotkeyRegistered) UnregisterHotKey(nullptr, DiagnosticHotkeyId);
+    });
+#endif
     SystemAudioController systemAudio;
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("appController", &controller);
