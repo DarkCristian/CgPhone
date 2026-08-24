@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QFile>
 #include <QSaveFile>
+#include <QStandardPaths>
 #include <QTextStream>
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -118,7 +119,10 @@ SipAccountConfig SettingsStore::loadAccount() const {
     c.startWithOs = startWithOsEnabled();
     c.enabledCodecs = s.value("audio/enabledCodecs", c.enabledCodecs).toStringList();
     c.localRecordingEnabled = s.value("recording/enabled", false).toBool();
-    c.recordingPath = s.value("recording/path", QDir::toNativeSeparators(QDir::homePath() + "/CgPhone/Grabaciones")).toString();
+    const QString documents = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    const QString defaultRecordingPath = QDir(documents.isEmpty() ? QDir::homePath() : documents)
+                                             .filePath(QStringLiteral("CgPhone/Grabaciones"));
+    c.recordingPath = s.value("recording/path", QDir::toNativeSeparators(defaultRecordingPath)).toString();
     c.recordingFormat = s.value("recording/format", "wav").toString().toLower();
     return c;
 }
