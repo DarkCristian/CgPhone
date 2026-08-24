@@ -9,6 +9,7 @@
 #include <QtConcurrent>
 #include <QPointer>
 #include <QFile>
+#include <QFileInfo>
 #include <cstdio>
 #ifdef Q_OS_WIN
 #include <windows.h>
