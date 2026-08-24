@@ -14,6 +14,7 @@ qt_add_executable(CgPhone
     src/main.cpp
     src/AppController.cpp src/AppController.h
     src/CallHistoryModel.cpp src/CallHistoryModel.h
+    src/DiagnosticWindow.cpp src/DiagnosticWindow.h
     src/SettingsStore.cpp src/SettingsStore.h
     src/RecordingEncoderLocator.cpp src/RecordingEncoderLocator.h
     src/Mp3Encoder.cpp src/Mp3Encoder.h
