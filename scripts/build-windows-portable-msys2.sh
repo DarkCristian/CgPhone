@@ -62,6 +62,28 @@ for runtime_dll in "${mingw_runtime_dlls[@]}"; do
   fi
 done
 
+# MP3 is optional at runtime. Bundle the native x64 libmp3lame build from
+# the same MSYS2 repository used by the compiler, under an explicit path that
+# cannot be influenced by the current working directory or PATH.
+lame_source="/mingw64/bin/libmp3lame-0.dll"
+lame_dir="$portable_dir/bin/codecs"
+if [[ -f "$lame_source" ]]; then
+  mkdir -p "$lame_dir"
+  cp -f "$lame_source" "$lame_dir/libmp3lame.dll"
+  if ! objdump -p "$lame_dir/libmp3lame.dll" | grep -q 'lame_init'; then
+    echo "libmp3lame.dll no exporta la API nativa requerida" >&2
+    exit 1
+  fi
+  sha256sum "$lame_dir/libmp3lame.dll" > "$lame_dir/SHA256SUMS.txt"
+  pacman -Q mingw-w64-x86_64-lame > "$lame_dir/BUILD-INFO.txt"
+  license_file="$(pacman -Ql mingw-w64-x86_64-lame | awk '/\/share\/licenses\// {print $2; exit}')"
+  if [[ -n "$license_file" ]] && [[ -f "$license_file" ]]; then
+    cp -f "$license_file" "$lame_dir/LICENSE-LAME.txt"
+  fi
+else
+  echo "Advertencia: LAME x64 no está disponible; CgPhone conservará WAV" >&2
+fi
+
 # Qt Multimedia backends are loaded dynamically, so they never appear in the
 # dependency tree of CgPhone.exe. Ensure that the backend exists in the exact
 # plugin tree referenced by qt.conf before collecting DLL dependencies.
