@@ -157,8 +157,35 @@ void AppController::toggleDebugConsole() {
     emit toast(tr("La consola de diagnóstico se controla desde la terminal en Linux"));
 #endif
 }
-void AppController::setDnd(bool value) { if (m_dnd == value) return; m_dnd = value; m_sip->setDnd(value); QSettings().setValue("behavior/dnd", value); emit dndChanged(); emit toast(value ? tr("DND activado · las llamadas entrantes se rechazarán") : tr("DND desactivado · disponible para recibir llamadas")); }
-void AppController::setAutoAnswer(bool value) { if (m_autoAnswer == value) return; m_autoAnswer = value; m_sip->setAutoAnswer(value); QSettings().setValue("behavior/autoAnswer", value); emit autoAnswerChanged(); emit toast(value ? tr("Autorespuesta activada") : tr("Autorespuesta desactivada")); }
+void AppController::setDnd(bool value) {
+    if (m_dnd == value) return;
+    m_dnd = value;
+    m_sip->setDnd(value);
+    QSettings().setValue("behavior/dnd", value);
+    if (value && m_autoAnswer) {
+        m_autoAnswer = false;
+        m_sip->setAutoAnswer(false);
+        QSettings().setValue("behavior/autoAnswer", false);
+        emit autoAnswerChanged();
+    }
+    emit dndChanged();
+    emit toast(value ? tr("DND activado · las llamadas entrantes se rechazarán")
+                     : tr("DND desactivado · disponible para recibir llamadas"));
+}
+void AppController::setAutoAnswer(bool value) {
+    if (m_autoAnswer == value) return;
+    m_autoAnswer = value;
+    m_sip->setAutoAnswer(value);
+    QSettings().setValue("behavior/autoAnswer", value);
+    if (value && m_dnd) {
+        m_dnd = false;
+        m_sip->setDnd(false);
+        QSettings().setValue("behavior/dnd", false);
+        emit dndChanged();
+    }
+    emit autoAnswerChanged();
+    emit toast(value ? tr("Autorespuesta activada") : tr("Autorespuesta desactivada"));
+}
 void AppController::registerAccount() { m_sip->configure(m_settings.loadAccount()); m_sip->registerAccount(); }
 
 void AppController::saveAccount(const QString &user, const QString &password, const QString &server, const QString &proxy, bool proxyEnabled, const QString &logoutCode, bool alwaysVisible, bool startWithOs, const QVariantList &enabledCodecs, bool localRecordingEnabled, const QString &recordingPath, const QString &recordingFormat) {
