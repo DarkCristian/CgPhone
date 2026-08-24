@@ -13,7 +13,23 @@
 #include <QIcon>
 #ifdef Q_OS_WIN
 #include <shobjidl.h>
+#include <windows.h>
 #endif
+
+namespace {
+void applyAlwaysOnTop(QWindow *window, bool enabled) {
+    if (!window) return;
+#ifdef Q_OS_WIN
+    const HWND nativeWindow = reinterpret_cast<HWND>(window->winId());
+    SetWindowPos(nativeWindow, enabled ? HWND_TOPMOST : HWND_NOTOPMOST,
+                 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+#else
+    window->setFlag(Qt::WindowStaysOnTopHint, enabled);
+    window->show();
+#endif
+}
+}
 
 int main(int argc, char *argv[]) {
 #ifdef Q_OS_WIN
@@ -43,8 +59,8 @@ int main(int argc, char *argv[]) {
     auto *window = qobject_cast<QWindow *>(engine.rootObjects().constFirst());
     if (window) {
         window->setIcon(appIcon);
-        window->setFlag(Qt::WindowStaysOnTopHint, controller.alwaysVisible());
         window->show();
+        applyAlwaysOnTop(window, controller.alwaysVisible());
     }
     QSystemTrayIcon tray(appIcon);
     QMenu trayMenu;
@@ -77,8 +93,8 @@ int main(int argc, char *argv[]) {
     QObject::connect(&controller, &AppController::registrationChanged, &tray, refreshTrayTooltip);
     QObject::connect(&controller, &AppController::accountChanged, &app, [&controller,window,refreshTrayTooltip] {
         if (window) {
-            window->setFlag(Qt::WindowStaysOnTopHint, controller.alwaysVisible());
             window->show();
+            applyAlwaysOnTop(window, controller.alwaysVisible());
             if (controller.alwaysVisible()) window->raise();
         }
         refreshTrayTooltip();
