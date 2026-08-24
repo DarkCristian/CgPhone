@@ -6,6 +6,7 @@
 #include <QPlainTextEdit>
 #include <QStandardPaths>
 #include <QTimer>
+#include <QTextCursor>
 #include <QVBoxLayout>
 #include <cstdio>
 
