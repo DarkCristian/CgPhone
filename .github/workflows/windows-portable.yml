@@ -23,6 +23,7 @@ jobs:
             mingw-w64-x86_64-qt6-base
             mingw-w64-x86_64-qt6-declarative
             mingw-w64-x86_64-qt6-multimedia
+            mingw-w64-x86_64-qt6-svg
       - name: Compilar CgPhone y PJPROJECT
         shell: msys2 {0}
         run: bash scripts/build-windows-portable-msys2.sh
