@@ -15,17 +15,6 @@
 #include <windows.h>
 #include <shellapi.h>
 
-namespace {
-BOOL WINAPI diagnosticConsoleControlHandler(DWORD controlType) {
-    if (controlType == CTRL_CLOSE_EVENT) {
-        // conhost envía este evento al pulsar X. Consumirlo evita que Windows
-        // ejecute el handler predeterminado, que termina todo CgPhone.
-        if (const HWND console = GetConsoleWindow()) ShowWindow(console, SW_HIDE);
-        return TRUE;
-    }
-    return FALSE;
-}
-}
 #endif
 #ifdef CGPHONE_WITH_PJSIP
 #include "sip/PjsipEngine.h"
@@ -198,28 +187,7 @@ void AppController::finalizeRecording() {
     });
 }
 
-void AppController::toggleDebugConsole() {
-#ifdef Q_OS_WIN
-    if (const HWND console = GetConsoleWindow(); console && IsWindow(console)) {
-        const bool visible = IsWindowVisible(console);
-        ShowWindow(console, visible ? SW_HIDE : SW_SHOW);
-        if (!visible) SetForegroundWindow(console);
-        return;
-    }
-    // Si conhost ya destruyó la ventana tras pulsar X, soltar cualquier
-    // asociación residual permite crear una consola nueva con Shift+F12.
-    FreeConsole();
-    if (!AllocConsole()) return;
-    FILE *stream = nullptr;
-    freopen_s(&stream, "CONOUT$", "w", stdout);
-    freopen_s(&stream, "CONOUT$", "w", stderr);
-    SetConsoleTitleW(L"CgPhone · Diagnóstico SIP");
-    SetConsoleCtrlHandler(diagnosticConsoleControlHandler, TRUE);
-    if (const HWND console = GetConsoleWindow()) SetForegroundWindow(console);
-#else
-    emit toast(tr("La consola de diagnóstico se controla desde la terminal en Linux"));
-#endif
-}
+void AppController::toggleDebugConsole() { emit debugConsoleToggleRequested(); }
 void AppController::setDnd(bool value) {
     if (m_dnd == value) return;
     m_dnd = value;
