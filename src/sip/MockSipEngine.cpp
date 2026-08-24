@@ -18,19 +18,19 @@ void MockSipEngine::makeCall(const QString &destination) {
         emit errorOccurred(tr("Ingresá un número o interno"));
         return;
     }
-    emit callStateChanged(CallState::Calling, m_peer);
-    QTimer::singleShot(900, this, [this] { emit callStateChanged(CallState::Connected, m_peer); });
+    emit callStateChanged(CallState::Calling, m_peer, m_peer);
+    QTimer::singleShot(900, this, [this] { emit callStateChanged(CallState::Connected, m_peer, m_peer); });
 }
 
-void MockSipEngine::answer() { emit callStateChanged(CallState::Connected, m_peer); }
-void MockSipEngine::hangup() { emit callStateChanged(CallState::Ended, m_peer); }
+void MockSipEngine::answer() { emit callStateChanged(CallState::Connected, m_peer, m_peer); }
+void MockSipEngine::hangup() { emit callStateChanged(CallState::Ended, m_peer, m_peer); }
 
 void MockSipEngine::transfer(const QString &extension) {
     if (extension.trimmed().isEmpty()) {
         emit errorOccurred(tr("Ingresá el interno a transferir"));
         return;
     }
-    emit callStateChanged(CallState::Ended, m_peer);
+    emit callStateChanged(CallState::Ended, m_peer, m_peer);
 }
 void MockSipEngine::sendDtmf(const QString &) {}
 bool MockSipEngine::setLocalAudioMonitor(bool enabled) { m_localAudioMonitor = enabled; return true; }
