@@ -58,8 +58,10 @@ void DiagnosticWindow::toggleVisibility() {
 }
 
 void DiagnosticWindow::closeEvent(QCloseEvent *event) {
-    event->ignore();
+    // Cerrar la ventana de diagnóstico sólo la oculta. No finaliza CgPhone y
+    // puede volver a mostrarse con Shift+F12.
     hide();
+    event->accept();
 }
 
 void DiagnosticWindow::refreshLog() {
