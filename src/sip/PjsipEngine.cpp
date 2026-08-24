@@ -2,6 +2,7 @@
 #include <pjsua2.hpp>
 #include <QMetaObject>
 #include <QRegularExpression>
+#include <QDebug>
 
 using namespace pj;
 
@@ -164,9 +165,26 @@ void PjsipEngine::incoming(int callId) {
 void PjsipEngine::answer() { if (!m_call) return; try { CallOpParam op; op.statusCode=PJSIP_SC_OK; m_call->answer(op); } catch (const Error &e) { reportError(QString::fromStdString(e.info())); } }
 void PjsipEngine::hangup() { if (!m_call) return; try { CallOpParam op; op.statusCode=PJSIP_SC_DECLINE; m_call->hangup(op); } catch (const Error &e) { reportError(QString::fromStdString(e.info())); } }
 void PjsipEngine::transfer(const QString &extension) {
-    if (!m_call || extension.trimmed().isEmpty()) { reportError(tr("Ingresá el interno a transferir")); return; }
-    try { CallOpParam op; const auto uri=QString("sip:%1@%2").arg(extension,m_config.server); m_call->xfer(uri.toStdString(), op); }
-    catch (const Error &e) { reportError(QString::fromStdString(e.info())); }
+    const QString target = extension.trimmed();
+    if (!m_call || target.isEmpty()) { reportError(tr("Ingresá el interno a transferir")); return; }
+    try {
+        const auto info = m_call->getInfo();
+        if (info.state != PJSIP_INV_STATE_CONFIRMED) {
+            reportError(tr("La llamada debe estar conectada antes de transferir"));
+            return;
+        }
+        CallOpParam op;
+        const QString uri = target.startsWith(QStringLiteral("sip:"), Qt::CaseInsensitive)
+            ? target
+            : QStringLiteral("sip:%1@%2").arg(target, m_config.server);
+        qInfo().noquote() << "[CgPhone SIP] Enviando REFER a" << uri;
+        m_call->xfer(uri.toStdString(), op);
+        QMetaObject::invokeMethod(this, [this,target] {
+            emit errorOccurred(tr("Transferencia solicitada a %1").arg(target));
+        }, Qt::QueuedConnection);
+    } catch (const Error &e) {
+        reportError(tr("No se pudo enviar la transferencia: %1").arg(QString::fromStdString(e.info())));
+    }
 }
 
 void PjsipEngine::sendDtmf(const QString &digits) {
