@@ -2,8 +2,36 @@
 #include <pjsua2.hpp>
 #include <QMetaObject>
 #include <QRegularExpression>
+#include <QFile>
+#include <QDir>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QStandardPaths>
 
 using namespace pj;
+
+namespace {
+QString diagnosticLogPath() {
+    return QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation))
+        .filePath(QStringLiteral("CgPhone-diagnostic.log"));
+}
+
+class PjsipDiagnosticWriter final : public LogWriter {
+public:
+    void write(const LogEntry &entry) override {
+        QMutexLocker lock(&m_mutex);
+        QFile file(diagnosticLogPath());
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+            return;
+        file.write(QByteArray::fromStdString(entry.msg));
+        file.flush();
+    }
+private:
+    QMutex m_mutex;
+};
+
+PjsipDiagnosticWriter g_diagnosticWriter;
+}
 
 static QString sipDialTarget(const std::string &remoteUri) {
     const QString raw = QString::fromStdString(remoteUri).trimmed();
@@ -96,7 +124,12 @@ PjsipEngine::~PjsipEngine() {
 void PjsipEngine::initializeEndpoint() {
     if (m_initialized) return;
     m_endpoint->libCreate();
-    EpConfig ep; ep.uaConfig.userAgent = "CgPhone/0.3.0"; ep.uaConfig.threadCnt = 1; ep.logConfig.level = 4;
+    EpConfig ep;
+    ep.uaConfig.userAgent = "CgPhone/0.3.0";
+    ep.uaConfig.threadCnt = 1;
+    ep.logConfig.level = 4;
+    ep.logConfig.consoleLevel = 0;
+    ep.logConfig.writer = &g_diagnosticWriter;
     m_endpoint->libInit(ep);
     TransportConfig udp; udp.port = 0;
     m_endpoint->transportCreate(PJSIP_TRANSPORT_UDP, udp);
