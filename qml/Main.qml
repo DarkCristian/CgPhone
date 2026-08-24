@@ -12,6 +12,11 @@ ApplicationWindow {
     property int selectedTab: 0
     property var tabs: ["Discador", "Historial"]
     Shortcut { sequence: "Shift+F12"; onActivated: appController.toggleDebugConsole() }
+    Shortcut {
+        sequence: "Escape"
+        enabled: !appController.configurationMode && appController.inCall
+        onActivated: appController.hangup()
+    }
     Shortcut { sequence: "Num+0"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("0") }
     Shortcut { sequence: "Num+1"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("1") }
     Shortcut { sequence: "Num+2"; enabled: !appController.configurationMode; onActivated: appController.appendDigit("2") }
@@ -82,8 +87,8 @@ ApplicationWindow {
             Rectangle {
                 implicitWidth: Math.min(112, registrationLabel.implicitWidth + 26); height: 30; radius: 10; color: "#FFFFFF"; border.color: "#DBE4EE"
                 Row { anchors.centerIn: parent; spacing: 5
-                    Rectangle { width: 9; height: 9; radius: 4.5; anchors.verticalCenter: parent.verticalCenter; color: appController.registered ? "#22C55E" : (/SIP [456]/.test(appController.registrationText) ? "#F59E0B" : "#94A3B8") }
-                    Label { id: registrationLabel; text: appController.registrationText; color: "#475569"; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
+                    Rectangle { width: 9; height: 9; radius: 4.5; anchors.verticalCenter: parent.verticalCenter; color: appController.configurationMode ? "#2563EB" : (appController.registered ? "#22C55E" : (/SIP [456]/.test(appController.registrationText) ? "#F59E0B" : "#94A3B8")) }
+                    Label { id: registrationLabel; text: appController.configurationMode ? "Configuración" : appController.registrationText; color: "#475569"; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
                 }
             }
         }
