@@ -7,6 +7,12 @@ Page {
     property string filter: "todas"
     property string recallTarget: ""
     property string recallLabel: ""
+    function requestRecall(peer, dialTarget) {
+        var fallback = /^[0-9*#]+$/.test(peer) ? peer : ""
+        recallTarget = dialTarget || fallback
+        recallLabel = peer
+        recallConfirm.open()
+    }
     function confirmRecall() {
         if (!recallTarget.length) return
         appController.redial(recallTarget)
@@ -40,9 +46,15 @@ Page {
                 required property string peer; required property string direction; required property string timestamp; required property string duration; required property bool missed; required property string dialTarget
                 property bool matches: (!search.text || peer.toLowerCase().includes(search.text.toLowerCase())) &&
                                        (page.filter === "todas" || (page.filter === "perdida" ? missed : direction === page.filter))
-                width: ListView.view.width; height: matches ? 72 : 0; radius: 14; color: "white"; border.color: "#DDE6F2"
+                width: ListView.view.width
+                height: matches ? 72 : 0
+                radius: 14
+                color: cardHover.hovered ? "#F1F7FF" : "white"
+                border.color: cardHover.hovered ? "#9FC5F8" : "#DDE6F2"
                 visible: matches
-                RowLayout { anchors.fill: parent; anchors.margins: 14
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 14
                     Item {
                         width: 30; height: 40
                         Text {
@@ -51,26 +63,24 @@ Page {
                             color: missed ? "#DC2626" : (direction === "saliente" ? "#2563EB" : "#16A34A")
                             font.pixelSize: 22
                         }
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onDoubleClicked: {
-                                var fallback = /^[0-9*#]+$/.test(peer) ? peer : ""
-                                page.recallTarget = dialTarget || fallback
-                                page.recallLabel = peer
-                                recallConfirm.open()
-                            }
-                        }
-                        ToolTip.visible: iconHover.hovered
-                        ToolTip.text: "Doble clic para rellamar"
-                        HoverHandler { id: iconHover }
                     }
-                    ColumnLayout { Layout.fillWidth: true; spacing: 2
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
                         Text { text: peer; color: "#111827"; font.pixelSize: 15; font.weight: Font.DemiBold }
                         Text { text: timestamp; color: "#64748B"; font.pixelSize: 12 }
                     }
                     Text { text: duration; color: "#334155"; font.pixelSize: 13 }
                 }
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton
+                    cursorShape: Qt.PointingHandCursor
+                    onDoubleClicked: page.requestRecall(peer, dialTarget)
+                }
+                HoverHandler { id: cardHover }
+                ToolTip.visible: cardHover.hovered
+                ToolTip.text: "Doble clic para rellamar"
             }
             Label { anchors.centerIn: parent; visible: parent.count===0; text: "Todavía no hay llamadas"; color: "#64748B" }
         }
