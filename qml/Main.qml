@@ -37,7 +37,19 @@ ApplicationWindow {
                 Label { id: sipBadgeText; anchors.centerIn: parent; text: appController.sipUser || "SIN SIP"; color: "#2563EB"; font.pixelSize: 18; font.weight: Font.DemiBold }
             }
             Item { Layout.fillWidth: true }
-            ToolButton { visible: !appController.configurationMode; width: 30; height: 30; onClicked: appController.requestAdminConfiguration(); background: Rectangle { radius: 9; color: "#EDF5FF" }; contentItem: Image { source: "qrc:/qt/qml/CgPhone/assets/icons/gear.svg"; width: 16; height: 16; anchors.centerIn: parent } }
+            ToolButton {
+                visible: !appController.configurationMode
+                width: 30
+                height: 30
+                onClicked: appController.requestAdminConfiguration()
+                background: Rectangle { radius: 9; color: "#EDF5FF" }
+                contentItem: Image {
+                    source: "qrc:/qt/qml/CgPhone/assets/icons/gear.svg"
+                    width: 16
+                    height: 16
+                    anchors.centerIn: parent
+                }
+            }
             Rectangle {
                 implicitWidth: Math.min(112, registrationLabel.implicitWidth + 26); height: 30; radius: 10; color: "#FFFFFF"; border.color: "#DBE4EE"
                 Row { anchors.centerIn: parent; spacing: 5
