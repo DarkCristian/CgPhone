@@ -11,7 +11,6 @@ ApplicationWindow {
 
     property int selectedTab: 0
     property var tabs: ["Discador", "Historial"]
-    Shortcut { sequence: "Shift+F12"; onActivated: appController.toggleDebugConsole() }
     Shortcut {
         sequence: "Escape"
         enabled: !appController.configurationMode && appController.inCall
