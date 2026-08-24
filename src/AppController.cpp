@@ -52,12 +52,6 @@ AppController::AppController(QObject *parent)
     connect(m_sip.get(), &ISipEngine::errorOccurred, this, &AppController::toast);
     connect(&m_durationTimer, &QTimer::timeout, this, &AppController::durationChanged);
     m_durationTimer.setInterval(1000);
-    m_ringtone.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/ringtone.wav")); m_ringtone.setLoopCount(QSoundEffect::Infinite);
-    m_ringback.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/ringing.wav")); m_ringback.setLoopCount(QSoundEffect::Infinite);
-    m_hangupSound.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/hangup.wav"));
-    // El paquete fuente puede reemplazar este WAV por el sonido corporativo
-    // sin cambiar el backend ni el mapeo de teclado/DTMF.
-    m_keypadSound.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/phone-keypad-button-dial.wav"));
     QSettings userSettings;
     m_dnd = userSettings.value("behavior/dnd", false).toBool();
     m_autoAnswer = userSettings.value("behavior/autoAnswer", false).toBool();
@@ -89,6 +83,12 @@ AppController::AppController(QObject *parent)
         // Dejar que QML pinte la ventana antes de inicializar PJSIP, audio,
         // transporte y registro. La interfaz queda disponible de inmediato.
         QTimer::singleShot(250, this, [this] {
+            m_ringtone.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/ringtone.wav"));
+            m_ringtone.setLoopCount(QSoundEffect::Infinite);
+            m_ringback.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/ringing.wav"));
+            m_ringback.setLoopCount(QSoundEffect::Infinite);
+            m_hangupSound.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/hangup.wav"));
+            m_keypadSound.setSource(QUrl("qrc:/qt/qml/CgPhone/assets/sounds/phone-keypad-button-dial.wav"));
             m_sip->configure(m_loadedAccount);
             if (!m_loadedAccount.user.trimmed().isEmpty() && !m_loadedAccount.server.trimmed().isEmpty())
                 m_sip->registerAccount();
