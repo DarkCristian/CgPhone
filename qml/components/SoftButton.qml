@@ -9,10 +9,30 @@ Button {
     implicitHeight: 48
     font.pixelSize: 15
     font.weight: Font.DemiBold
-    contentItem: Row {
-        spacing: 5; anchors.centerIn: parent
-        Image { visible: control.iconSource.toString().length > 0; source: control.iconSource; width: 16; height: 16; sourceSize.width: 32; sourceSize.height: 32; anchors.verticalCenter: parent.verticalCenter }
-        Text { text: control.text; color: control.primary ? "white" : "#111827"; font.pixelSize: control.font.pixelSize; font.weight: control.font.weight; anchors.verticalCenter: parent.verticalCenter }
+    contentItem: Item {
+        implicitWidth: buttonContent.implicitWidth
+        implicitHeight: buttonContent.implicitHeight
+        Row {
+            id: buttonContent
+            spacing: 5
+            anchors.centerIn: parent
+            Image {
+                visible: control.iconSource.toString().length > 0
+                source: control.iconSource
+                width: 16
+                height: 16
+                sourceSize.width: 32
+                sourceSize.height: 32
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Text {
+                text: control.text
+                color: control.primary ? "white" : "#111827"
+                font.pixelSize: control.font.pixelSize
+                font.weight: control.font.weight
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
     }
     background: Rectangle {
         radius: 12
