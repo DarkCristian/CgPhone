@@ -89,6 +89,7 @@ signals:
     void localAudioMonitorChanged();
     void mutedChanged();
     void toast(const QString &message);
+    void debugConsoleToggleRequested();
 
 private:
     void onCallState(ISipEngine::CallState state, const QString &peer, const QString &dialTarget);
