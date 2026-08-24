@@ -139,29 +139,88 @@ ApplicationWindow {
     }
 
     Dialog {
-        id: incomingDialog; anchors.centerIn: parent; modal: true; closePolicy: Popup.NoAutoClose
-        title: "Llamada entrante"
+        id: incomingDialog
+        anchors.centerIn: parent
+        modal: true
+        closePolicy: Popup.NoAutoClose
         width: Math.min(parent.width - 32, 380)
-        background: Rectangle { radius: 18; color: "#FFFFFF"; border.color: "#D8E1EE" }
+        topPadding: 18
+        leftPadding: 14
+        rightPadding: 14
+        bottomPadding: 14
+        background: Rectangle {
+            radius: 18
+            color: "#FFFFFF"
+            border.width: 1
+            border.color: "#D8E1EE"
+        }
         contentItem: ColumnLayout {
-            spacing: 14
-            Label { Layout.fillWidth: true; text: appController.peer || "Asterisk"; font.pixelSize: 20; font.weight: Font.DemiBold; horizontalAlignment: Text.AlignHCenter }
-            Label { Layout.fillWidth: true; text: "La central está llamando"; color: "#64748B"; horizontalAlignment: Text.AlignHCenter }
+            spacing: 12
+            Label {
+                Layout.fillWidth: true
+                text: "Llamada entrante"
+                color: "#111827"
+                font.pixelSize: 18
+                font.weight: Font.DemiBold
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 66
+                radius: 14
+                color: "#EFF6FF"
+                border.color: "#C9DDF8"
+                Column {
+                    anchors.centerIn: parent
+                    width: parent.width - 20
+                    spacing: 4
+                    Label {
+                        width: parent.width
+                        text: appController.peer || "Asterisk"
+                        color: "#111827"
+                        font.pixelSize: 19
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        elide: Text.ElideRight
+                    }
+                    Label {
+                        width: parent.width
+                        text: "La central está llamando"
+                        color: "#64748B"
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+            }
             RowLayout {
-                Layout.fillWidth: true; spacing: 10
+                Layout.fillWidth: true
+                spacing: 10
                 Button {
                     Layout.fillWidth: true
+                    implicitHeight: 40
                     text: "Atender"
-                    onClicked: { appController.answer() }
+                    onClicked: appController.answer()
                     background: Rectangle { radius: 12; color: "#16A34A" }
-                    contentItem: Label { text: parent.text; color: "white"; horizontalAlignment: Text.AlignHCenter }
+                    contentItem: Label {
+                        text: parent.text
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        font.weight: Font.DemiBold
+                    }
                 }
                 Button {
                     Layout.fillWidth: true
+                    implicitHeight: 40
                     text: "Rechazar"
-                    onClicked: { appController.hangup() }
+                    onClicked: appController.hangup()
                     background: Rectangle { radius: 12; color: "#DC2626" }
-                    contentItem: Label { text: parent.text; color: "white"; horizontalAlignment: Text.AlignHCenter }
+                    contentItem: Label {
+                        text: parent.text
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        font.weight: Font.DemiBold
+                    }
                 }
             }
         }
