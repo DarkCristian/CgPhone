@@ -12,6 +12,25 @@ Page {
         {name:"Opus", id:"opus/48000/2"}, {name:"G.711 A-law", id:"PCMA/8000/1"},
         {name:"G.711 μ-law", id:"PCMU/8000/1"}, {name:"G.722", id:"G722/16000/1"}, {name:"GSM", id:"GSM/8000/1"}
     ]
+    component CodecToggle: AbstractButton {
+        id: codecToggle
+        checkable: true
+        implicitWidth: 34
+        implicitHeight: 20
+        background: Rectangle {
+            radius: 10
+            color: codecToggle.checked ? "#2563EB" : "#CBD5E1"
+            Rectangle {
+                width: 14
+                height: 14
+                radius: 7
+                color: "#FFFFFF"
+                y: 3
+                x: codecToggle.checked ? 17 : 3
+                Behavior on x { NumberAnimation { duration: 120 } }
+            }
+        }
+    }
     ListModel { id: codecModel }
     Component.onCompleted: {
         var active = page.saved.enabledCodecs || []
@@ -52,7 +71,10 @@ Page {
                         Text { text: parent.parent.name; color: "#111827"; Layout.fillWidth: true }
                         ToolButton { text: "↑"; enabled: index>0; onClicked: codecModel.move(index,index-1,1) }
                         ToolButton { text: "↓"; enabled: index<codecModel.count-1; onClicked: codecModel.move(index,index+1,1) }
-                        Switch { checked: parent.parent.codecEnabled; onToggled: codecModel.setProperty(index,"codecEnabled",checked) }
+                        CodecToggle {
+                            checked: parent.parent.codecEnabled
+                            onToggled: codecModel.setProperty(index, "codecEnabled", checked)
+                        }
                     }
                 }
             }
