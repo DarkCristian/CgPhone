@@ -220,7 +220,7 @@ void AppController::saveAccount(const QString &user, const QString &password, co
     c.enabledCodecs.clear();
     for (const auto &codec : enabledCodecs) c.enabledCodecs.append(codec.toString());
     if (c.enabledCodecs.isEmpty()) { emit toast(tr("Activá al menos un codec de audio")); return; }
-    c.localRecordingEnabled=localRecordingEnabled; c.recordingPath=recordingPath; c.recordingFormat=recordingFormat;
+    c.localRecordingEnabled=localRecordingEnabled; c.recordingPath=recordingPath; c.recordingFormat=QStringLiteral("wav");
     if (!m_settings.saveAccount(c)) { emit toast(tr("No se pudo aplicar el inicio con el SO o guardar la configuración")); return; }
     m_loadedAccount = c; m_sip->configure(c); emit accountChanged(); emit toast(tr("Configuración guardada"));
     if (m_configurationMode) QTimer::singleShot(120, qApp, &QCoreApplication::quit);
