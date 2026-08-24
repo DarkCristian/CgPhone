@@ -9,6 +9,20 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 #include <shellapi.h>
+
+namespace {
+WNDPROC g_diagnosticConsoleProcedure = nullptr;
+
+LRESULT CALLBACK diagnosticConsoleWindowProcedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
+    if (message == WM_CLOSE) {
+        ShowWindow(window, SW_HIDE);
+        return 0;
+    }
+    return g_diagnosticConsoleProcedure
+        ? CallWindowProcW(g_diagnosticConsoleProcedure, window, message, wParam, lParam)
+        : DefWindowProcW(window, message, wParam, lParam);
+}
+}
 #endif
 #ifdef CGPHONE_WITH_PJSIP
 #include "sip/PjsipEngine.h"
@@ -147,12 +161,23 @@ void AppController::toggleRecording() {
 
 void AppController::toggleDebugConsole() {
 #ifdef Q_OS_WIN
-    if (GetConsoleWindow()) { FreeConsole(); return; }
+    if (const HWND console = GetConsoleWindow()) {
+        const bool visible = IsWindowVisible(console);
+        ShowWindow(console, visible ? SW_HIDE : SW_SHOW);
+        if (!visible) SetForegroundWindow(console);
+        return;
+    }
     if (!AllocConsole()) return;
     FILE *stream = nullptr;
     freopen_s(&stream, "CONOUT$", "w", stdout);
     freopen_s(&stream, "CONOUT$", "w", stderr);
     SetConsoleTitleW(L"CgPhone · Diagnóstico SIP");
+    if (const HWND console = GetConsoleWindow()) {
+        g_diagnosticConsoleProcedure = reinterpret_cast<WNDPROC>(
+            SetWindowLongPtrW(console, GWLP_WNDPROC,
+                              reinterpret_cast<LONG_PTR>(diagnosticConsoleWindowProcedure)));
+        SetForegroundWindow(console);
+    }
 #else
     emit toast(tr("La consola de diagnóstico se controla desde la terminal en Linux"));
 #endif
