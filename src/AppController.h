@@ -61,6 +61,7 @@ public:
     Q_INVOKABLE void appendDigit(const QString &digit);
     Q_INVOKABLE void backspace();
     Q_INVOKABLE void call();
+    Q_INVOKABLE void redial(const QString &destination);
     Q_INVOKABLE void answer();
     Q_INVOKABLE void hangup();
     Q_INVOKABLE void transfer(const QString &extension);
@@ -90,7 +91,7 @@ signals:
     void toast(const QString &message);
 
 private:
-    void onCallState(ISipEngine::CallState state, const QString &peer);
+    void onCallState(ISipEngine::CallState state, const QString &peer, const QString &dialTarget);
     void onHoldStateChanged(bool held);
     void refreshAccountIfChanged();
     void finalizeRecording();
@@ -99,6 +100,7 @@ private:
     CallHistoryModel m_history;
     QString m_dialedNumber, m_peer, m_callStatus = tr("Listo");
     QString m_recordingWavPath;
+    QString m_peerDialTarget;
     bool m_inCall = false, m_incoming = false, m_held = false, m_holdRequested = false, m_recording = false, m_muted = false, m_dnd = false, m_autoAnswer = false;
     bool m_wasConnected = false;
     QString m_callDirection = "saliente";
