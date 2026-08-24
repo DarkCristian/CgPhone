@@ -15,6 +15,24 @@ Page {
     }
     background: Rectangle { color: "#F6FAFF" }
     property var digits: ["1","2","3","4","5","6","7","8","9","*","0","#"]
+    property string pendingTransfer: ""
+    function requestTransferConfirmation() {
+        var target = extension.text.trim()
+        if (!target.length) {
+            extension.forceActiveFocus()
+            return
+        }
+        pendingTransfer = target
+        transferDialog.close()
+        transferConfirm.open()
+    }
+    function confirmTransfer() {
+        if (!pendingTransfer.length) return
+        appController.transfer(pendingTransfer)
+        pendingTransfer = ""
+        extension.clear()
+        transferConfirm.close()
+    }
 
     ColumnLayout {
         anchors.fill: parent; anchors.margins: 12; spacing: 6
@@ -70,17 +88,47 @@ Page {
     Dialog {
         id: transferDialog; anchors.centerIn: parent; width: Math.min(parent.width-48, 370); modal: true; title: "Transferir llamada"
         standardButtons: Dialog.NoButton
+        closePolicy: Popup.CloseOnEscape
+        onOpened: extension.forceActiveFocus()
         background: Rectangle { radius: 18; color: "white"; border.color: "#D8E1EE" }
         contentItem: ColumnLayout {
             spacing: 12
             Label { text: "Interno a transferir"; color: "#111827" }
-            TextField { id: extension; Layout.fillWidth: true; placeholderText: "Ej. 204"; inputMethodHints: Qt.ImhDialableCharactersOnly }
+            TextField {
+                id: extension; Layout.fillWidth: true; placeholderText: "Ej. 204"
+                inputMethodHints: Qt.ImhDialableCharactersOnly
+                onAccepted: page.requestTransferConfirmation()
+            }
             RowLayout {
                 Layout.fillWidth: true; spacing: 10
                 SoftButton { Layout.fillWidth: true; text: "Cancelar"; onClicked: transferDialog.close() }
-                SoftButton { Layout.fillWidth: true; primary: true; text: "Transferir"; onClicked: { appController.transfer(extension.text); extension.clear(); transferDialog.close() } }
+                SoftButton { Layout.fillWidth: true; primary: true; text: "Continuar"; onClicked: page.requestTransferConfirmation() }
             }
         }
+    }
+
+    Dialog {
+        id: transferConfirm; anchors.centerIn: parent; width: Math.min(parent.width-48, 370); modal: true
+        title: "Confirmar transferencia"; standardButtons: Dialog.NoButton
+        closePolicy: Popup.CloseOnEscape
+        background: Rectangle { radius: 18; color: "white"; border.color: "#D8E1EE" }
+        contentItem: ColumnLayout {
+            spacing: 14
+            Label {
+                Layout.fillWidth: true
+                text: "¿El interno " + page.pendingTransfer + " es correcto?"
+                wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
+                color: "#111827"; font.pixelSize: 15; font.weight: Font.DemiBold
+            }
+            RowLayout {
+                Layout.fillWidth: true; spacing: 10
+                SoftButton { Layout.fillWidth: true; text: "No"; onClicked: transferConfirm.close() }
+                SoftButton { Layout.fillWidth: true; primary: true; text: "Sí"; onClicked: page.confirmTransfer() }
+            }
+        }
+        Shortcut { sequence: "Return"; enabled: transferConfirm.opened; onActivated: page.confirmTransfer() }
+        Shortcut { sequence: "Enter"; enabled: transferConfirm.opened; onActivated: page.confirmTransfer() }
+        Shortcut { sequence: "Escape"; enabled: transferConfirm.opened; onActivated: transferConfirm.close() }
     }
 
     Dialog {
