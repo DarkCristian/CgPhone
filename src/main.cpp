@@ -1,5 +1,6 @@
 #include "AppController.h"
 #include "SystemAudioController.h"
+#include "DiagnosticWindow.h"
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -74,6 +75,9 @@ int main(int argc, char *argv[]) {
     });
 #endif
     SystemAudioController systemAudio;
+    DiagnosticWindow diagnosticWindow;
+    QObject::connect(&controller, &AppController::debugConsoleToggleRequested,
+                     &diagnosticWindow, &DiagnosticWindow::toggleVisibility);
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("appController", &controller);
     engine.rootContext()->setContextProperty("systemAudio", &systemAudio);
