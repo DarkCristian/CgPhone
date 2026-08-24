@@ -29,7 +29,26 @@ ApplicationWindow {
         background: Rectangle { color: "#FFFFFF"; border.color: "#E7EDF5" }
         RowLayout {
             anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 11
-            Rectangle { width: 28; height: 28; radius: 9; color: "#E7F1FF"; Image { anchors.centerIn: parent; width: 18; height: 18; source: "qrc:/qt/qml/CgPhone/assets/icons/phone-blue.svg" } }
+            Rectangle {
+                width: 28
+                height: 28
+                radius: 9
+                color: "#E7F1FF"
+                Image {
+                    id: headerPhoneIcon
+                    anchors.centerIn: parent
+                    width: 18
+                    height: 18
+                    source: "qrc:/qt/qml/CgPhone/assets/icons/phone-blue.svg"
+                }
+                Text {
+                    visible: headerPhoneIcon.status === Image.Error
+                    anchors.centerIn: parent
+                    text: "☎"
+                    color: "#2563EB"
+                    font.pixelSize: 16
+                }
+            }
             Label { text: "CgPhone"; color: "#111827"; font.pixelSize: 18; font.weight: Font.DemiBold }
             Rectangle {
                 implicitWidth: sipBadgeText.implicitWidth + 14; implicitHeight: 28; radius: 10
@@ -43,11 +62,21 @@ ApplicationWindow {
                 height: 30
                 onClicked: appController.requestAdminConfiguration()
                 background: Rectangle { radius: 9; color: "#EDF5FF" }
-                contentItem: Image {
-                    source: "qrc:/qt/qml/CgPhone/assets/icons/gear.svg"
-                    width: 16
-                    height: 16
-                    anchors.centerIn: parent
+                contentItem: Item {
+                    Image {
+                        id: gearIcon
+                        source: "qrc:/qt/qml/CgPhone/assets/icons/gear.svg"
+                        width: 16
+                        height: 16
+                        anchors.centerIn: parent
+                    }
+                    Text {
+                        visible: gearIcon.status === Image.Error
+                        anchors.centerIn: parent
+                        text: "⚙"
+                        color: "#2563EB"
+                        font.pixelSize: 16
+                    }
                 }
             }
             Rectangle {
