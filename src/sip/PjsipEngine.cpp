@@ -1,8 +1,23 @@
 #include "PjsipEngine.h"
 #include <pjsua2.hpp>
 #include <QMetaObject>
+#include <QRegularExpression>
 
 using namespace pj;
+
+static QString friendlySipPeer(const std::string &remoteUri) {
+    const QString raw = QString::fromStdString(remoteUri).trimmed();
+    const auto displayMatch = QRegularExpression(QStringLiteral("^\\s*\\\"([^\\\"]+)\\\"")).match(raw);
+    if (displayMatch.hasMatch()) {
+        const QString display = displayMatch.captured(1).trimmed();
+        if (!display.isEmpty() && display.compare(QStringLiteral("Unknown"), Qt::CaseInsensitive) != 0)
+            return display;
+    }
+    const auto userMatch = QRegularExpression(QStringLiteral("sip:([^@;>]+)"), QRegularExpression::CaseInsensitiveOption).match(raw);
+    if (userMatch.hasMatch() && !userMatch.captured(1).trimmed().isEmpty())
+        return userMatch.captured(1).trimmed();
+    return QStringLiteral("Asterisk");
+}
 
 class PjsipEngine::CallImpl final : public Call {
 public:
@@ -133,7 +148,7 @@ void PjsipEngine::incoming(int callId) {
     }
     m_call = std::make_unique<CallImpl>(*m_account, this, callId);
     QString peer;
-    try { peer = QString::fromStdString(m_call->getInfo().remoteUri); } catch (...) {}
+    try { peer = friendlySipPeer(m_call->getInfo().remoteUri); } catch (...) {}
     emit callStateChanged(CallState::Incoming, peer);
     if (m_dnd) {
         CallOpParam op; op.statusCode = PJSIP_SC_BUSY_HERE; m_call->answer(op); return;
@@ -233,7 +248,7 @@ void PjsipEngine::reportCallState(CallImpl *call) {
         else if (ci.state==PJSIP_INV_STATE_EARLY && ci.role==PJSIP_ROLE_UAC && hasActiveAudio) state=CallState::EarlyMedia;
         else if (ci.state==PJSIP_INV_STATE_CONFIRMED) state=CallState::Connected;
         else if (ci.state==PJSIP_INV_STATE_DISCONNECTED) state=CallState::Ended;
-        const auto peer=QString::fromStdString(ci.remoteUri);
+        const auto peer=friendlySipPeer(ci.remoteUri);
         QMetaObject::invokeMethod(this, [this,state,peer,call]{ emit callStateChanged(state,peer); if (state==CallState::Ended) releaseDisconnectedCall(call); }, Qt::QueuedConnection);
     } catch (const Error &e) { reportError(QString::fromStdString(e.info())); }
 }
@@ -242,7 +257,7 @@ void PjsipEngine::reportEarlyMedia(CallImpl *call) {
     try {
         const auto ci = call->getInfo();
         if (ci.state != PJSIP_INV_STATE_EARLY) return;
-        const auto peer = QString::fromStdString(ci.remoteUri);
+        const auto peer = friendlySipPeer(ci.remoteUri);
         QMetaObject::invokeMethod(this, [this,peer]{
             emit callStateChanged(CallState::EarlyMedia, peer);
         }, Qt::QueuedConnection);
