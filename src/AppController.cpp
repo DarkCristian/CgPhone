@@ -100,6 +100,12 @@ void AppController::appendDigit(const QString &digit) {
 }
 void AppController::backspace() { setDialedNumber(m_dialedNumber.chopped(1)); }
 void AppController::call() { m_sip->makeCall(m_dialedNumber); }
+void AppController::redial(const QString &destination) {
+    if (m_inCall) { emit toast(tr("Ya hay una llamada en curso")); return; }
+    const QString target = destination.trimmed();
+    if (target.isEmpty()) { emit toast(tr("El historial no contiene un número rellamable")); return; }
+    m_sip->makeCall(target);
+}
 void AppController::answer() { m_sip->answer(); }
 void AppController::hangup() { m_sip->hangup(); }
 void AppController::transfer(const QString &extension) { m_sip->transfer(extension); }
@@ -315,13 +321,14 @@ QString AppController::duration() const {
     return QString("%1:%2").arg(seconds / 60, 2, 10, QLatin1Char('0')).arg(seconds % 60, 2, 10, QLatin1Char('0'));
 }
 
-void AppController::onCallState(ISipEngine::CallState state, const QString &peer) {
+void AppController::onCallState(ISipEngine::CallState state, const QString &peer, const QString &dialTarget) {
     if (state != ISipEngine::CallState::Idle && m_localAudioMonitor) {
         m_sip->setLocalAudioMonitor(false);
         m_localAudioMonitor = false;
         emit localAudioMonitorChanged();
     }
     m_peer = peer;
+    if (!dialTarget.trimmed().isEmpty()) m_peerDialTarget = dialTarget.trimmed();
     switch (state) {
     case ISipEngine::CallState::Calling: m_callStatus = tr("Llamando…"); m_inCall = true; m_incoming = false; m_callDirection="saliente"; m_wasConnected=false; m_elapsed.invalidate(); if (!m_ringback.isPlaying()) m_ringback.play(); break;
     case ISipEngine::CallState::Incoming:
@@ -332,8 +339,8 @@ void AppController::onCallState(ISipEngine::CallState state, const QString &peer
     case ISipEngine::CallState::EarlyMedia: m_ringtone.stop(); m_ringback.stop(); m_callStatus = tr("Audio de la central…"); m_inCall = true; m_incoming = false; break;
     case ISipEngine::CallState::Connected: m_ringtone.stop(); m_ringback.stop(); m_callStatus = tr("Conectada"); m_inCall = true; m_incoming = false; m_wasConnected=true; m_elapsed.restart(); m_durationTimer.start(); break;
     case ISipEngine::CallState::Ended:
-        m_history.addCall({peer, m_callDirection, QDateTime::currentDateTime(), int(m_elapsed.isValid() ? m_elapsed.elapsed()/1000 : 0), m_callDirection=="entrante" && !m_wasConnected});
-        m_ringtone.stop(); m_ringback.stop(); { const bool wasRecording=m_recording; m_sip->stopRecording(); m_recording=false; if (wasRecording) finalizeRecording(); } m_held=false; m_holdRequested=false; m_holdTimer.stop(); m_holdElapsed.invalidate(); m_hangupSound.play(); m_callStatus = tr("Disponible"); m_inCall = false; m_incoming=false; m_durationTimer.stop(); m_elapsed.invalidate(); setDialedNumber({}); m_peer.clear(); break;
+        m_history.addCall({peer, m_callDirection, QDateTime::currentDateTime(), int(m_elapsed.isValid() ? m_elapsed.elapsed()/1000 : 0), m_callDirection=="entrante" && !m_wasConnected, m_peerDialTarget});
+        m_ringtone.stop(); m_ringback.stop(); { const bool wasRecording=m_recording; m_sip->stopRecording(); m_recording=false; if (wasRecording) finalizeRecording(); } m_held=false; m_holdRequested=false; m_holdTimer.stop(); m_holdElapsed.invalidate(); m_hangupSound.play(); m_callStatus = tr("Disponible"); m_inCall = false; m_incoming=false; m_durationTimer.stop(); m_elapsed.invalidate(); setDialedNumber({}); m_peer.clear(); m_peerDialTarget.clear(); break;
     case ISipEngine::CallState::Error: m_callStatus = tr("Error"); m_inCall = false; m_incoming=false; break;
     case ISipEngine::CallState::Idle: m_callStatus = tr("Listo"); m_inCall = false; m_incoming=false; break;
     }
