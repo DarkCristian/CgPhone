@@ -12,32 +12,32 @@
 #include <QWindow>
 #include <QCursor>
 #include <QIcon>
-#include <QAbstractNativeEventFilter>
+#include <QEvent>
+#include <QKeyEvent>
 #ifdef Q_OS_WIN
 #include <shobjidl.h>
 #include <windows.h>
 #endif
 
 namespace {
-#ifdef Q_OS_WIN
-constexpr int DiagnosticHotkeyId = 0x4347;
-
-class DiagnosticHotkeyFilter final : public QAbstractNativeEventFilter {
+class DiagnosticShortcutFilter final : public QObject {
 public:
-    explicit DiagnosticHotkeyFilter(AppController *controller) : m_controller(controller) {}
-    bool nativeEventFilter(const QByteArray &, void *message, qintptr *) override {
-        const auto *nativeMessage = static_cast<MSG *>(message);
-        if (nativeMessage && nativeMessage->message == WM_HOTKEY &&
-            nativeMessage->wParam == DiagnosticHotkeyId) {
-            QMetaObject::invokeMethod(m_controller, &AppController::toggleDebugConsole, Qt::QueuedConnection);
-            return true;
-        }
-        return false;
+    explicit DiagnosticShortcutFilter(AppController *controller) : m_controller(controller) {}
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override {
+        Q_UNUSED(watched)
+        if (event->type() != QEvent::KeyPress) return false;
+        const auto *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() != Qt::Key_F12 ||
+            !(keyEvent->modifiers() & Qt::ShiftModifier) ||
+            keyEvent->isAutoRepeat()) return false;
+        QMetaObject::invokeMethod(m_controller, &AppController::toggleDebugConsole,
+                                  Qt::QueuedConnection);
+        return true;
     }
 private:
     AppController *m_controller;
 };
-#endif
 
 void applyAlwaysOnTop(QWindow *window, bool enabled) {
     if (!window) return;
@@ -65,15 +65,8 @@ int main(int argc, char *argv[]) {
     app.setWindowIcon(appIcon);
     QQuickStyle::setStyle("Basic");
     AppController controller;
-#ifdef Q_OS_WIN
-    DiagnosticHotkeyFilter diagnosticHotkey(&controller);
-    app.installNativeEventFilter(&diagnosticHotkey);
-    const bool diagnosticHotkeyRegistered =
-        RegisterHotKey(nullptr, DiagnosticHotkeyId, MOD_SHIFT | MOD_NOREPEAT, VK_F12);
-    QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, [diagnosticHotkeyRegistered] {
-        if (diagnosticHotkeyRegistered) UnregisterHotKey(nullptr, DiagnosticHotkeyId);
-    });
-#endif
+    DiagnosticShortcutFilter diagnosticShortcut(&controller);
+    app.installEventFilter(&diagnosticShortcut);
     SystemAudioController systemAudio;
     DiagnosticWindow diagnosticWindow;
     QObject::connect(&controller, &AppController::debugConsoleToggleRequested,
