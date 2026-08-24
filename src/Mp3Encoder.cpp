@@ -2,6 +2,8 @@
 #include "RecordingEncoderLocator.h"
 #include <QDataStream>
 #include <QFile>
+#include <QFileInfo>
+#include <cstring>
 #include <QLibrary>
 #include <QVector>
 
