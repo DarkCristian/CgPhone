@@ -16,16 +16,14 @@
 #include <shellapi.h>
 
 namespace {
-WNDPROC g_diagnosticConsoleProcedure = nullptr;
-
-LRESULT CALLBACK diagnosticConsoleWindowProcedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
-    if (message == WM_CLOSE) {
-        ShowWindow(window, SW_HIDE);
-        return 0;
+BOOL WINAPI diagnosticConsoleControlHandler(DWORD controlType) {
+    if (controlType == CTRL_CLOSE_EVENT) {
+        // conhost envía este evento al pulsar X. Consumirlo evita que Windows
+        // ejecute el handler predeterminado, que termina todo CgPhone.
+        if (const HWND console = GetConsoleWindow()) ShowWindow(console, SW_HIDE);
+        return TRUE;
     }
-    return g_diagnosticConsoleProcedure
-        ? CallWindowProcW(g_diagnosticConsoleProcedure, window, message, wParam, lParam)
-        : DefWindowProcW(window, message, wParam, lParam);
+    return FALSE;
 }
 }
 #endif
@@ -202,23 +200,22 @@ void AppController::finalizeRecording() {
 
 void AppController::toggleDebugConsole() {
 #ifdef Q_OS_WIN
-    if (const HWND console = GetConsoleWindow()) {
+    if (const HWND console = GetConsoleWindow(); console && IsWindow(console)) {
         const bool visible = IsWindowVisible(console);
         ShowWindow(console, visible ? SW_HIDE : SW_SHOW);
         if (!visible) SetForegroundWindow(console);
         return;
     }
+    // Si conhost ya destruyó la ventana tras pulsar X, soltar cualquier
+    // asociación residual permite crear una consola nueva con Shift+F12.
+    FreeConsole();
     if (!AllocConsole()) return;
     FILE *stream = nullptr;
     freopen_s(&stream, "CONOUT$", "w", stdout);
     freopen_s(&stream, "CONOUT$", "w", stderr);
     SetConsoleTitleW(L"CgPhone · Diagnóstico SIP");
-    if (const HWND console = GetConsoleWindow()) {
-        g_diagnosticConsoleProcedure = reinterpret_cast<WNDPROC>(
-            SetWindowLongPtrW(console, GWLP_WNDPROC,
-                              reinterpret_cast<LONG_PTR>(diagnosticConsoleWindowProcedure)));
-        SetForegroundWindow(console);
-    }
+    SetConsoleCtrlHandler(diagnosticConsoleControlHandler, TRUE);
+    if (const HWND console = GetConsoleWindow()) SetForegroundWindow(console);
 #else
     emit toast(tr("La consola de diagnóstico se controla desde la terminal en Linux"));
 #endif
