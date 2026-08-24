@@ -11,8 +11,14 @@
 #include <QWindow>
 #include <QCursor>
 #include <QIcon>
+#ifdef Q_OS_WIN
+#include <shobjidl.h>
+#endif
 
 int main(int argc, char *argv[]) {
+#ifdef Q_OS_WIN
+    SetCurrentProcessExplicitAppUserModelID(L"CgPhone.Softphone");
+#endif
     QApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(false);
     QCoreApplication::setOrganizationName("CgPhone");
@@ -36,6 +42,7 @@ int main(int argc, char *argv[]) {
 
     auto *window = qobject_cast<QWindow *>(engine.rootObjects().constFirst());
     if (window) {
+        window->setIcon(appIcon);
         window->setFlag(Qt::WindowStaysOnTopHint, controller.alwaysVisible());
         window->show();
     }
