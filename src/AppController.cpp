@@ -68,7 +68,6 @@ AppController::AppController(QObject *parent)
         m_registered = userSettings.value("runtime/registered", false).toBool();
         m_registrationText = userSettings.value("runtime/registrationText", tr("Sin registrar")).toString();
     }
-    m_sip->configure(m_loadedAccount);
     connect(&m_holdTimer, &QTimer::timeout, this, [this] {
         if (!m_held || !m_holdElapsed.isValid()) return;
         const int seconds = int(m_holdElapsed.elapsed() / 1000);
@@ -84,10 +83,16 @@ AppController::AppController(QObject *parent)
             emit toast(tr("Recordá que estás en mute"));
     });
     m_muteTimer.setInterval(3000);
-    if (!m_configurationMode && !m_loadedAccount.user.trimmed().isEmpty() && !m_loadedAccount.server.trimmed().isEmpty()) m_sip->registerAccount();
     if (!m_configurationMode) {
         connect(&m_configRefreshTimer, &QTimer::timeout, this, &AppController::refreshAccountIfChanged);
         m_configRefreshTimer.start(1500);
+        // Dejar que QML pinte la ventana antes de inicializar PJSIP, audio,
+        // transporte y registro. La interfaz queda disponible de inmediato.
+        QTimer::singleShot(250, this, [this] {
+            m_sip->configure(m_loadedAccount);
+            if (!m_loadedAccount.user.trimmed().isEmpty() && !m_loadedAccount.server.trimmed().isEmpty())
+                m_sip->registerAccount();
+        });
     }
 }
 
