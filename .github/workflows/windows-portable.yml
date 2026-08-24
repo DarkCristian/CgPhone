@@ -20,6 +20,7 @@ jobs:
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-pkgconf
             mingw-w64-x86_64-ntldd
+            mingw-w64-x86_64-lame
             mingw-w64-x86_64-qt6-base
             mingw-w64-x86_64-qt6-declarative
             mingw-w64-x86_64-qt6-multimedia
