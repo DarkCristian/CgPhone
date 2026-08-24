@@ -1,10 +1,14 @@
 #include "AppController.h"
 #include "sip/MockSipEngine.h"
+#include "Mp3Encoder.h"
 #include <QSettings>
 #include <QCoreApplication>
 #include <QDir>
 #include <QDateTime>
 #include <QRegularExpression>
+#include <QtConcurrent>
+#include <QPointer>
+#include <QFile>
 #include <cstdio>
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -147,16 +151,41 @@ void AppController::setMuted(bool muted) {
 
 void AppController::toggleRecording() {
     if (!m_loadedAccount.localRecordingEnabled || !m_inCall || !m_wasConnected) return;
-    if (m_recording) { m_sip->stopRecording(); m_recording = false; emit toast(tr("Grabación finalizada")); emit callChanged(); return; }
+    if (m_recording) { m_sip->stopRecording(); m_recording = false; finalizeRecording(); emit callChanged(); return; }
     QDir directory(m_loadedAccount.recordingPath);
     if (!directory.exists() && !directory.mkpath(".")) { emit toast(tr("No se pudo crear la ruta de grabaciones")); return; }
-    if (m_loadedAccount.recordingFormat.compare("mp3", Qt::CaseInsensitive) == 0)
-        emit toast(tr("Esta beta captura en WAV; MP3 requiere el codificador LAME validado"));
     const auto peerSafe = (m_peer.isEmpty() ? QStringLiteral("Asterisk") : m_peer).replace(QRegularExpression("[^A-Za-z0-9_-]"), "_");
     const QString file = directory.filePath(QString("%1_%2.wav").arg(QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"), peerSafe));
     m_recording = m_sip->startRecording(QDir::toNativeSeparators(file));
+    m_recordingWavPath = m_recording ? QDir::toNativeSeparators(file) : QString();
     emit toast(m_recording ? tr("Grabación local iniciada") : tr("No se pudo iniciar la grabación"));
     emit callChanged();
+}
+
+void AppController::finalizeRecording() {
+    const QString wavPath = m_recordingWavPath;
+    m_recordingWavPath.clear();
+    if (wavPath.isEmpty()) return;
+    if (m_loadedAccount.recordingFormat.compare(QStringLiteral("mp3"), Qt::CaseInsensitive) != 0) {
+        emit toast(tr("Grabación WAV finalizada"));
+        return;
+    }
+
+    const QString mp3Path = QFileInfo(wavPath).absolutePath() + QDir::separator() +
+                            QFileInfo(wavPath).completeBaseName() + QStringLiteral(".mp3");
+    emit toast(tr("Convirtiendo grabación a MP3…"));
+    QPointer<AppController> self(this);
+    QtConcurrent::run([self,wavPath,mp3Path] {
+        const auto result = Mp3Encoder::encodeWav(wavPath, mp3Path);
+        if (result.success) QFile::remove(wavPath);
+        if (!self) return;
+        QMetaObject::invokeMethod(self, [self,result] {
+            if (!self) return;
+            emit self->toast(result.success
+                ? self->tr("Grabación MP3 finalizada")
+                : self->tr("%1").arg(result.error));
+        }, Qt::QueuedConnection);
+    });
 }
 
 void AppController::toggleDebugConsole() {
@@ -220,7 +249,8 @@ void AppController::saveAccount(const QString &user, const QString &password, co
     c.enabledCodecs.clear();
     for (const auto &codec : enabledCodecs) c.enabledCodecs.append(codec.toString());
     if (c.enabledCodecs.isEmpty()) { emit toast(tr("Activá al menos un codec de audio")); return; }
-    c.localRecordingEnabled=localRecordingEnabled; c.recordingPath=recordingPath; c.recordingFormat=QStringLiteral("wav");
+    c.localRecordingEnabled=localRecordingEnabled; c.recordingPath=recordingPath;
+    c.recordingFormat = recordingFormat.compare(QStringLiteral("mp3"), Qt::CaseInsensitive) == 0 ? QStringLiteral("mp3") : QStringLiteral("wav");
     if (!m_settings.saveAccount(c)) { emit toast(tr("No se pudo aplicar el inicio con el SO o guardar la configuración")); return; }
     m_loadedAccount = c; m_sip->configure(c); emit accountChanged(); emit toast(tr("Configuración guardada"));
     if (m_configurationMode) QTimer::singleShot(120, qApp, &QCoreApplication::quit);
@@ -302,7 +332,7 @@ void AppController::onCallState(ISipEngine::CallState state, const QString &peer
     case ISipEngine::CallState::Connected: m_ringtone.stop(); m_ringback.stop(); m_callStatus = tr("Conectada"); m_inCall = true; m_incoming = false; m_wasConnected=true; m_elapsed.restart(); m_durationTimer.start(); break;
     case ISipEngine::CallState::Ended:
         m_history.addCall({peer, m_callDirection, QDateTime::currentDateTime(), int(m_elapsed.isValid() ? m_elapsed.elapsed()/1000 : 0), m_callDirection=="entrante" && !m_wasConnected});
-        m_ringtone.stop(); m_ringback.stop(); m_sip->stopRecording(); m_recording=false; m_held=false; m_holdRequested=false; m_holdTimer.stop(); m_holdElapsed.invalidate(); m_hangupSound.play(); m_callStatus = tr("Disponible"); m_inCall = false; m_incoming=false; m_durationTimer.stop(); m_elapsed.invalidate(); setDialedNumber({}); m_peer.clear(); break;
+        m_ringtone.stop(); m_ringback.stop(); { const bool wasRecording=m_recording; m_sip->stopRecording(); m_recording=false; if (wasRecording) finalizeRecording(); } m_held=false; m_holdRequested=false; m_holdTimer.stop(); m_holdElapsed.invalidate(); m_hangupSound.play(); m_callStatus = tr("Disponible"); m_inCall = false; m_incoming=false; m_durationTimer.stop(); m_elapsed.invalidate(); setDialedNumber({}); m_peer.clear(); break;
     case ISipEngine::CallState::Error: m_callStatus = tr("Error"); m_inCall = false; m_incoming=false; break;
     case ISipEngine::CallState::Idle: m_callStatus = tr("Listo"); m_inCall = false; m_incoming=false; break;
     }
