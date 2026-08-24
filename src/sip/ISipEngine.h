@@ -44,7 +44,7 @@ public:
 
 signals:
     void registrationChanged(bool registered, const QString &message);
-    void callStateChanged(ISipEngine::CallState state, const QString &peer);
+    void callStateChanged(ISipEngine::CallState state, const QString &peer, const QString &dialTarget);
     void holdStateChanged(bool held);
     void errorOccurred(const QString &message);
 };
