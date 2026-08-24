@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 
 option(CGPHONE_WITH_PJSIP "Build the PJSUA2 SIP adapter" OFF)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Multimedia Widgets Test)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Multimedia Svg Widgets Test)
 qt_standard_project_setup(REQUIRES 6.5)
 
 qt_add_executable(CgPhone
@@ -65,7 +65,7 @@ qt_add_qml_module(CgPhone
 )
 
 target_link_libraries(CgPhone PRIVATE
-    Qt6::Core Qt6::Gui Qt6::Quick Qt6::QuickControls2 Qt6::Multimedia Qt6::Widgets
+    Qt6::Core Qt6::Gui Qt6::Quick Qt6::QuickControls2 Qt6::Multimedia Qt6::Svg Qt6::Widgets
 )
 if(WIN32)
     target_link_libraries(CgPhone PRIVATE Shell32 Crypt32 Advapi32 Ole32 Uuid)
