@@ -83,7 +83,7 @@ Page {
             TextField { id: recordingPath; visible: recordingToggle.checked; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Ruta de grabaciones"; text: page.saved.recordingPath || ""; rightPadding: 42
                 ToolButton { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; text: "…"; onClicked: recordingFolder.open() }
             }
-            ComboBox { id: recordingFormat; visible: recordingToggle.checked; Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20; model: ["wav"]; currentIndex: 0 }
+            ComboBox { id: recordingFormat; visible: recordingToggle.checked; Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20; model: ["wav","mp3"]; currentIndex: (page.saved.recordingFormat || "wav") === "mp3" ? 1 : 0 }
             RowLayout {
                 Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 6; spacing: 10
                 SoftButton { Layout.fillWidth: true; text: "Descartar y volver"; onClicked: appController.discardConfiguration() }
