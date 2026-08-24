@@ -5,6 +5,13 @@ import QtQuick.Layouts
 Page {
     id: page
     property string filter: "todas"
+    property string recallTarget: ""
+    property string recallLabel: ""
+    function confirmRecall() {
+        if (!recallTarget.length) return
+        appController.redial(recallTarget)
+        recallConfirm.close()
+    }
     background: Rectangle { color: "#F6FAFF" }
     ColumnLayout {
         anchors.fill: parent; anchors.margins: 20; spacing: 14
@@ -30,13 +37,34 @@ Page {
             Layout.fillWidth: true; Layout.fillHeight: true; spacing: 8; clip: true
             model: appController.history
             delegate: Rectangle {
-                required property string peer; required property string direction; required property string timestamp; required property string duration; required property bool missed
+                required property string peer; required property string direction; required property string timestamp; required property string duration; required property bool missed; required property string dialTarget
                 property bool matches: (!search.text || peer.toLowerCase().includes(search.text.toLowerCase())) &&
                                        (page.filter === "todas" || (page.filter === "perdida" ? missed : direction === page.filter))
                 width: ListView.view.width; height: matches ? 72 : 0; radius: 14; color: "white"; border.color: "#DDE6F2"
                 visible: matches
                 RowLayout { anchors.fill: parent; anchors.margins: 14
-                    Text { text: direction === "saliente" ? "↗" : "↙"; color: missed ? "#DC2626" : (direction === "saliente" ? "#2563EB" : "#16A34A"); font.pixelSize: 22 }
+                    Item {
+                        width: 30; height: 40
+                        Text {
+                            anchors.centerIn: parent
+                            text: direction === "saliente" ? "↗" : "↙"
+                            color: missed ? "#DC2626" : (direction === "saliente" ? "#2563EB" : "#16A34A")
+                            font.pixelSize: 22
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onDoubleClicked: {
+                                var fallback = /^[0-9*#]+$/.test(peer) ? peer : ""
+                                page.recallTarget = dialTarget || fallback
+                                page.recallLabel = peer
+                                recallConfirm.open()
+                            }
+                        }
+                        ToolTip.visible: iconHover.hovered
+                        ToolTip.text: "Doble clic para rellamar"
+                        HoverHandler { id: iconHover }
+                    }
                     ColumnLayout { Layout.fillWidth: true; spacing: 2
                         Text { text: peer; color: "#111827"; font.pixelSize: 15; font.weight: Font.DemiBold }
                         Text { text: timestamp; color: "#64748B"; font.pixelSize: 12 }
@@ -47,6 +75,39 @@ Page {
             Label { anchors.centerIn: parent; visible: parent.count===0; text: "Todavía no hay llamadas"; color: "#64748B" }
         }
     }
+    Dialog {
+        id: recallConfirm; anchors.centerIn: parent; modal: true; width: Math.min(parent.width-48, 370)
+        title: "Rellamar"; standardButtons: Dialog.NoButton; closePolicy: Popup.CloseOnEscape
+        background: Rectangle { radius: 18; color: "white"; border.color: "#D8E1EE" }
+        contentItem: ColumnLayout {
+            spacing: 14
+            Label {
+                Layout.fillWidth: true
+                text: page.recallTarget.length
+                      ? "¿Querés rellamar a " + page.recallLabel + " (" + page.recallTarget + ")?"
+                      : "Esta llamada antigua no contiene un interno rellamable."
+                wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
+                color: "#111827"; font.pixelSize: 14
+            }
+            RowLayout {
+                Layout.fillWidth: true; spacing: 10
+                Button {
+                    Layout.fillWidth: true; text: "No"; onClicked: recallConfirm.close()
+                    background: Rectangle { radius: 12; color: "white"; border.color: "#D8E1EE" }
+                }
+                Button {
+                    Layout.fillWidth: true; text: "Sí"; enabled: page.recallTarget.length > 0
+                    onClicked: page.confirmRecall()
+                    background: Rectangle { radius: 12; color: parent.enabled ? "#2563EB" : "#CBD5E1" }
+                    contentItem: Text { text: parent.text; color: "white"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                }
+            }
+        }
+        Shortcut { sequence: "Return"; enabled: recallConfirm.opened && page.recallTarget.length > 0; onActivated: page.confirmRecall() }
+        Shortcut { sequence: "Enter"; enabled: recallConfirm.opened && page.recallTarget.length > 0; onActivated: page.confirmRecall() }
+        Shortcut { sequence: "Escape"; enabled: recallConfirm.opened; onActivated: recallConfirm.close() }
+    }
+
     Dialog { id: clearConfirm; anchors.centerIn: parent; title: "Borrar historial"; modal: true; standardButtons: Dialog.Yes | Dialog.No
         contentItem: Label { text: "¿Querés borrar todo el historial de llamadas?"; wrapMode: Text.WordWrap }
         onAccepted: appController.history.clear()
