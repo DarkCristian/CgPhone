@@ -12,25 +12,11 @@ using namespace pj;
 
 namespace {
 QString diagnosticLogPath() {
-    return QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation))
-        .filePath(QStringLiteral("CgPhone-diagnostic.log"));
+    const QString directory = QDir(QStandardPaths::writableLocation(
+        QStandardPaths::AppLocalDataLocation)).filePath(QStringLiteral("logs"));
+    QDir().mkpath(directory);
+    return QDir(directory).filePath(QStringLiteral("cgphone-sip.log"));
 }
-
-class PjsipDiagnosticWriter final : public LogWriter {
-public:
-    void write(const LogEntry &entry) override {
-        QMutexLocker lock(&m_mutex);
-        QFile file(diagnosticLogPath());
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
-            return;
-        file.write(QByteArray::fromStdString(entry.msg));
-        file.flush();
-    }
-private:
-    QMutex m_mutex;
-};
-
-PjsipDiagnosticWriter g_diagnosticWriter;
 }
 
 static QString sipDialTarget(const std::string &remoteUri) {
@@ -129,7 +115,10 @@ void PjsipEngine::initializeEndpoint() {
     ep.uaConfig.threadCnt = 1;
     ep.logConfig.level = 4;
     ep.logConfig.consoleLevel = 0;
-    ep.logConfig.writer = &g_diagnosticWriter;
+    // PJSIP escribe directamente al archivo que consume DiagnosticWindow.
+    // Evita depender de stdout/stderr o de callbacks entre hilos.
+    ep.logConfig.filename = diagnosticLogPath().toStdString();
+    ep.logConfig.consoleLevel = 0;
     m_endpoint->libInit(ep);
     TransportConfig udp; udp.port = 0;
     m_endpoint->transportCreate(PJSIP_TRANSPORT_UDP, udp);
