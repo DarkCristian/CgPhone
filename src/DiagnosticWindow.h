@@ -6,6 +6,7 @@
 class QPlainTextEdit;
 class QTimer;
 class QCloseEvent;
+class QEvent;
 
 class DiagnosticWindow final : public QWidget {
     Q_OBJECT
@@ -15,6 +16,7 @@ public slots:
     void toggleVisibility();
 protected:
     void closeEvent(QCloseEvent *event) override;
+    void changeEvent(QEvent *event) override;
 private slots:
     void refreshLog();
 private:
