@@ -3,6 +3,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QEvent>
 #include <QPlainTextEdit>
 #include <QStandardPaths>
 #include <QTimer>
@@ -25,19 +26,12 @@ DiagnosticWindow::DiagnosticWindow(QWidget *parent) : QWidget(parent) {
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_output);
 
-    const QString logPath = QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation))
-                                .filePath(QStringLiteral("CgPhone-diagnostic.log"));
-#ifdef Q_OS_WIN
-    FILE *stream = nullptr;
-    _wfreopen_s(&stream, reinterpret_cast<const wchar_t *>(QDir::toNativeSeparators(logPath).utf16()), L"w", stdout);
-    _wfreopen_s(&stream, reinterpret_cast<const wchar_t *>(QDir::toNativeSeparators(logPath).utf16()), L"a", stderr);
-#else
-    freopen(logPath.toLocal8Bit().constData(), "w", stdout);
-    freopen(logPath.toLocal8Bit().constData(), "a", stderr);
-#endif
-    setvbuf(stdout, nullptr, _IONBF, 0);
-    setvbuf(stderr, nullptr, _IONBF, 0);
+    const QString logDirectory = QDir(QStandardPaths::writableLocation(
+        QStandardPaths::AppLocalDataLocation)).filePath(QStringLiteral("logs"));
+    QDir().mkpath(logDirectory);
+    const QString logPath = QDir(logDirectory).filePath(QStringLiteral("cgphone-sip.log"));
 
+    m_output->setPlaceholderText(tr("Esperando actividad SIP de PJSIP…"));
     m_logFile.setFileName(logPath);
     m_logFile.open(QIODevice::ReadOnly | QIODevice::Text);
     m_refreshTimer = new QTimer(this);
@@ -60,8 +54,14 @@ void DiagnosticWindow::toggleVisibility() {
 void DiagnosticWindow::closeEvent(QCloseEvent *event) {
     // Cerrar la ventana de diagnóstico sólo la oculta. No finaliza CgPhone y
     // puede volver a mostrarse con Shift+F12.
+    event->ignore();
     hide();
-    event->accept();
+}
+
+void DiagnosticWindow::changeEvent(QEvent *event) {
+    QWidget::changeEvent(event);
+    if (event->type() == QEvent::WindowStateChange && isMinimized())
+        QTimer::singleShot(0, this, &QWidget::hide);
 }
 
 void DiagnosticWindow::refreshLog() {
