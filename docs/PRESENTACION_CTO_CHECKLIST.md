@@ -194,6 +194,32 @@ El hash prueba integridad respecto de un valor publicado; la firma agrega identi
 - No hay telemetría externa automática declarada en esta beta.
 - Para soporte, exportar un paquete explícito y revisable por el usuario/administrador.
 
+## 10.1 Política de ausencia de telemetría
+
+CgPhone no debe enviar información operativa al autor ni a infraestructura controlada por el autor.
+
+### Prohibido por diseño
+
+- Analítica de uso o seguimiento de botones.
+- Identificadores de instalación, equipo, dominio, usuario o cuenta SIP.
+- Inventario remoto de versiones instaladas.
+- Envío automático de logs, diagnósticos, crash dumps, contactos, historial o grabaciones.
+- Reportes automáticos de errores a servicios externos.
+- Consultas periódicas a servidores personales del autor.
+- Publicidad, trackers o SDK de métricas.
+
+Los logs de SIP y diagnóstico permanecen locales. Si Soporte necesita analizarlos, el usuario o administrador debe exportarlos y entregarlos mediante un canal corporativo autorizado, luego de revisar y sanear datos sensibles.
+
+### Actualizaciones
+
+La vigilancia de nuevas versiones y vulnerabilidades de Qt WebEngine se ejecuta del lado del proyecto/autor y no desde las terminales donde se instala CgPhone. Los endpoints no reportan su versión ni estado.
+
+Por defecto, CgPhone no realiza comprobaciones de actualización. En entornos corporativos, las nuevas versiones se distribuyen mediante el mecanismo aprobado por IT, como GPO, Intune, SCCM o instalación manual. Si en el futuro se incorpora una consulta opcional a un manifiesto firmado, deberá estar deshabilitada por defecto, documentar exactamente qué solicitud realiza y no incluir identificadores ni datos SIP.
+
+### Servicios web Pro
+
+Cuando el usuario abre Google Meet o Microsoft Teams mediante Qt WebEngine, existe tráfico directo entre la terminal y Google/Microsoft. Cookies, autenticación, WebRTC y notificaciones pertenecen a esos servicios y se rigen por sus políticas. Esto no constituye telemetría enviada al autor de CgPhone, pero sí debe figurar en la documentación de privacidad y en la matriz de destinos de red.
+
 ## 11. Matriz de controles
 
 | Riesgo | Control | Evidencia | Estado |
