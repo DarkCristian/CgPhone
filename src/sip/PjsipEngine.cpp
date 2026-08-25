@@ -118,7 +118,6 @@ void PjsipEngine::initializeEndpoint() {
     // PJSIP escribe directamente al archivo que consume DiagnosticWindow.
     // Evita depender de stdout/stderr o de callbacks entre hilos.
     ep.logConfig.filename = diagnosticLogPath().toStdString();
-    ep.logConfig.consoleLevel = 0;
     m_endpoint->libInit(ep);
     TransportConfig udp; udp.port = 0;
     m_endpoint->transportCreate(PJSIP_TRANSPORT_UDP, udp);
