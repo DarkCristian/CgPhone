@@ -11,6 +11,39 @@ El icono oficial se integra en el ejecutable de Windows mediante un recurso ICO 
 - El proyecto está preparado para separar funciones Free/Pro mediante módulos; video, Google Workspace y Microsoft 365 no están incluidos en este MVP.
 - Asterisk y Neotel deben validarse contra centrales reales. “SIP compatible” no garantiza compatibilidad con cada configuración de NAT, transporte, DTMF o transferencia.
 
+## Ramas y flujo de trabajo
+
+| Rama | Propósito | Workflow y pruebas |
+|---|---|---|
+| `main` | Beta Free integrada y validada funcionalmente contra Asterisk. | Ejecutar **Windows portable SIP** desde `main` para generar el portable de referencia. Repetir smoke test SIP antes de publicar. |
+| `fix/functional-beta-0.3.0` | Rama histórica de estabilización que originó la beta integrada. | No agregar funciones nuevas. Conservar temporalmente para trazabilidad y comparación; no es la rama normal de publicación. |
+| `security/compliance-signing` | Preparación de firma Authenticode, SBOM, hashes, análisis y controles de release. | Ejecutar el workflow desde esta rama para comprobar que sigue compilando. La firma efectiva requiere una identidad de publicación y un certificado o servicio de firma confiable. |
+
+No se deben desarrollar funciones Pro directamente en `main`. Después de cerrar
+la etapa de seguridad se creará una rama funcional independiente desde el
+`main` actualizado. Las ramas de trabajo se integran mediante pull request y
+no mediante actualizaciones forzadas de `main`.
+
+### Matriz mínima de pruebas del portable
+
+1. Inicio sin consola visible y registro SIP correcto.
+2. Dos o más llamadas salientes consecutivas.
+3. Llamada entrante con ringtone, popup, atender y rechazar.
+4. DND con respuesta SIP esperada y autorespuesta.
+5. DTMF mediante pad, teclado numérico y durante una llamada.
+6. Hold/unhold sincronizado con la central y temporizador propio.
+7. Mute, volumen de salida y nivel de micrófono.
+8. Transferencia SIP REFER con confirmación del interno.
+9. Historial entrante, saliente y perdido; filtros, rellamada y borrado.
+10. Grabación WAV local, ruta configurada y reproducción del archivo.
+11. Codecs habilitados, prioridad y valores predeterminados PCMA/PCMU.
+12. Bandeja del sistema, abrir instancia existente, minimizar y cierre confirmado.
+13. Siempre visible e inicio con el sistema operativo.
+14. `Shift+F12`: mostrar tráfico PJSIP; volver a pulsar, cerrar o minimizar debe
+    ocultar sólo el diagnóstico sin cerrar CgPhone.
+15. Verificar `cgphone-sip.log`, hashes y contenido del paquete antes de
+    conservar el artefacto.
+
 ## Funciones implementadas
 
 - Discador y teclado telefónico.
@@ -31,7 +64,9 @@ El icono oficial se integra en el ejecutable de Windows mediante un recurso ICO 
 - Sliders redondeados que modifican el volumen real del headset y del micrófono
   predeterminados del sistema (Core Audio en Windows; PulseAudio/PipeWire vía
   `pactl` en Linux).
-- Codecs mostrados como base de configuración futura.
+- Codecs activables, desactivables y ordenables por prioridad; PCMA/G.711 A-law y PCMU/G.711 μ-law quedan habilitados de forma predeterminada.
+- Grabación local WAV bajo demanda con ruta configurable; MP3 sólo se habilita cuando existe un codificador LAME x64 válido.
+- Diagnóstico SIP bajo demanda con `Shift+F12`, lectura del log nativo de PJSIP y cierre/minimización que ocultan únicamente la ventana diagnóstica.
 
 ## Compilar en Linux (Ubuntu/Debian)
 
@@ -137,11 +172,22 @@ login.
 
 Qt y PJPROJECT tienen obligaciones que dependen de cómo se distribuye el producto. PJPROJECT 2.17 se distribuye bajo GPL-2.0 o licencia comercial: no se puede lanzar una edición cerrada/Pro enlazada con esta biblioteca sin resolver la licencia. El desacoplamiento `ISipEngine` permite sustituir el backend sin reescribir la interfaz.
 
-## Próxima iteración
+## Próximas iteraciones
 
-1. Persistir historial en SQLite.
-2. Credenciales en almacenes seguros del sistema.
-3. Selección de micrófono, parlantes, ringtones y codecs reales.
-4. Transporte TLS/SRTP, NAT traversal y logs diagnósticos.
-5. Instaladores firmados y pruebas con Asterisk/Neotel.
-6. Después: módulo Pro de video SIP y conectores de calendario.
+### Seguridad y publicación
+
+1. Elegir la identidad legal de publicación y el proveedor Authenticode.
+2. Integrar firma SHA-256, timestamp RFC 3161 y verificación con SignTool.
+3. Generar SBOM, hashes, attestations y análisis de Microsoft Defender.
+4. Validar el instalador por equipo, las ACL y el despliegue en dominio.
+5. Publicar sólo artefactos firmados y aprobados por Seguridad.
+
+### Free y Pro
+
+1. Mantener Free con una cuenta SIP y los accesos Pro atenuados.
+2. Incorporar un wizard administrativo para configurar y probar SIP1.
+3. En Pro, extender el mismo wizard con la pregunta y formulario opcional SIP2.
+4. Implementar licencias Pro firmadas y verificadas también en controlador y
+   backend; un toggle visual no constituye control de licencia.
+5. Implementar SIP2/doble canal antes de Meet, Teams o video.
+6. Mantener contactos locales por SIP y sin elevación.
