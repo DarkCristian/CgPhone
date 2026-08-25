@@ -1,5 +1,5 @@
 #define MyAppName "CgPhone"
-#define MyAppVersion "0.2.10"
+#define MyAppVersion "0.3.0"
 #define MyAppExeName "CgPhone.exe"
 #define MyAppExePath "bin\CgPhone.exe"
 
@@ -35,6 +35,7 @@ Name: "{commondesktop}\CgPhone"; Filename: "{app}\{#MyAppExePath}"; IconFilename
 Filename: "{app}\{#MyAppExePath}"; Description: "Iniciar CgPhone"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
+Filename: "{sys}\\netsh.exe"; Parameters: "advfirewall firewall delete rule name=\"CgPhone SIP-RTP\" program=\"{app}\\{#MyAppExePath}\""; Flags: runhidden
 ; CgPhone administra el valor desde Cuenta; al desinstalar se elimina para no
 ; dejar una ruta de autoarranque huérfana.
 Filename: "{cmd}"; Parameters: "/c reg delete HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v CgPhone /f"; Flags: runhidden

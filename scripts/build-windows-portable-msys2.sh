@@ -62,34 +62,90 @@ for runtime_dll in "${mingw_runtime_dlls[@]}"; do
   fi
 done
 
-# Collect every transitive MinGW dependency, including codecs and OpenSSL used
-# indirectly by Qt Multimedia/PJSIP. A fixed DLL list is insufficient because
-# these dependencies change when the MSYS2 packages are updated.
+# MP3 is optional at runtime. Bundle the native x64 libmp3lame build from
+# the same MSYS2 repository used by the compiler, under an explicit path that
+# cannot be influenced by the current working directory or PATH.
+lame_source="/mingw64/bin/libmp3lame-0.dll"
+lame_dir="$portable_dir/bin/codecs"
+if [[ -f "$lame_source" ]]; then
+  mkdir -p "$lame_dir"
+  cp -f "$lame_source" "$lame_dir/libmp3lame.dll"
+  if ! objdump -p "$lame_dir/libmp3lame.dll" | grep -q 'lame_init'; then
+    echo "libmp3lame.dll no exporta la API nativa requerida" >&2
+    exit 1
+  fi
+  sha256sum "$lame_dir/libmp3lame.dll" > "$lame_dir/SHA256SUMS.txt"
+  pacman -Q mingw-w64-x86_64-lame > "$lame_dir/BUILD-INFO.txt"
+  license_file="$(pacman -Ql mingw-w64-x86_64-lame | awk '/\/share\/licenses\// {print $2; exit}')"
+  if [[ -n "$license_file" ]] && [[ -f "$license_file" ]]; then
+    cp -f "$license_file" "$lame_dir/LICENSE-LAME.txt"
+  fi
+else
+  echo "Advertencia: LAME x64 no está disponible; CgPhone conservará WAV" >&2
+fi
+
+# Qt Multimedia backends are loaded dynamically, so they never appear in the
+# dependency tree of CgPhone.exe. Ensure that the backend exists in the exact
+# plugin tree referenced by qt.conf before collecting DLL dependencies.
+qt_multimedia_plugins="/mingw64/share/qt6/plugins/multimedia"
+portable_plugins="$portable_dir/share/qt6/plugins"
+if [[ ! -d "$qt_multimedia_plugins" ]]; then
+  echo "MSYS2 no instaló ningún backend de Qt Multimedia" >&2
+  exit 1
+fi
+mkdir -p "$portable_plugins/multimedia"
+cp -Rf "$qt_multimedia_plugins/"* "$portable_plugins/multimedia/"
+
+# Scan only the executable and runtime-loaded multimedia backends. Scanning
+# every Qt/QML DLL recursively is redundant (windeployqt already deployed
+# those modules) and turns this step into hundreds of repeated dependency
+# traversals. ntldd -R already follows transitive dependencies in one pass.
 dependency_report="$portable_dir/DEPENDENCIES.txt"
-ntldd -R "$exe_path" | tee "$dependency_report"
+scan_targets=("$exe_path")
+while IFS= read -r plugin_dll; do
+  scan_targets+=("$plugin_dll")
+done < <(find "$portable_plugins/multimedia" -type f -iname '*.dll')
+
+: > "$dependency_report"
+for binary in "${scan_targets[@]}"; do
+  ntldd -R "$binary" 2>/dev/null || true
+done | tee "$dependency_report"
 
 while IFS= read -r dependency_line; do
-  dependency_path="$(printf '%s\n' "$dependency_line" |
-    sed -n 's/^.*=>[[:space:]]*\(.*\)[[:space:]]*(0x[[:xdigit:]]*)$/\1/p')"
-  # The greedy capture above retains the separator space before "(0x...)".
-  # Trim both ends or cygpath receives a filename ending in a space and the
-  # copy is silently skipped.
+  dependency_path="$(printf '%s\n' "$dependency_line" | sed -n 's/^.*=>[[:space:]]*\(.*\)[[:space:]]*(0x[[:xdigit:]]*)$/\1/p')"
   dependency_path="${dependency_path#"${dependency_path%%[![:space:]]*}"}"
   dependency_path="${dependency_path%"${dependency_path##*[![:space:]]}"}"
   [[ -n "$dependency_path" ]] || continue
-
   dependency_unix_path="$(cygpath -u "$dependency_path" 2>/dev/null || true)"
-  if [[ "$dependency_unix_path" == */mingw64/bin/*.dll ]] &&
-     [[ -f "$dependency_unix_path" ]]; then
+  if [[ "$dependency_unix_path" == */mingw64/bin/*.dll ]] && [[ -f "$dependency_unix_path" ]]; then
     cp -f "$dependency_unix_path" "$portable_dir/bin/"
   fi
 done < "$dependency_report"
 
-# Re-scan using the portable directory first. Any unresolved non-system DLL
-# means the artifact is incomplete and must not be uploaded.
+# A plugin inspected as a standalone DLL resolves its dependencies through the
+# MSYS2 PATH instead of the executable directory, even when those DLLs were
+# correctly copied beside CgPhone.exe. Validate the copy by basename here;
+# Windows will use the application directory when CgPhone loads the plugin.
+while IFS= read -r dependency_line; do
+  dependency_path="$(printf '%s\n' "$dependency_line" | sed -n 's/^.*=>[[:space:]]*\(.*\)[[:space:]]*(0x[[:xdigit:]]*)$/\1/p')"
+  dependency_path="${dependency_path#"${dependency_path%%[![:space:]]*}"}"
+  dependency_path="${dependency_path%"${dependency_path##*[![:space:]]}"}"
+  [[ -n "$dependency_path" ]] || continue
+  dependency_unix_path="$(cygpath -u "$dependency_path" 2>/dev/null || true)"
+  if [[ "$dependency_unix_path" == */mingw64/bin/*.dll ]]; then
+    dependency_name="$(basename "$dependency_unix_path")"
+    if [[ ! -f "$portable_dir/bin/$dependency_name" ]]; then
+      echo "No se copió la dependencia del backend multimedia: $dependency_name" >&2
+      exit 1
+    fi
+  fi
+done < "$dependency_report"
+
+# Re-scan the executable in its real loader context. API-set contracts reported
+# as missing are supplied by Windows and are not redistributable files.
 export PATH="$portable_dir/bin:/mingw64/bin:$PATH"
 validation_report="$portable_dir/DEPENDENCIES-VALIDATED.txt"
-ntldd -R "$exe_path" | tee "$validation_report"
+ntldd -R "$exe_path" 2>/dev/null | tee "$validation_report"
 # ntldd reports Windows API-set contracts (api-ms-*/ext-ms-*) and optional OS
 # components as "not found" even though the Windows loader resolves them. Do
 # not treat those as redistributable DLL failures. The meaningful failure is a
@@ -117,8 +173,9 @@ done
 # against the copied tree is redundant and fails on MSYS2 when qmlimportscanner
 # cannot be started from the mixed Windows/POSIX path environment.
 cp "$root_dir/PORTABLE-LEEME.txt" "$portable_dir/"
+bash "$root_dir/scripts/generate-compliance-manifest.sh" "$root_dir" "$portable_dir" "$pj_dir"
 
 pushd "$root_dir"
-rm -f CgPhone-0.2.10-windows-x64-portable.zip
-zip -qr CgPhone-0.2.10-windows-x64-portable.zip CgPhone-portable
+rm -f CgPhone-0.3.0-windows-x64-portable.zip
+zip -qr CgPhone-0.3.0-windows-x64-portable.zip CgPhone-portable
 popd

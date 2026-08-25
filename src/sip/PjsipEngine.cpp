@@ -1,8 +1,44 @@
 #include "PjsipEngine.h"
 #include <pjsua2.hpp>
 #include <QMetaObject>
+#include <QRegularExpression>
+#include <QFile>
+#include <QDir>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QStandardPaths>
 
 using namespace pj;
+
+namespace {
+QString diagnosticLogPath() {
+    const QString directory = QDir(QStandardPaths::writableLocation(
+        QStandardPaths::AppLocalDataLocation)).filePath(QStringLiteral("logs"));
+    QDir().mkpath(directory);
+    return QDir(directory).filePath(QStringLiteral("cgphone-sip.log"));
+}
+}
+
+static QString sipDialTarget(const std::string &remoteUri) {
+    const QString raw = QString::fromStdString(remoteUri).trimmed();
+    const auto match = QRegularExpression(QStringLiteral("sip:([^@;>]+)"),
+                                           QRegularExpression::CaseInsensitiveOption).match(raw);
+    return match.hasMatch() ? match.captured(1).trimmed() : QString();
+}
+
+static QString friendlySipPeer(const std::string &remoteUri) {
+    const QString raw = QString::fromStdString(remoteUri).trimmed();
+    const auto displayMatch = QRegularExpression(QStringLiteral("^\\s*\\\"([^\\\"]+)\\\"")).match(raw);
+    if (displayMatch.hasMatch()) {
+        const QString display = displayMatch.captured(1).trimmed();
+        if (!display.isEmpty() && display.compare(QStringLiteral("Unknown"), Qt::CaseInsensitive) != 0)
+            return display;
+    }
+    const auto userMatch = QRegularExpression(QStringLiteral("sip:([^@;>]+)"), QRegularExpression::CaseInsensitiveOption).match(raw);
+    if (userMatch.hasMatch() && !userMatch.captured(1).trimmed().isEmpty())
+        return userMatch.captured(1).trimmed();
+    return QStringLiteral("Asterisk");
+}
 
 class PjsipEngine::CallImpl final : public Call {
 public:
@@ -34,7 +70,15 @@ public:
     void onCallMediaState(OnCallMediaStateParam &) override {
         connectActiveAudio();
         try {
-            if (getInfo().state == PJSIP_INV_STATE_EARLY)
+            const auto info = getInfo();
+            bool locallyHeld = false;
+            for (const auto &media : info.media)
+                if (media.type == PJMEDIA_TYPE_AUDIO && media.status == PJSUA_CALL_MEDIA_LOCAL_HOLD)
+                    locallyHeld = true;
+            QMetaObject::invokeMethod(owner, [owner=owner,locallyHeld]{
+                emit owner->holdStateChanged(locallyHeld);
+            }, Qt::QueuedConnection);
+            if (info.state == PJSIP_INV_STATE_EARLY)
                 owner->reportEarlyMedia(this);
         } catch (const Error &e) { owner->reportError(QString::fromStdString(e.info())); }
     }
@@ -45,8 +89,9 @@ class PjsipEngine::AccountImpl final : public Account {
 public:
     explicit AccountImpl(PjsipEngine *owner) : owner(owner) {}
     void onIncomingCall(OnIncomingCallParam &p) override {
-        const int callId = p.callId;
-        QMetaObject::invokeMethod(owner, [owner=owner,callId]{ owner->incoming(callId); }, Qt::QueuedConnection);
+        // El callId sólo es seguro mientras PJSIP conserva la sesión. Crear el
+        // wrapper inmediatamente evita perder INVITEs al demorarlos en Qt.
+        owner->incoming(p.callId);
     }
     void onRegState(OnRegStateParam &) override {
         try { const auto ai=getInfo(); owner->reportRegistration(ai.regIsActive, ai.regStatus, ai.regStatusText); }
@@ -65,7 +110,14 @@ PjsipEngine::~PjsipEngine() {
 void PjsipEngine::initializeEndpoint() {
     if (m_initialized) return;
     m_endpoint->libCreate();
-    EpConfig ep; ep.uaConfig.userAgent = "CgPhone/0.2.10"; ep.uaConfig.threadCnt = 1; ep.logConfig.level = 4;
+    EpConfig ep;
+    ep.uaConfig.userAgent = "CgPhone/0.3.0";
+    ep.uaConfig.threadCnt = 1;
+    ep.logConfig.level = 4;
+    ep.logConfig.consoleLevel = 0;
+    // PJSIP escribe directamente al archivo que consume DiagnosticWindow.
+    // Evita depender de stdout/stderr o de callbacks entre hilos.
+    ep.logConfig.filename = diagnosticLogPath().toStdString();
     m_endpoint->libInit(ep);
     TransportConfig udp; udp.port = 0;
     m_endpoint->transportCreate(PJSIP_TRANSPORT_UDP, udp);
@@ -77,11 +129,27 @@ void PjsipEngine::configure(const SipAccountConfig &config) { m_config = config;
 void PjsipEngine::registerAccount() {
     try {
         initializeEndpoint();
+        const auto codecs = m_endpoint->codecEnum2();
+        for (const auto &codec : codecs) m_endpoint->codecSetPriority(codec.codecId, 0);
+        unsigned priority = 255;
+        for (const auto &wanted : m_config.enabledCodecs) {
+            for (const auto &codec : codecs) {
+                if (QString::fromStdString(codec.codecId).compare(wanted, Qt::CaseInsensitive) == 0) {
+                    m_endpoint->codecSetPriority(codec.codecId, priority--);
+                    break;
+                }
+            }
+        }
         m_call.reset(); m_account = std::make_unique<AccountImpl>(this);
         AccountConfig ac;
         const auto server = m_config.server.trimmed();
         ac.idUri = QString("sip:%1@%2").arg(m_config.user, server).toStdString();
         ac.regConfig.registrarUri = QString("sip:%1").arg(server).toStdString();
+        ac.regConfig.retryIntervalSec = 30;
+        ac.regConfig.firstRetryIntervalSec = 5;
+        ac.natConfig.contactRewriteUse = 1;
+        ac.natConfig.viaRewriteUse = 1;
+        ac.natConfig.sdpNatRewriteUse = 1;
         ac.sipConfig.authCreds.emplace_back("digest", "*", m_config.user.toStdString(), 0, m_config.password.toStdString());
         if (m_config.proxyEnabled && !m_config.proxy.trimmed().isEmpty())
             ac.sipConfig.proxies.push_back(QString("sip:%1;lr").arg(m_config.proxy.trimmed()).toStdString());
@@ -91,6 +159,8 @@ void PjsipEngine::registerAccount() {
 
 void PjsipEngine::makeCall(const QString &destination) {
     if (!m_account) { reportError(tr("La cuenta SIP no está registrada")); return; }
+    if (destination.trimmed().isEmpty()) { reportError(tr("Ingresá un número")); return; }
+    if (m_call) { reportError(tr("Todavía hay una llamada en curso")); return; }
     try {
         m_call = std::make_unique<CallImpl>(*m_account, this);
         const QString uri = destination.startsWith("sip:") ? destination : QString("sip:%1@%2").arg(destination, m_config.server);
@@ -105,18 +175,20 @@ void PjsipEngine::incoming(int callId) {
         return;
     }
     m_call = std::make_unique<CallImpl>(*m_account, this, callId);
+    QString peer;
+    try { peer = friendlySipPeer(m_call->getInfo().remoteUri); } catch (...) {}
+    QString target;
+    try { target = sipDialTarget(m_call->getInfo().remoteUri); } catch (...) {}
+    emit callStateChanged(CallState::Incoming, peer, target);
     if (m_dnd) {
         CallOpParam op; op.statusCode = PJSIP_SC_BUSY_HERE; m_call->answer(op); return;
     }
-    QString peer;
-    try { peer = QString::fromStdString(m_call->getInfo().remoteUri); } catch (...) {}
     if (m_autoAnswer) {
         // Sin demora artificial ni ringtone local: la central controla el
         // anuncio de campaña/cola y el momento del bridge con el cliente.
         answer();
         return;
     }
-    emit callStateChanged(CallState::Incoming, peer);
 }
 
 void PjsipEngine::answer() { if (!m_call) return; try { CallOpParam op; op.statusCode=PJSIP_SC_OK; m_call->answer(op); } catch (const Error &e) { reportError(QString::fromStdString(e.info())); } }
@@ -131,6 +203,47 @@ void PjsipEngine::sendDtmf(const QString &digits) {
     if (!m_call || digits.isEmpty()) return;
     try { m_call->dialDtmf(digits.toStdString()); }
     catch (const Error &e) { reportError(QString::fromStdString(e.info())); }
+}
+
+void PjsipEngine::setHold(bool enabled) {
+    if (!m_call) return;
+    try {
+        CallOpParam op(true);
+        if (enabled) m_call->setHold(op);
+        else { op.opt.flag = PJSUA_CALL_UNHOLD; m_call->reinvite(op); }
+    } catch (const Error &e) { reportError(QString::fromStdString(e.info())); }
+}
+
+bool PjsipEngine::startRecording(const QString &path) {
+    if (!m_call || path.isEmpty() || m_recorder) return false;
+    try {
+        m_recorder = std::make_unique<AudioMediaRecorder>();
+        m_recorder->createRecorder(path.toStdString());
+        const auto ci = m_call->getInfo();
+        for (unsigned i = 0; i < ci.media.size(); ++i) {
+            if (ci.media[i].type == PJMEDIA_TYPE_AUDIO && ci.media[i].status == PJSUA_CALL_MEDIA_ACTIVE) {
+                m_call->getAudioMedia(i).startTransmit(*m_recorder);
+                Endpoint::instance().audDevManager().getCaptureDevMedia().startTransmit(*m_recorder);
+                return true;
+            }
+        }
+    } catch (const Error &e) { reportError(QString::fromStdString(e.info())); }
+    m_recorder.reset();
+    return false;
+}
+
+void PjsipEngine::stopRecording() {
+    if (!m_recorder) return;
+    try {
+        if (m_call) {
+            const auto ci = m_call->getInfo();
+            for (unsigned i = 0; i < ci.media.size(); ++i)
+                if (ci.media[i].type == PJMEDIA_TYPE_AUDIO)
+                    m_call->getAudioMedia(i).stopTransmit(*m_recorder);
+            Endpoint::instance().audDevManager().getCaptureDevMedia().stopTransmit(*m_recorder);
+        }
+    } catch (...) {}
+    m_recorder.reset();
 }
 
 bool PjsipEngine::setLocalAudioMonitor(bool enabled) {
@@ -165,8 +278,9 @@ void PjsipEngine::reportCallState(CallImpl *call) {
         else if (ci.state==PJSIP_INV_STATE_EARLY && ci.role==PJSIP_ROLE_UAC && hasActiveAudio) state=CallState::EarlyMedia;
         else if (ci.state==PJSIP_INV_STATE_CONFIRMED) state=CallState::Connected;
         else if (ci.state==PJSIP_INV_STATE_DISCONNECTED) state=CallState::Ended;
-        const auto peer=QString::fromStdString(ci.remoteUri);
-        QMetaObject::invokeMethod(this, [this,state,peer,call]{ emit callStateChanged(state,peer); if (state==CallState::Ended) releaseDisconnectedCall(call); }, Qt::QueuedConnection);
+        const auto peer=friendlySipPeer(ci.remoteUri);
+        const auto target=sipDialTarget(ci.remoteUri);
+        QMetaObject::invokeMethod(this, [this,state,peer,target,call]{ emit callStateChanged(state,peer,target); if (state==CallState::Ended) releaseDisconnectedCall(call); }, Qt::QueuedConnection);
     } catch (const Error &e) { reportError(QString::fromStdString(e.info())); }
 }
 
@@ -174,9 +288,10 @@ void PjsipEngine::reportEarlyMedia(CallImpl *call) {
     try {
         const auto ci = call->getInfo();
         if (ci.state != PJSIP_INV_STATE_EARLY) return;
-        const auto peer = QString::fromStdString(ci.remoteUri);
-        QMetaObject::invokeMethod(this, [this,peer]{
-            emit callStateChanged(CallState::EarlyMedia, peer);
+        const auto peer = friendlySipPeer(ci.remoteUri);
+        const auto target = sipDialTarget(ci.remoteUri);
+        QMetaObject::invokeMethod(this, [this,peer,target]{
+            emit callStateChanged(CallState::EarlyMedia, peer, target);
         }, Qt::QueuedConnection);
     } catch (const Error &e) { reportError(QString::fromStdString(e.info())); }
 }
@@ -186,7 +301,7 @@ void PjsipEngine::reportError(const QString &message) {
 }
 
 void PjsipEngine::releaseDisconnectedCall(CallImpl *call) {
-    if (m_call.get() == call) m_call.reset();
+    if (m_call.get() == call) { stopRecording(); m_call.reset(); }
 }
 
 void PjsipEngine::reportRegistration(bool active, int code, const std::string &reason) {

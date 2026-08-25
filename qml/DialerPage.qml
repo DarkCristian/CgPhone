@@ -6,8 +6,33 @@ import "components"
 
 Page {
     id: page
+    focus: true
+    Component.onCompleted: forceActiveFocus()
+    Keys.onPressed: function(event) {
+        if (event.text && /^[0-9*#]$/.test(event.text)) { appController.appendDigit(event.text); event.accepted = true }
+        else if (event.key === Qt.Key_Backspace) { appController.backspace(); event.accepted = true }
+        else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { if (!appController.inCall) appController.call(); event.accepted = true }
+    }
     background: Rectangle { color: "#F6FAFF" }
     property var digits: ["1","2","3","4","5","6","7","8","9","*","0","#"]
+    property string pendingTransfer: ""
+    function requestTransferConfirmation() {
+        var target = extension.text.trim()
+        if (!target.length) {
+            extension.forceActiveFocus()
+            return
+        }
+        pendingTransfer = target
+        transferDialog.close()
+        transferConfirm.open()
+    }
+    function confirmTransfer() {
+        if (!pendingTransfer.length) return
+        appController.transfer(pendingTransfer)
+        pendingTransfer = ""
+        extension.clear()
+        transferConfirm.close()
+    }
 
     ColumnLayout {
         anchors.fill: parent; anchors.margins: 12; spacing: 6
@@ -28,8 +53,8 @@ Page {
             Layout.fillWidth: true; implicitHeight: 72; radius: 14; color: "#EFF6FF"; border.color: "#C9DDF8"
             Column { anchors.centerIn: parent; spacing: 3
                 Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.inCall ? appController.peer : (appController.dialedNumber || "Ingresá un número"); color: "#111827"; font.pixelSize: 20; font.weight: Font.Bold }
-                Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.callStatus; color: "#2563EB"; font.pixelSize: 12 }
-                Text { anchors.horizontalCenter: parent.horizontalCenter; visible: appController.inCall; text: appController.duration; color: "#111827"; font.pixelSize: 12; font.weight: Font.DemiBold }
+                Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.callStatus; color: appController.held ? "#D97706" : (appController.callStatus === "Disponible" ? "#16A34A" : "#2563EB"); font.pixelSize: 12; font.weight: Font.DemiBold }
+                Text { anchors.horizontalCenter: parent.horizontalCenter; visible: appController.inCall; text: appController.duration; color: appController.held ? "#D97706" : "#111827"; font.pixelSize: 12; font.weight: Font.DemiBold }
             }
         }
         GridLayout {
@@ -41,16 +66,21 @@ Page {
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 6
-            SoftButton { visible: !appController.incoming; Layout.fillWidth: true; implicitHeight: 38; text: "⌫"; onClicked: appController.backspace() }
+            SoftButton { visible: !appController.incoming && !appController.inCall; Layout.fillWidth: true; implicitHeight: 38; text: "Borrar"; iconSource: "qrc:/qt/qml/CgPhone/assets/icons/backspace.svg"; onClicked: appController.backspace() }
             SoftButton { visible: appController.incoming; Layout.fillWidth: true; implicitHeight: 38; primary: true; accent: "#16A34A"; text: "Atender"; onClicked: appController.answer() }
-            SoftButton { Layout.fillWidth: true; implicitHeight: 38; primary: true; accent: appController.inCall ? "#DC2626" : "#2563EB"; text: appController.incoming ? "Rechazar" : (appController.inCall ? "Cortar" : "Llamar"); onClicked: appController.inCall ? appController.hangup() : appController.call() }
+            SoftButton { visible: appController.inCall && !appController.incoming; Layout.fillWidth: true; implicitHeight: 38; text: appController.held ? "▶  Retomar" : "Ⅱ  Hold"; primary: appController.held; accent: "#F59E0B"; onClicked: appController.toggleHold() }
+            SoftButton { Layout.fillWidth: true; implicitHeight: 38; primary: true; accent: appController.inCall ? "#DC2626" : "#2563EB"; text: appController.incoming ? "Rechazar" : (appController.inCall ? "Cortar" : "Llamar"); iconSource: appController.incoming ? "" : "qrc:/qt/qml/CgPhone/assets/icons/phone-white.svg"; onClicked: appController.inCall ? appController.hangup() : appController.call() }
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 6
             ToggleCard { Layout.fillWidth: true; text: "No molestar"; checked: appController.dnd; onToggled: appController.dnd=checked }
             ToggleCard { Layout.fillWidth: true; text: "Autorespuesta"; checked: appController.autoAnswer; onToggled: appController.autoAnswer=checked }
         }
-        SoftButton { Layout.fillWidth: true; implicitHeight: 38; text: "⇄  Transferir"; enabled: appController.inCall; onClicked: transferDialog.open() }
+        RowLayout {
+            Layout.fillWidth: true; spacing: 6
+            SoftButton { Layout.fillWidth: true; implicitHeight: 38; text: "Transferir"; iconSource: "qrc:/qt/qml/CgPhone/assets/icons/transfer.svg"; enabled: appController.inCall; onClicked: transferDialog.open() }
+            SoftButton { Layout.fillWidth: true; implicitHeight: 38; text: appController.recording ? "■  Detener" : "●  Grabar"; enabled: appController.localRecordingEnabled && appController.inCall && !appController.incoming; primary: appController.recording; accent: "#DC2626"; ToolTip.visible: hovered && !appController.localRecordingEnabled; ToolTip.text: "Habilitá la grabación local en Configuración"; onClicked: appController.toggleRecording() }
+        }
         SystemVolumeControl { Layout.fillWidth: true }
         Item { Layout.fillHeight: true }
     }
@@ -58,17 +88,47 @@ Page {
     Dialog {
         id: transferDialog; anchors.centerIn: parent; width: Math.min(parent.width-48, 370); modal: true; title: "Transferir llamada"
         standardButtons: Dialog.NoButton
+        closePolicy: Popup.CloseOnEscape
+        onOpened: extension.forceActiveFocus()
         background: Rectangle { radius: 18; color: "white"; border.color: "#D8E1EE" }
         contentItem: ColumnLayout {
             spacing: 12
             Label { text: "Interno a transferir"; color: "#111827" }
-            TextField { id: extension; Layout.fillWidth: true; placeholderText: "Ej. 204"; inputMethodHints: Qt.ImhDialableCharactersOnly }
+            TextField {
+                id: extension; Layout.fillWidth: true; placeholderText: "Ej. 204"
+                inputMethodHints: Qt.ImhDialableCharactersOnly
+                onAccepted: page.requestTransferConfirmation()
+            }
             RowLayout {
                 Layout.fillWidth: true; spacing: 10
                 SoftButton { Layout.fillWidth: true; text: "Cancelar"; onClicked: transferDialog.close() }
-                SoftButton { Layout.fillWidth: true; primary: true; text: "Transferir"; onClicked: { appController.transfer(extension.text); extension.clear(); transferDialog.close() } }
+                SoftButton { Layout.fillWidth: true; primary: true; text: "Continuar"; onClicked: page.requestTransferConfirmation() }
             }
         }
+    }
+
+    Dialog {
+        id: transferConfirm; anchors.centerIn: parent; width: Math.min(parent.width-48, 370); modal: true
+        title: "Confirmar transferencia"; standardButtons: Dialog.NoButton
+        closePolicy: Popup.CloseOnEscape
+        background: Rectangle { radius: 18; color: "white"; border.color: "#D8E1EE" }
+        contentItem: ColumnLayout {
+            spacing: 14
+            Label {
+                Layout.fillWidth: true
+                text: "¿El interno " + page.pendingTransfer + " es correcto?"
+                wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
+                color: "#111827"; font.pixelSize: 15; font.weight: Font.DemiBold
+            }
+            RowLayout {
+                Layout.fillWidth: true; spacing: 10
+                SoftButton { Layout.fillWidth: true; text: "No"; onClicked: transferConfirm.close() }
+                SoftButton { Layout.fillWidth: true; primary: true; text: "Sí"; onClicked: page.confirmTransfer() }
+            }
+        }
+        Shortcut { sequence: "Return"; enabled: transferConfirm.opened; onActivated: page.confirmTransfer() }
+        Shortcut { sequence: "Enter"; enabled: transferConfirm.opened; onActivated: page.confirmTransfer() }
+        Shortcut { sequence: "Escape"; enabled: transferConfirm.opened; onActivated: transferConfirm.close() }
     }
 
     Dialog {

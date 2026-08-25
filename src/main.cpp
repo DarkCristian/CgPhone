@@ -1,5 +1,6 @@
 #include "AppController.h"
 #include "SystemAudioController.h"
+#include "DiagnosticWindow.h"
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -11,8 +12,51 @@
 #include <QWindow>
 #include <QCursor>
 #include <QIcon>
+#include <QEvent>
+#include <QKeyEvent>
+#ifdef Q_OS_WIN
+#include <shobjidl.h>
+#include <windows.h>
+#endif
+
+namespace {
+class DiagnosticShortcutFilter final : public QObject {
+public:
+    explicit DiagnosticShortcutFilter(AppController *controller) : m_controller(controller) {}
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override {
+        Q_UNUSED(watched)
+        if (event->type() != QEvent::KeyPress) return false;
+        const auto *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() != Qt::Key_F12 ||
+            !(keyEvent->modifiers() & Qt::ShiftModifier) ||
+            keyEvent->isAutoRepeat()) return false;
+        QMetaObject::invokeMethod(m_controller, &AppController::toggleDebugConsole,
+                                  Qt::QueuedConnection);
+        return true;
+    }
+private:
+    AppController *m_controller;
+};
+
+void applyAlwaysOnTop(QWindow *window, bool enabled) {
+    if (!window) return;
+#ifdef Q_OS_WIN
+    const HWND nativeWindow = reinterpret_cast<HWND>(window->winId());
+    SetWindowPos(nativeWindow, enabled ? HWND_TOPMOST : HWND_NOTOPMOST,
+                 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+#else
+    window->setFlag(Qt::WindowStaysOnTopHint, enabled);
+    window->show();
+#endif
+}
+}
 
 int main(int argc, char *argv[]) {
+#ifdef Q_OS_WIN
+    SetCurrentProcessExplicitAppUserModelID(L"CgPhone.Softphone");
+#endif
     QApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(false);
     QCoreApplication::setOrganizationName("CgPhone");
@@ -21,7 +65,12 @@ int main(int argc, char *argv[]) {
     app.setWindowIcon(appIcon);
     QQuickStyle::setStyle("Basic");
     AppController controller;
+    DiagnosticShortcutFilter diagnosticShortcut(&controller);
+    app.installEventFilter(&diagnosticShortcut);
     SystemAudioController systemAudio;
+    DiagnosticWindow diagnosticWindow;
+    QObject::connect(&controller, &AppController::debugConsoleToggleRequested,
+                     &diagnosticWindow, &DiagnosticWindow::toggleVisibility);
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("appController", &controller);
     engine.rootContext()->setContextProperty("systemAudio", &systemAudio);
@@ -36,8 +85,9 @@ int main(int argc, char *argv[]) {
 
     auto *window = qobject_cast<QWindow *>(engine.rootObjects().constFirst());
     if (window) {
-        window->setFlag(Qt::WindowStaysOnTopHint, controller.alwaysVisible());
+        window->setIcon(appIcon);
         window->show();
+        applyAlwaysOnTop(window, controller.alwaysVisible());
     }
     QSystemTrayIcon tray(appIcon);
     QMenu trayMenu;
@@ -70,8 +120,8 @@ int main(int argc, char *argv[]) {
     QObject::connect(&controller, &AppController::registrationChanged, &tray, refreshTrayTooltip);
     QObject::connect(&controller, &AppController::accountChanged, &app, [&controller,window,refreshTrayTooltip] {
         if (window) {
-            window->setFlag(Qt::WindowStaysOnTopHint, controller.alwaysVisible());
             window->show();
+            applyAlwaysOnTop(window, controller.alwaysVisible());
             if (controller.alwaysVisible()) window->raise();
         }
         refreshTrayTooltip();

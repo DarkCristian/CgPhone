@@ -13,12 +13,13 @@ QVariant CallHistoryModel::data(const QModelIndex &index, int role) const {
     case TimestampRole: return e.timestamp.toString("dd/MM/yyyy  HH:mm");
     case DurationRole: return QString("%1:%2").arg(e.duration / 60, 2, 10, QLatin1Char('0')).arg(e.duration % 60, 2, 10, QLatin1Char('0'));
     case MissedRole: return e.missed;
+    case DialTargetRole: return e.dialTarget;
     default: return {};
     }
 }
 
 QHash<int, QByteArray> CallHistoryModel::roleNames() const {
-    return {{PeerRole,"peer"},{DirectionRole,"direction"},{TimestampRole,"timestamp"},{DurationRole,"duration"},{MissedRole,"missed"}};
+    return {{PeerRole,"peer"},{DirectionRole,"direction"},{TimestampRole,"timestamp"},{DurationRole,"duration"},{MissedRole,"missed"},{DialTargetRole,"dialTarget"}};
 }
 
 void CallHistoryModel::addCall(const Entry &entry) {
@@ -34,7 +35,7 @@ void CallHistoryModel::load() {
         s.setArrayIndex(i);
         m_entries.push_back({s.value("peer").toString(), s.value("direction").toString(),
                              s.value("timestamp").toDateTime(), s.value("duration").toInt(),
-                             s.value("missed").toBool()});
+                             s.value("missed").toBool(), s.value("dialTarget").toString()});
     }
     s.endArray();
 }
@@ -45,7 +46,7 @@ void CallHistoryModel::save() const {
     for (int i = 0; i < m_entries.size(); ++i) {
         s.setArrayIndex(i); const auto &e = m_entries.at(i);
         s.setValue("peer", e.peer); s.setValue("direction", e.direction);
-        s.setValue("timestamp", e.timestamp); s.setValue("duration", e.duration); s.setValue("missed", e.missed);
+        s.setValue("timestamp", e.timestamp); s.setValue("duration", e.duration); s.setValue("missed", e.missed); s.setValue("dialTarget", e.dialTarget);
     }
     s.endArray(); s.sync();
 }

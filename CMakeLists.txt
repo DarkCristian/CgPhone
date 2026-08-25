@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(CgPhone VERSION 0.2.10 LANGUAGES CXX)
+project(CgPhone VERSION 0.3.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,19 +7,25 @@ set(CMAKE_AUTOMOC ON)
 
 option(CGPHONE_WITH_PJSIP "Build the PJSUA2 SIP adapter" OFF)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Multimedia Widgets Test)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Multimedia Svg Widgets Concurrent Test)
 qt_standard_project_setup(REQUIRES 6.5)
 
 qt_add_executable(CgPhone
     src/main.cpp
     src/AppController.cpp src/AppController.h
     src/CallHistoryModel.cpp src/CallHistoryModel.h
+    src/DiagnosticWindow.cpp src/DiagnosticWindow.h
     src/SettingsStore.cpp src/SettingsStore.h
     src/RecordingEncoderLocator.cpp src/RecordingEncoderLocator.h
+    src/Mp3Encoder.cpp src/Mp3Encoder.h
     src/SystemAudioController.cpp src/SystemAudioController.h
     src/sip/ISipEngine.h
     src/sip/MockSipEngine.cpp src/sip/MockSipEngine.h
 )
+
+if(WIN32)
+    set_target_properties(CgPhone PROPERTIES WIN32_EXECUTABLE TRUE)
+endif()
 
 if(WIN32)
     target_sources(CgPhone PRIVATE assets/app/CgPhone.rc)
@@ -51,11 +57,17 @@ qt_add_qml_module(CgPhone
         assets/sounds/ringing.wav
         assets/sounds/ringing2.wav
         assets/sounds/ringtone.wav
+        assets/sounds/phone-keypad-button-dial.wav
         assets/app/CgPhone.png
+        assets/icons/phone-blue.svg
+        assets/icons/phone-white.svg
+        assets/icons/gear.svg
+        assets/icons/transfer.svg
+        assets/icons/backspace.svg
 )
 
 target_link_libraries(CgPhone PRIVATE
-    Qt6::Core Qt6::Gui Qt6::Quick Qt6::QuickControls2 Qt6::Multimedia Qt6::Widgets
+    Qt6::Core Qt6::Gui Qt6::Quick Qt6::QuickControls2 Qt6::Multimedia Qt6::Svg Qt6::Widgets Qt6::Concurrent
 )
 if(WIN32)
     target_link_libraries(CgPhone PRIVATE Shell32 Crypt32 Advapi32 Ole32 Uuid)

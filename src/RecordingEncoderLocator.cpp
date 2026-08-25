@@ -10,21 +10,22 @@ RecordingEncoderLocator::Result RecordingEncoderLocator::locateLame() {
     const QString windows = qEnvironmentVariable("WINDIR");
     const QString app = QCoreApplication::applicationDirPath();
     const QList<Candidate> candidates = {
-        {QDir(windows).filePath("System32/lame_enc.dll"), "system"},
-        {QDir(windows).filePath("SysWOW64/lame_enc.dll"), "system-x86"},
-        {QDir(app).filePath("codecs/lame_enc.dll"), "bundled"},
-        {QDir(app).filePath("codecs/x64/lame_enc.dll"), "bundled-x64"},
-        {QDir(app).filePath("codecs/x86/lame_enc.dll"), "bundled-x86"}
+        {QDir(app).filePath("codecs/libmp3lame.dll"), "bundled"},
+        {QDir(app).filePath("codecs/x64/libmp3lame.dll"), "bundled-x64"},
+        {QDir(windows).filePath("System32/libmp3lame.dll"), "system-x64"}
     };
 
     for (const auto &candidate : candidates) {
         if (!QFileInfo::exists(candidate.path)) continue;
         QLibrary library(candidate.path);
-        if (!library.load()) continue; // Also rejects an incompatible architecture.
+        if (!library.load()) continue;
+        const bool nativeApi = library.resolve("lame_init") &&
+                               library.resolve("lame_init_params") &&
+                               library.resolve("lame_encode_buffer") &&
+                               library.resolve("lame_encode_flush") &&
+                               library.resolve("lame_close");
         library.unload();
-        return {candidate.path, candidate.source, true};
+        if (nativeApi) return {QDir::toNativeSeparators(candidate.path), candidate.source, true};
     }
-
     return {};
 }
- 

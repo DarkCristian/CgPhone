@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QFile>
 #include <QSaveFile>
+#include <QStandardPaths>
 #include <QTextStream>
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -116,6 +117,13 @@ SipAccountConfig SettingsStore::loadAccount() const {
     c.logoutCode = s.value("agent/logoutCode", "*02").toString();
     c.alwaysVisible = s.value("behavior/alwaysVisible", false).toBool();
     c.startWithOs = startWithOsEnabled();
+    c.enabledCodecs = s.value("audio/enabledCodecs", c.enabledCodecs).toStringList();
+    c.localRecordingEnabled = s.value("recording/enabled", false).toBool();
+    const QString documents = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    const QString defaultRecordingPath = QDir(documents.isEmpty() ? QDir::homePath() : documents)
+                                             .filePath(QStringLiteral("CgPhone/Grabaciones"));
+    c.recordingPath = s.value("recording/path", QDir::toNativeSeparators(defaultRecordingPath)).toString();
+    c.recordingFormat = s.value("recording/format", "wav").toString().toLower();
     return c;
 }
 
@@ -134,6 +142,10 @@ bool SettingsStore::saveAccount(const SipAccountConfig &c) {
     s.setValue("agent/logoutCode", c.logoutCode.isEmpty() ? "*02" : c.logoutCode);
     s.setValue("behavior/alwaysVisible", c.alwaysVisible);
     s.setValue("behavior/startWithOs", c.startWithOs);
+    s.setValue("audio/enabledCodecs", c.enabledCodecs);
+    s.setValue("recording/enabled", c.localRecordingEnabled);
+    s.setValue("recording/path", c.recordingPath);
+    s.setValue("recording/format", c.recordingFormat);
     s.sync();
     return s.status() == QSettings::NoError;
 }

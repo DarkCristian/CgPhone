@@ -3,7 +3,7 @@
 #include "ISipEngine.h"
 #include <memory>
 
-namespace pj { class Endpoint; class Account; class Call; }
+namespace pj { class Endpoint; class Account; class Call; class AudioMediaRecorder; }
 
 class PjsipEngine final : public ISipEngine {
     Q_OBJECT
@@ -17,6 +17,9 @@ public:
     void hangup() override;
     void transfer(const QString &extension) override;
     void sendDtmf(const QString &digits) override;
+    void setHold(bool enabled) override;
+    bool startRecording(const QString &path) override;
+    void stopRecording() override;
     bool setLocalAudioMonitor(bool enabled) override;
     void setDnd(bool enabled) override { m_dnd = enabled; }
     void setAutoAnswer(bool enabled) override { m_autoAnswer = enabled; }
@@ -37,6 +40,7 @@ private:
     std::unique_ptr<pj::Endpoint> m_endpoint;
     std::unique_ptr<AccountImpl> m_account;
     std::unique_ptr<CallImpl> m_call;
+    std::unique_ptr<pj::AudioMediaRecorder> m_recorder;
     bool m_initialized = false, m_dnd = false, m_autoAnswer = false;
     bool m_localAudioMonitor = false;
 };

@@ -63,7 +63,7 @@ Para una guía desde cero, abrí
 El workflow `.github/workflows/windows-portable.yml` crea un Windows x64
 portable con MSYS2/MinGW, Qt 6 y PJPROJECT 2.17. Se ejecuta manualmente mediante
 **Actions → Windows portable SIP → Run workflow** y publica el artefacto
-`CgPhone-0.2.10-windows-x64-portable.zip`.
+`CgPhone-0.3.0-windows-x64-portable.zip`.
 
 El mismo proceso puede ejecutarse en una consola MSYS2 MINGW64 con:
 
@@ -73,6 +73,19 @@ bash scripts/build-windows-portable-msys2.sh
 
 Este build todavía debe validarse contra una central de laboratorio antes de
 instalarse en boxes de campaña.
+
+### Seguridad y compliance
+
+Los artefactos actuales son exclusivamente de laboratorio. Cada build genera
+un directorio `COMPLIANCE` con la revisión utilizada, versiones de dependencias
+y hashes SHA-256. La política, los advisories evaluados y el gate obligatorio
+para una versión productiva están documentados en
+[`SECURITY.md`](SECURITY.md) y
+[`docs/SECURITY_COMPLIANCE.md`](docs/SECURITY_COMPLIANCE.md).
+
+PJPROJECT 2.17 sin parches posteriores bloquea una release final. La versión
+productiva también requiere SBOM, escaneo de vulnerabilidades, CodeQL, análisis
+de Defender, firma digital con timestamp y aceptación de Seguridad.
 
 1. Instalá Qt 6.5+ para MSVC 2022 y CMake/Ninja.
 2. Compilá PJPROJECT con PJSUA2 para el mismo compilador y arquitectura.
