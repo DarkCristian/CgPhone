@@ -7,6 +7,7 @@ ApplicationWindow {
     width: 344; height: 640; minimumWidth: 320; minimumHeight: 600
     visible: true; title: "CgPhone" + (appController.sipUser ? " · " + appController.sipUser : ""); color: "#F6FAFF"
     property bool allowExit: false
+    property bool creditsVisible: false
     onClosing: function(close) { if (!allowExit) { close.accepted = false; closeConfirm.open() } }
 
     property int selectedTab: 0
@@ -101,7 +102,16 @@ ApplicationWindow {
         HistoryPage { }
     }
 
-    SettingsPage { anchors.fill: parent; visible: appController.configurationMode }
+    SettingsPage {
+        anchors.fill: parent
+        visible: appController.configurationMode && !window.creditsVisible
+        onOpenCredits: window.creditsVisible = true
+    }
+    CreditsPage {
+        anchors.fill: parent
+        visible: appController.configurationMode && window.creditsVisible
+        onBackRequested: window.creditsVisible = false
+    }
 
     TabBar {
         id: nav; visible: !appController.configurationMode; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 58

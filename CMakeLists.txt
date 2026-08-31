@@ -47,6 +47,7 @@ qt_add_qml_module(CgPhone
         qml/DialerPage.qml
         qml/HistoryPage.qml
         qml/SettingsPage.qml
+        qml/CreditsPage.qml
         qml/components/SoftButton.qml
         qml/components/ToggleCard.qml
         qml/components/SystemVolumeControl.qml
