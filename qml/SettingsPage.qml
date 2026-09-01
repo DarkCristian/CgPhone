@@ -6,7 +6,7 @@ import CgPhone
 
 Page {
     id: page
-    background: Rectangle { color: Theme.background }
+    background: Rectangle { color: "#F6FAFF" }
     property var saved: appController.account()
     signal openCredits()
     property var supportedCodecs: [
@@ -20,7 +20,7 @@ Page {
         implicitHeight: 20
         background: Rectangle {
             radius: 10
-            color: codecToggle.checked ? Theme.accent : Theme.disabled
+            color: codecToggle.checked ? "#2563EB" : "#CBD5E1"
             Rectangle {
                 width: 14
                 height: 14
@@ -48,28 +48,28 @@ Page {
         ColumnLayout {
             width: parent.width; spacing: 12
             Item { height: 6 }
-            Label { text: "Cuenta"; color: Theme.accent; font.pixelSize: 21; font.weight: Font.DemiBold; Layout.alignment: Qt.AlignHCenter }
-            Label { text: "🛡  Solo administrador"; color: Theme.textSecondary; font.pixelSize: 14; Layout.leftMargin: 20 }
-            Label { text: "Cuenta SIP"; color: Theme.accent; font.pixelSize: 17; font.weight: Font.DemiBold; Layout.leftMargin: 20 }
+            Label { text: "Cuenta"; color: "#2563EB"; font.pixelSize: 21; font.weight: Font.DemiBold; Layout.alignment: Qt.AlignHCenter }
+            Label { text: "🛡  Solo administrador"; color: "#334155"; font.pixelSize: 14; Layout.leftMargin: 20 }
+            Label { text: "Cuenta SIP"; color: "#2563EB"; font.pixelSize: 17; font.weight: Font.DemiBold; Layout.leftMargin: 20 }
             TextField { id: user; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Usuario SIP"; text: page.saved.user || "" }
             TextField { id: password; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Contraseña"; echoMode: TextInput.Password; text: page.saved.password || "" }
             TextField { id: server; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Servidor, ej. pbx.empresa.com"; text: page.saved.server || "" }
             ToggleCard { id: proxyToggle; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; text: "Usar proxy"; checked: page.saved.proxyEnabled || false }
             TextField { id: proxy; visible: proxyToggle.checked; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Proxy, ej. sip.empresa.com:5060"; text: page.saved.proxy || "" }
-            Label { text: "Código de deslogueo de la central"; color: Theme.textSecondary; font.pixelSize: 12; Layout.leftMargin: 20 }
+            Label { text: "Código de deslogueo de la central"; color: "#334155"; font.pixelSize: 12; Layout.leftMargin: 20 }
             TextField { id: logoutCode; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Ej. *02"; text: page.saved.logoutCode || "*02" }
-            Label { text: "Se marca desde el menú del tray para cerrar la sesión del agente. Es configurable porque *02 no es universal en Asterisk/Neotel."; color: Theme.muted; font.pixelSize: 10; wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20 }
+            Label { text: "Se marca desde el menú del tray para cerrar la sesión del agente. Es configurable porque *02 no es universal en Asterisk/Neotel."; color: "#64748B"; font.pixelSize: 10; wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20 }
             ToggleCard { id: alwaysVisibleToggle; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; text: "Siempre visible"; checked: page.saved.alwaysVisible || false }
             ToggleCard { id: startWithOsToggle; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; text: "Iniciar con el SO"; checked: page.saved.startWithOs || false }
-            Label { text: "Codecs de audio"; color: Theme.accent; font.pixelSize: 17; font.weight: Font.DemiBold; Layout.leftMargin: 20 }
-            Label { text: "Activá los disponibles y ordenalos por prioridad."; color: Theme.muted; font.pixelSize: 11; Layout.leftMargin: 20 }
+            Label { text: "Codecs de audio"; color: "#2563EB"; font.pixelSize: 17; font.weight: Font.DemiBold; Layout.leftMargin: 20 }
+            Label { text: "Activá los disponibles y ordenalos por prioridad."; color: "#64748B"; font.pixelSize: 11; Layout.leftMargin: 20 }
             Repeater { model: codecModel
                 Rectangle {
                     required property int index; required property string name; required property bool codecEnabled
-                    Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20; height: 48; radius: 12; color: Theme.surface; border.color: Theme.border
+                    Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20; height: 48; radius: 12; color: "white"; border.color: "#DDE6F2"
                     RowLayout { anchors.fill: parent; anchors.leftMargin: 10; anchors.rightMargin: 8
-                        Text { text: "⋮⋮"; color: Theme.muted }
-                        Text { text: parent.parent.name; color: Theme.text; Layout.fillWidth: true }
+                        Text { text: "⋮⋮"; color: "#64748B" }
+                        Text { text: parent.parent.name; color: "#111827"; Layout.fillWidth: true }
                         ToolButton { text: "↑"; enabled: index>0; onClicked: codecModel.move(index,index-1,1) }
                         ToolButton { text: "↓"; enabled: index<codecModel.count-1; onClicked: codecModel.move(index,index+1,1) }
                         CodecToggle {
@@ -79,7 +79,7 @@ Page {
                     }
                 }
             }
-            Label { text: "Grabación local"; color: Theme.accent; font.pixelSize: 17; font.weight: Font.DemiBold; Layout.leftMargin: 20 }
+            Label { text: "Grabación local"; color: "#2563EB"; font.pixelSize: 17; font.weight: Font.DemiBold; Layout.leftMargin: 20 }
             ToggleCard { id: recordingToggle; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; text: "Habilitar grabaciones locales"; checked: page.saved.localRecordingEnabled || false }
             TextField { id: recordingPath; visible: recordingToggle.checked; Layout.fillWidth: true; Layout.margins: 20; Layout.topMargin: 0; Layout.bottomMargin: 0; placeholderText: "Ruta de grabaciones"; text: page.saved.recordingPath || ""; rightPadding: 42
                 ToolButton { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; text: "…"; onClicked: recordingFolder.open() }
@@ -90,8 +90,8 @@ Page {
                 SoftButton { Layout.fillWidth: true; text: "Descartar y volver"; onClicked: appController.discardConfiguration() }
                 SoftButton { Layout.fillWidth: true; primary: true; text: "Guardar y volver"; onClicked: appController.saveAccount(user.text,password.text,server.text,proxy.text,proxyToggle.checked,logoutCode.text,alwaysVisibleToggle.checked,startWithOsToggle.checked,page.enabledCodecIds(),recordingToggle.checked,recordingPath.text,recordingFormat.currentText) }
             }
-            Label { Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20; text: "La sesión normal probará el registro automáticamente al guardar."; wrapMode: Text.WordWrap; color: Theme.muted; font.pixelSize: 11 }
-            Rectangle { Layout.fillWidth: true; Layout.margins: 20; height: 50; radius: 12; color: Theme.softBlue; Text { anchors.centerIn: parent; text: "Compatible por SIP · Validar con Asterisk y Neotel"; color: Theme.textSecondary; font.pixelSize: 12 } }
+            Label { Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20; text: "La sesión normal probará el registro automáticamente al guardar."; wrapMode: Text.WordWrap; color: "#64748B"; font.pixelSize: 11 }
+            Rectangle { Layout.fillWidth: true; Layout.margins: 20; height: 50; radius: 12; color: "#EAF3FF"; Text { anchors.centerIn: parent; text: "Compatible por SIP · Validar con Asterisk y Neotel"; color: "#334155"; font.pixelSize: 12 } }
             SoftButton {
                 Layout.fillWidth: true
                 Layout.leftMargin: 20

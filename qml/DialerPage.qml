@@ -13,7 +13,7 @@ Page {
         else if (event.key === Qt.Key_Backspace) { appController.backspace(); event.accepted = true }
         else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { if (!appController.inCall) appController.call(); event.accepted = true }
     }
-    background: Rectangle { color: Theme.background }
+    background: Rectangle { color: "#F6FAFF" }
     property var digits: ["1","2","3","4","5","6","7","8","9","*","0","#"]
     property string pendingTransfer: ""
     function requestTransferConfirmation() {
@@ -38,53 +38,23 @@ Page {
         anchors.fill: parent; anchors.margins: 12; spacing: 6
         Item {
             Layout.fillWidth: true; implicitHeight: 32
-            Label { anchors.centerIn: parent; text: "Discador"; color: Theme.accent; font.pixelSize: 18; font.weight: Font.DemiBold }
-            Row {
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 6
-
-                ToolButton {
-                    width: 30
-                    height: 30
-                    ToolTip.visible: hovered
-                    ToolTip.text: Theme.darkMode ? "Usar modo claro" : "Usar modo oscuro"
-                    onClicked: Theme.darkMode = !Theme.darkMode
-                    background: Rectangle {
-                        radius: 10
-                        color: parent.down ? Theme.hover : Theme.softBlue
-                        border.color: Theme.blueBorder
-                    }
-                    contentItem: Item {
-                        Image {
-                            anchors.centerIn: parent
-                            width: 16
-                            height: 16
-                            sourceSize.width: 32
-                            sourceSize.height: 32
-                            source: Theme.darkMode
-                                    ? "qrc:/qt/qml/CgPhone/assets/icons/sun.svg"
-                                    : "qrc:/qt/qml/CgPhone/assets/icons/moon.svg"
-                        }
-                    }
-                }
-
-                ToolButton {
-                    width: 30; height: 30; text: appController.localAudioMonitor ? "■" : "↙"
-                    enabled: !appController.inCall
-                    ToolTip.visible: hovered; ToolTip.text: appController.localAudioMonitor ? "Detener prueba de audio" : "Probar micrófono y headset"
-                    background: Rectangle { radius: 10; color: parent.down ? Theme.hover : Theme.softBlue; border.color: appController.localAudioMonitor ? "#22C55E" : Theme.blueBorder }
-                    contentItem: Text { text: parent.text; color: appController.localAudioMonitor ? "#16A34A" : Theme.accent; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; font.pixelSize: 15 }
-                    onClicked: appController.localAudioMonitor ? appController.toggleLocalAudioMonitor() : audioTestConfirm.open()
-                }
+            Label { anchors.centerIn: parent; text: "Discador"; color: "#2563EB"; font.pixelSize: 18; font.weight: Font.DemiBold }
+            ToolButton {
+                anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                width: 30; height: 30; text: appController.localAudioMonitor ? "■" : "↙"
+                enabled: !appController.inCall
+                ToolTip.visible: hovered; ToolTip.text: appController.localAudioMonitor ? "Detener prueba de audio" : "Probar micrófono y headset"
+                background: Rectangle { radius: 10; color: parent.down ? "#DCEBFF" : "#EDF5FF"; border.color: appController.localAudioMonitor ? "#22C55E" : "#BCD5FB" }
+                contentItem: Text { text: parent.text; color: appController.localAudioMonitor ? "#16A34A" : "#2563EB"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; font.pixelSize: 15 }
+                onClicked: appController.localAudioMonitor ? appController.toggleLocalAudioMonitor() : audioTestConfirm.open()
             }
         }
         Rectangle {
-            Layout.fillWidth: true; implicitHeight: 72; radius: 14; color: Theme.surfaceAlt; border.color: Theme.blueBorder
+            Layout.fillWidth: true; implicitHeight: 72; radius: 14; color: "#EFF6FF"; border.color: "#C9DDF8"
             Column { anchors.centerIn: parent; spacing: 3
-                Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.inCall ? appController.peer : (appController.dialedNumber || "Ingresá un número"); color: Theme.text; font.pixelSize: 20; font.weight: Font.Bold }
-                Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.callStatus; color: appController.held ? "#D97706" : (appController.callStatus === "Disponible" ? "#16A34A" : Theme.accent); font.pixelSize: 12; font.weight: Font.DemiBold }
-                Text { anchors.horizontalCenter: parent.horizontalCenter; visible: appController.inCall; text: appController.duration; color: appController.held ? "#D97706" : Theme.text; font.pixelSize: 12; font.weight: Font.DemiBold }
+                Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.inCall ? appController.peer : (appController.dialedNumber || "Ingresá un número"); color: "#111827"; font.pixelSize: 20; font.weight: Font.Bold }
+                Text { anchors.horizontalCenter: parent.horizontalCenter; text: appController.callStatus; color: appController.held ? "#D97706" : (appController.callStatus === "Disponible" ? "#16A34A" : "#2563EB"); font.pixelSize: 12; font.weight: Font.DemiBold }
+                Text { anchors.horizontalCenter: parent.horizontalCenter; visible: appController.inCall; text: appController.duration; color: appController.held ? "#D97706" : "#111827"; font.pixelSize: 12; font.weight: Font.DemiBold }
             }
         }
         GridLayout {
@@ -99,7 +69,7 @@ Page {
             SoftButton { visible: !appController.incoming && !appController.inCall; Layout.fillWidth: true; implicitHeight: 38; text: "Borrar"; iconSource: "qrc:/qt/qml/CgPhone/assets/icons/backspace.svg"; onClicked: appController.backspace() }
             SoftButton { visible: appController.incoming; Layout.fillWidth: true; implicitHeight: 38; primary: true; accent: "#16A34A"; text: "Atender"; onClicked: appController.answer() }
             SoftButton { visible: appController.inCall && !appController.incoming; Layout.fillWidth: true; implicitHeight: 38; text: appController.held ? "▶  Retomar" : "Ⅱ  Hold"; primary: appController.held; accent: "#F59E0B"; onClicked: appController.toggleHold() }
-            SoftButton { Layout.fillWidth: true; implicitHeight: 38; primary: true; accent: appController.inCall ? "#DC2626" : Theme.accent; text: appController.incoming ? "Rechazar" : (appController.inCall ? "Cortar" : "Llamar"); iconSource: appController.incoming ? "" : "qrc:/qt/qml/CgPhone/assets/icons/phone-white.svg"; onClicked: appController.inCall ? appController.hangup() : appController.call() }
+            SoftButton { Layout.fillWidth: true; implicitHeight: 38; primary: true; accent: appController.inCall ? "#DC2626" : "#2563EB"; text: appController.incoming ? "Rechazar" : (appController.inCall ? "Cortar" : "Llamar"); iconSource: appController.incoming ? "" : "qrc:/qt/qml/CgPhone/assets/icons/phone-white.svg"; onClicked: appController.inCall ? appController.hangup() : appController.call() }
         }
         RowLayout {
             Layout.fillWidth: true; spacing: 6
@@ -120,10 +90,10 @@ Page {
         standardButtons: Dialog.NoButton
         closePolicy: Popup.CloseOnEscape
         onOpened: extension.forceActiveFocus()
-        background: Rectangle { radius: 18; color: Theme.surface; border.color: Theme.borderStrong }
+        background: Rectangle { radius: 18; color: "white"; border.color: "#D8E1EE" }
         contentItem: ColumnLayout {
             spacing: 12
-            Label { text: "Interno a transferir"; color: Theme.text }
+            Label { text: "Interno a transferir"; color: "#111827" }
             TextField {
                 id: extension; Layout.fillWidth: true; placeholderText: "Ej. 204"
                 inputMethodHints: Qt.ImhDialableCharactersOnly
@@ -141,14 +111,14 @@ Page {
         id: transferConfirm; anchors.centerIn: parent; width: Math.min(parent.width-48, 370); modal: true
         title: "Confirmar transferencia"; standardButtons: Dialog.NoButton
         closePolicy: Popup.CloseOnEscape
-        background: Rectangle { radius: 18; color: Theme.surface; border.color: Theme.borderStrong }
+        background: Rectangle { radius: 18; color: "white"; border.color: "#D8E1EE" }
         contentItem: ColumnLayout {
             spacing: 14
             Label {
                 Layout.fillWidth: true
                 text: "¿El interno " + page.pendingTransfer + " es correcto?"
                 wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
-                color: Theme.text; font.pixelSize: 15; font.weight: Font.DemiBold
+                color: "#111827"; font.pixelSize: 15; font.weight: Font.DemiBold
             }
             RowLayout {
                 Layout.fillWidth: true; spacing: 10

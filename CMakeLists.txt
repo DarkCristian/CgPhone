@@ -48,7 +48,6 @@ qt_add_qml_module(CgPhone
         qml/HistoryPage.qml
         qml/SettingsPage.qml
         qml/CreditsPage.qml
-        qml/Theme.qml
         qml/components/SoftButton.qml
         qml/components/ToggleCard.qml
         qml/components/SystemVolumeControl.qml
@@ -66,8 +65,6 @@ qt_add_qml_module(CgPhone
         assets/icons/gear.svg
         assets/icons/transfer.svg
         assets/icons/backspace.svg
-        assets/icons/moon.svg
-        assets/icons/sun.svg
 )
 
 target_link_libraries(CgPhone PRIVATE

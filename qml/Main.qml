@@ -1,22 +1,11 @@
 import QtQuick
-import CgPhone
 import QtQuick.Controls
 import QtQuick.Layouts
 
 ApplicationWindow {
     id: window
     width: 344; height: 640; minimumWidth: 320; minimumHeight: 600
-    visible: true; title: "CgPhone" + (appController.sipUser ? " · " + appController.sipUser : ""); color: Theme.background
-    palette.window: Theme.background
-    palette.windowText: Theme.text
-    palette.base: Theme.surface
-    palette.alternateBase: Theme.surfaceAlt
-    palette.text: Theme.text
-    palette.button: Theme.surface
-    palette.buttonText: Theme.text
-    palette.placeholderText: Theme.muted
-    palette.highlight: Theme.accent
-    palette.highlightedText: Theme.onAccent
+    visible: true; title: "CgPhone" + (appController.sipUser ? " · " + appController.sipUser : ""); color: "#F6FAFF"
     property bool allowExit: false
     property bool creditsVisible: false
     onClosing: function(close) { if (!allowExit) { close.accepted = false; closeConfirm.open() } }
@@ -42,7 +31,7 @@ ApplicationWindow {
 
     header: ToolBar {
         height: 50
-        background: Rectangle { color: Theme.surface; border.color: "#E7EDF5" }
+        background: Rectangle { color: "#FFFFFF"; border.color: "#E7EDF5" }
         RowLayout {
             anchors.fill: parent; anchors.leftMargin: 11; anchors.rightMargin: 11
             Rectangle {
@@ -61,15 +50,15 @@ ApplicationWindow {
                     visible: headerPhoneIcon.status === Image.Error
                     anchors.centerIn: parent
                     text: "☎"
-                    color: Theme.accent
+                    color: "#2563EB"
                     font.pixelSize: 16
                 }
             }
-            Label { text: "CgPhone"; color: Theme.text; font.pixelSize: 18; font.weight: Font.DemiBold }
+            Label { text: "CgPhone"; color: "#111827"; font.pixelSize: 18; font.weight: Font.DemiBold }
             Rectangle {
                 implicitWidth: sipBadgeText.implicitWidth + 14; implicitHeight: 28; radius: 10
-                color: Theme.softBlue; border.color: Theme.blueBorder
-                Label { id: sipBadgeText; anchors.centerIn: parent; text: appController.sipUser || "SIN SIP"; color: Theme.accent; font.pixelSize: 18; font.weight: Font.DemiBold }
+                color: "#EDF5FF"; border.color: "#BCD5FB"
+                Label { id: sipBadgeText; anchors.centerIn: parent; text: appController.sipUser || "SIN SIP"; color: "#2563EB"; font.pixelSize: 18; font.weight: Font.DemiBold }
             }
             Item { Layout.fillWidth: true }
             ToolButton {
@@ -77,7 +66,7 @@ ApplicationWindow {
                 width: 30
                 height: 30
                 onClicked: appController.requestAdminConfiguration()
-                background: Rectangle { radius: 9; color: Theme.softBlue }
+                background: Rectangle { radius: 9; color: "#EDF5FF" }
                 contentItem: Item {
                     Image {
                         id: gearIcon
@@ -90,16 +79,16 @@ ApplicationWindow {
                         visible: gearIcon.status === Image.Error
                         anchors.centerIn: parent
                         text: "⚙"
-                        color: Theme.accent
+                        color: "#2563EB"
                         font.pixelSize: 16
                     }
                 }
             }
             Rectangle {
-                implicitWidth: Math.min(112, registrationLabel.implicitWidth + 26); height: 30; radius: 10; color: Theme.surface; border.color: Theme.border
+                implicitWidth: Math.min(112, registrationLabel.implicitWidth + 26); height: 30; radius: 10; color: "#FFFFFF"; border.color: "#DBE4EE"
                 Row { anchors.centerIn: parent; spacing: 5
-                    Rectangle { width: 9; height: 9; radius: 4.5; anchors.verticalCenter: parent.verticalCenter; color: appController.configurationMode ? Theme.accent : (appController.registered ? "#22C55E" : (/SIP [456]/.test(appController.registrationText) ? "#F59E0B" : Theme.muted)) }
-                    Label { id: registrationLabel; text: appController.configurationMode ? "Configuración" : appController.registrationText; color: Theme.secondary; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
+                    Rectangle { width: 9; height: 9; radius: 4.5; anchors.verticalCenter: parent.verticalCenter; color: appController.configurationMode ? "#2563EB" : (appController.registered ? "#22C55E" : (/SIP [456]/.test(appController.registrationText) ? "#F59E0B" : "#94A3B8")) }
+                    Label { id: registrationLabel; text: appController.configurationMode ? "Configuración" : appController.registrationText; color: "#475569"; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
                 }
             }
         }
@@ -128,13 +117,13 @@ ApplicationWindow {
         id: nav; visible: !appController.configurationMode; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 58
         currentIndex: window.selectedTab
         onCurrentIndexChanged: window.selectedTab = currentIndex
-        background: Rectangle { color: Theme.surface; border.color: Theme.border }
+        background: Rectangle { color: "#FFFFFF"; border.color: "#E1E8F2" }
         Repeater {
             model: window.tabs
             TabButton {
                 text: modelData
-                contentItem: Text { text: parent.text; color: parent.checked ? Theme.accent : Theme.textSecondary; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; font.pixelSize: 14; font.weight: parent.checked ? Font.DemiBold : Font.Normal }
-                background: Rectangle { color: "transparent"; Rectangle { visible: parent.parent.checked; width: 34; height: 3; radius: 2; color: Theme.accent; anchors.horizontalCenter: parent.horizontalCenter } }
+                contentItem: Text { text: parent.text; color: parent.checked ? "#2563EB" : "#334155"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; font.pixelSize: 14; font.weight: parent.checked ? Font.DemiBold : Font.Normal }
+                background: Rectangle { color: "transparent"; Rectangle { visible: parent.parent.checked; width: 34; height: 3; radius: 2; color: "#2563EB"; anchors.horizontalCenter: parent.horizontalCenter } }
             }
         }
     }
@@ -143,10 +132,10 @@ ApplicationWindow {
         id: toast; x: (parent.width-width)/2; y: Math.max(100, (parent.height-height)/2); width: Math.min(parent.width-32, 372); height: Math.max(62, toastText.implicitHeight + 30)
         padding: 14; closePolicy: Popup.NoAutoClose
         background: Rectangle {
-            radius: 16; color: Theme.surface; border.width: 1; border.color: Theme.blueBorder
-            Rectangle { width: 5; radius: 2.5; color: Theme.accent; anchors { left: parent.left; top: parent.top; bottom: parent.bottom; topMargin: 10; bottomMargin: 10 } }
+            radius: 16; color: "#FFFFFF"; border.width: 1; border.color: "#BFD6F5"
+            Rectangle { width: 5; radius: 2.5; color: "#2563EB"; anchors { left: parent.left; top: parent.top; bottom: parent.bottom; topMargin: 10; bottomMargin: 10 } }
         }
-        contentItem: Label { id: toastText; color: Theme.textSecondary; font.pixelSize: 12; font.weight: Font.DemiBold; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; wrapMode: Text.Wrap }
+        contentItem: Label { id: toastText; color: "#1E293B"; font.pixelSize: 12; font.weight: Font.DemiBold; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; wrapMode: Text.Wrap }
         Timer { id: toastTimer; interval: toastText.text.length > 90 ? 5200 : 2800; onTriggered: toast.close() }
     }
     Connections {
@@ -175,16 +164,16 @@ ApplicationWindow {
         bottomPadding: 14
         background: Rectangle {
             radius: 18
-            color: Theme.surface
+            color: "#FFFFFF"
             border.width: 1
-            border.color: Theme.borderStrong
+            border.color: "#D8E1EE"
         }
         contentItem: ColumnLayout {
             spacing: 12
             Label {
                 Layout.fillWidth: true
                 text: "Llamada entrante"
-                color: Theme.text
+                color: "#111827"
                 font.pixelSize: 18
                 font.weight: Font.DemiBold
                 horizontalAlignment: Text.AlignHCenter
@@ -193,8 +182,8 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 implicitHeight: 66
                 radius: 14
-                color: Theme.surfaceAlt
-                border.color: Theme.blueBorder
+                color: "#EFF6FF"
+                border.color: "#C9DDF8"
                 Column {
                     anchors.centerIn: parent
                     width: parent.width - 20
@@ -202,7 +191,7 @@ ApplicationWindow {
                     Label {
                         width: parent.width
                         text: appController.peer || "Asterisk"
-                        color: Theme.text
+                        color: "#111827"
                         font.pixelSize: 19
                         font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter
@@ -211,7 +200,7 @@ ApplicationWindow {
                     Label {
                         width: parent.width
                         text: "La central está llamando"
-                        color: Theme.muted
+                        color: "#64748B"
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
