@@ -7,7 +7,7 @@ Page {
     id: page
     signal backRequested()
 
-    background: Rectangle { color: "#F6FAFF" }
+    background: Rectangle { color: Theme.background }
 
     ScrollView {
         anchors.fill: parent
@@ -21,7 +21,7 @@ Page {
 
             Label {
                 text: "Créditos"
-                color: "#2563EB"
+                color: Theme.accent
                 font.pixelSize: 21
                 font.weight: Font.DemiBold
                 Layout.alignment: Qt.AlignHCenter
@@ -33,8 +33,8 @@ Page {
                 Layout.rightMargin: 20
                 implicitHeight: authorColumn.implicitHeight + 28
                 radius: 14
-                color: "#FFFFFF"
-                border.color: "#DDE6F2"
+                color: Theme.surface
+                border.color: Theme.border
 
                 ColumnLayout {
                     id: authorColumn
@@ -44,19 +44,19 @@ Page {
 
                     Label {
                         text: "Autor"
-                        color: "#2563EB"
+                        color: Theme.accent
                         font.pixelSize: 17
                         font.weight: Font.DemiBold
                     }
                     Label {
                         text: "Cristian Carroccio"
-                        color: "#111827"
+                        color: Theme.text
                         font.pixelSize: 15
                         font.weight: Font.DemiBold
                     }
                     Label {
                         text: "CgPhone 0.3.0 · Softphone para Windows y Linux"
-                        color: "#64748B"
+                        color: Theme.muted
                         font.pixelSize: 11
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
@@ -66,7 +66,7 @@ Page {
 
             Label {
                 text: "Licencias"
-                color: "#2563EB"
+                color: Theme.accent
                 font.pixelSize: 17
                 font.weight: Font.DemiBold
                 Layout.leftMargin: 20
@@ -78,8 +78,8 @@ Page {
                 Layout.rightMargin: 20
                 implicitHeight: licenseColumn.implicitHeight + 28
                 radius: 14
-                color: "#FFFFFF"
-                border.color: "#DDE6F2"
+                color: Theme.surface
+                border.color: Theme.border
 
                 ColumnLayout {
                     id: licenseColumn
@@ -89,12 +89,12 @@ Page {
 
                     Label {
                         text: "CgPhone"
-                        color: "#111827"
+                        color: Theme.text
                         font.weight: Font.DemiBold
                     }
                     Label {
                         text: "No se declaró una licencia pública para el código de CgPhone. Todos los derechos permanecen reservados por su autor."
-                        color: "#475569"
+                        color: Theme.secondary
                         font.pixelSize: 11
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
@@ -104,12 +104,12 @@ Page {
 
                     Label {
                         text: "Qt 6"
-                        color: "#111827"
+                        color: Theme.text
                         font.weight: Font.DemiBold
                     }
                     Label {
                         text: "Disponible bajo licencias comerciales de Qt o, según cada módulo y forma de distribución, bajo LGPLv3/GPLv3. Qt es una marca de The Qt Company."
-                        color: "#475569"
+                        color: Theme.secondary
                         font.pixelSize: 11
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
@@ -119,12 +119,12 @@ Page {
 
                     Label {
                         text: "PJPROJECT / PJSUA2"
-                        color: "#111827"
+                        color: Theme.text
                         font.weight: Font.DemiBold
                     }
                     Label {
                         text: "El backend SIP utilizado por el build portable se distribuye bajo GPLv2 o mediante una licencia comercial alternativa. La distribución de CgPhone debe respetar la opción de licencia aplicable."
-                        color: "#475569"
+                        color: Theme.secondary
                         font.pixelSize: 11
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
@@ -137,7 +137,7 @@ Page {
                 Layout.leftMargin: 20
                 Layout.rightMargin: 20
                 text: "Los textos completos y avisos de terceros deben acompañar cada distribución cuando corresponda."
-                color: "#64748B"
+                color: Theme.muted
                 font.pixelSize: 10
                 wrapMode: Text.WordWrap
                 horizontalAlignment: Text.AlignHCenter
