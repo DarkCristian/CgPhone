@@ -6,6 +6,7 @@ on:
     branches:
       - release/free-0.3.1
       - fix/windows-installer-dependencies
+      - fix/uninstaller-remove-settings
     paths:
       - .github/workflows/windows-portable.yml
       - installer/CgPhone.iss
