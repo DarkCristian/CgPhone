@@ -51,14 +51,14 @@ begin
     SettingsFile := ExpandConstant('{commonappdata}\CgPhone\CgPhone.ini');
     if FileExists(SettingsFile) and
        (MsgBox(
-          '¿Desea eliminar también la cuenta SIP y la configuración de CgPhone?' + #13#10 + #13#10 +
+          '¿Desea eliminar también la cuenta SIP y la configuración de CgPhone?' + Chr(13) + Chr(10) + Chr(13) + Chr(10) +
           'Seleccione No para conservarlas y reutilizarlas en una futura instalación.',
           mbConfirmation, MB_YESNO) = IDYES) then
     begin
       if not DeleteFile(SettingsFile) then
         MsgBox(
           'No se pudo eliminar la configuración de CgPhone. Puede borrarla manualmente desde:' +
-          #13#10 + SettingsFile,
+          Chr(13) + Chr(10) + SettingsFile,
           mbError, MB_OK);
       RemoveDir(ExpandConstant('{commonappdata}\CgPhone'));
     end;
