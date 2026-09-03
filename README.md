@@ -46,9 +46,10 @@ La versión preparada actualmente es:
 85a4744787827e2816865b0538ffe4f8d7157dc1be79abb26c27007776375b73
 ```
 
-El repositorio público y su sección **Releases** se habilitarán después de
-completar la auditoría de secretos, licencias y archivos de distribución. No
-descargues CgPhone desde sitios o enlaces no oficiales.
+El código fuente público está disponible en este repositorio. Los instaladores
+oficiales se publicarán en la sección **Releases** después de completar la
+auditoría de secretos, licencias y archivos de distribución. No descargues
+CgPhone desde sitios o enlaces no oficiales.
 
 ### Aviso de Microsoft SmartScreen
 
