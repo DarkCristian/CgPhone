@@ -27,8 +27,8 @@ llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 - Diagnóstico SIP con `Shift+F12` y lectura del log nativo de PJSIP.
 - Pantalla de Créditos con autor y licencias.
 
-CgPhone no incluye Qt WebEngine, Google Meet, Microsoft Teams, video SIP,
-segunda cuenta ni doble canal.
+El alcance mantenido se concentra en telefonía SIP de audio con una cuenta por
+terminal. Las nuevas funciones deberán preservar esa base simple y auditable.
 
 ## Descargar y probar
 

@@ -9,9 +9,8 @@ como Asterisk o Neotel. Windows x64 dispone de instalador y portable. La versió
 nativa para Linux continúa en desarrollo y todavía no se distribuye como
 paquete soportado.
 
-No existe actualmente una release productiva aprobada. El proyecto Pro quedó
-fuera del alcance de mantenimiento y sus ramas experimentales no deben
-publicarse como versiones soportadas.
+No existe actualmente una release productiva aprobada. CgPhone Free es la única
+línea mantenida y todos los controles de publicación se aplican sobre ella.
 
 ## Evidencia del build 0.3.1
 
@@ -38,7 +37,6 @@ pruebas funcionales ni una auditoría de seguridad.
 | Componente | Versión observada | Evaluación actual |
 |---|---:|---|
 | Qt Base / QML / Multimedia | 6.11.2 | Reevaluar advisories en cada build |
-| Qt WebEngine | No incluido | Sus CVE no son automáticamente aplicables |
 | PJPROJECT/PJSIP | 2.17 | Bloqueante para producción sin parches revisados |
 | FFmpeg | 9.0.1 | Revisar componentes transitivos incluidos por Qt |
 | OpenSSL | 3.6.3 | Registrar y verificar en cada build |
@@ -59,9 +57,6 @@ artefacto.
   mantenerse actualizado.
 - CVE-2026-15037 corresponde a QtXml/QDom. La rama Free no enlaza QtXml
   actualmente; debe reevaluarse si eso cambia.
-- La rama Free no incluye Qt WebEngine ni Chromium embebido. La futura
-  publicación Linux tampoco debe asumir aplicabilidad sin revisar el paquete
-  concreto.
 
 ### PJPROJECT/PJSIP
 
