@@ -82,12 +82,13 @@ release aprobada para producción.
 
 ## Linux
 
-La interfaz y buena parte del código son multiplataforma, pero el paquete
-Linux todavía no está publicado. Faltan validar la compilación nativa,
-PJPROJECT, PulseAudio/PipeWire, almacenamiento seguro de credenciales,
-integración de escritorio y empaquetado para distribuciones compatibles.
+El soporte Linux se encuentra en fase de desarrollo comunitario. La interfaz y
+buena parte del código son multiplataforma, pero todavía deben validarse
+PJPROJECT, PipeWire/PulseAudio, el almacenamiento seguro de credenciales, la
+integración de escritorio y el empaquetado en cada distribución.
 
-No se anuncia una fecha hasta completar esas pruebas.
+Las instrucciones siguientes permiten compilar y comenzar las pruebas; no
+representan todavía un paquete Linux oficialmente soportado.
 
 ## Compilar
 
@@ -103,28 +104,119 @@ Para ejecutar el build portable en MSYS2 MINGW64:
 bash scripts/build-windows-portable-msys2.sh
 ```
 
-### Linux
+### Ubuntu y Debian
 
-Requiere Qt 6.5 o posterior, CMake 3.22 o posterior, Ninja y PJPROJECT/PJSUA2
-para la misma arquitectura:
+También aplica a sus derivados habituales:
+
+- **Linux Mint** basado en Ubuntu.
+- **Linux Mint Debian Edition (LMDE)** basado en Debian.
+- **Zorin OS** basado en Ubuntu.
+
+Instalá las herramientas y bibliotecas de desarrollo:
 
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-ctest --test-dir build --output-on-failure
+sudo apt update
+sudo apt install --no-install-recommends \
+  build-essential cmake ninja-build pkg-config \
+  qt6-base-dev qt6-declarative-dev qt6-multimedia-dev qt6-svg-dev \
+  libpjproject-dev pulseaudio-utils
 ```
 
-Para activar el backend SIP real:
+Comprobá que PJPROJECT esté visible mediante `pkg-config`:
+
+```bash
+pkg-config --modversion libpjproject
+```
+
+### Arch Linux y derivados
+
+Este bloque aplica a Arch Linux y derivados que utilicen sus repositorios y
+`pacman`, como EndeavourOS. En Manjaro la versión de los paquetes puede quedar
+rezagada respecto de Arch y debe registrarse en el reporte de prueba.
+
+```bash
+sudo pacman -Syu --needed \
+  base-devel cmake ninja pkgconf \
+  qt6-base qt6-declarative qt6-multimedia qt6-svg \
+  pjproject libpulse
+```
+
+Comprobá la dependencia SIP:
+
+```bash
+pkg-config --modversion libpjproject
+```
+
+Si la distribución no ofrece `pjproject`, o la versión instalada no publica
+`libpjproject.pc`, no reemplaces bibliotecas al azar. Compilá PJPROJECT desde
+una revisión identificada y documentá el commit utilizado en el pull request.
+
+### Configurar y compilar
+
+Para compilar solamente la interfaz con el motor simulado:
+
+```bash
+cmake -S . -B build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
+./build/CgPhone
+```
+
+Para una beta funcional con PJSUA2:
 
 ```bash
 cmake -S . -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DCGPHONE_WITH_PJSIP=ON
 cmake --build build
+ctest --test-dir build --output-on-failure
+./build/CgPhone
 ```
 
-Los nombres de paquetes y la integración de audio varían según la
-distribución. Este procedimiento aún no representa un paquete Linux soportado.
+Si CMake no encuentra Qt o PJPROJECT, incluí en el reporte las salidas de:
+
+```bash
+cmake --version
+qmake6 --version || qtpaths6 --qt-version
+pkg-config --modversion libpjproject
+cmake -S . -B build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCGPHONE_WITH_PJSIP=ON
+```
+
+No publiques contraseñas SIP, cabeceras `Authorization`, dominios internos ni
+logs sin sanitizar.
+
+## Beta testers y contribuciones Linux
+
+Se reciben pruebas y pull requests para Ubuntu, Debian, Linux Mint, LMDE, Zorin
+OS, Arch Linux y sus derivados. Para que un aporte pueda revisarse, el PR debe
+indicar:
+
+- distribución y versión exactas;
+- arquitectura;
+- entorno de escritorio y sesión X11 o Wayland;
+- PipeWire o PulseAudio;
+- versiones de Qt y PJPROJECT;
+- comandos de compilación utilizados;
+- resultado de `ctest`;
+- pruebas de registro, llamadas entrantes/salientes, audio, DTMF, hold,
+  transferencia, tray y diagnóstico;
+- logs sanitizados y una descripción reproducible del problema.
+
+Flujo recomendado:
+
+1. Hacé un fork de este repositorio.
+2. Creá una rama específica, por ejemplo `linux/ubuntu-24.04-audio`.
+3. Aplicá un cambio pequeño y enfocado.
+4. Compilá con `CGPHONE_WITH_PJSIP=ON` y ejecutá las pruebas.
+5. Abrí un pull request contra `main` con la evidencia indicada.
+
+Los aportes se revisarán y se integrarán progresivamente cuando sean
+reproducibles, mantengan las funciones Free y no introduzcan regresiones en
+Windows ni en otras distribuciones. Enviar un PR no garantiza su merge
+automático.
 
 ## Seguridad
 
