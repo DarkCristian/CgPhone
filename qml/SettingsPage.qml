@@ -8,6 +8,7 @@ Page {
     id: page
     background: Rectangle { color: "#F6FAFF" }
     property var saved: appController.account()
+    signal openCredits()
     property var supportedCodecs: [
         {name:"Opus", id:"opus/48000/2"}, {name:"G.711 A-law", id:"PCMA/8000/1"},
         {name:"G.711 μ-law", id:"PCMU/8000/1"}, {name:"G.722", id:"G722/16000/1"}, {name:"GSM", id:"GSM/8000/1"}
@@ -91,6 +92,14 @@ Page {
             }
             Label { Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20; text: "La sesión normal probará el registro automáticamente al guardar."; wrapMode: Text.WordWrap; color: "#64748B"; font.pixelSize: 11 }
             Rectangle { Layout.fillWidth: true; Layout.margins: 20; height: 50; radius: 12; color: "#EAF3FF"; Text { anchors.centerIn: parent; text: "Compatible por SIP · Validar con Asterisk y Neotel"; color: "#334155"; font.pixelSize: 12 } }
+            SoftButton {
+                Layout.fillWidth: true
+                Layout.leftMargin: 20
+                Layout.rightMargin: 20
+                primary: true
+                text: "Créditos"
+                onClicked: page.openCredits()
+            }
             Item { height: 18 }
         }
     }

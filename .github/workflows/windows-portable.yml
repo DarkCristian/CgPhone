@@ -1,7 +1,14 @@
-name: Windows portable SIP
+name: Windows Free installer
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - release/free-0.3.1
+      - fix/windows-installer-dependencies
+    paths:
+      - .github/workflows/windows-portable.yml
+      - installer/CgPhone.iss
 
 jobs:
   build:
@@ -9,6 +16,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
+
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -25,12 +33,106 @@ jobs:
             mingw-w64-x86_64-qt6-declarative
             mingw-w64-x86_64-qt6-multimedia
             mingw-w64-x86_64-qt6-svg
+
       - name: Compilar CgPhone y PJPROJECT
         shell: msys2 {0}
         run: bash scripts/build-windows-portable-msys2.sh
+
+      - name: Instalar Inno Setup
+        shell: powershell
+        run: choco install innosetup --yes --no-progress
+
+      - name: Crear instalador EXE
+        shell: powershell
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\\Inno Setup 6\\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            throw "No se encontró Inno Setup en $iscc"
+          }
+          & $iscc "/O$PWD" "installer\\CgPhone.iss"
+          if (-not (Test-Path "CgPhone-Setup-0.3.1-x64.exe")) {
+            throw "No se generó el instalador esperado"
+          }
+
+      - name: Validar contenido del instalador
+        shell: powershell
+        run: |
+          $setup = Join-Path $PWD "CgPhone-Setup-0.3.1-x64.exe"
+          $testDir = Join-Path $env:RUNNER_TEMP "CgPhone-installed-test"
+          if (Test-Path $testDir) {
+            Remove-Item $testDir -Recurse -Force
+          }
+          $process = Start-Process -FilePath $setup -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=$testDir" -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "El instalador terminó con código $($process.ExitCode)"
+          }
+
+          $portableRoot = Join-Path $PWD "CgPhone-portable"
+          $missing = @()
+          $different = @()
+          Get-ChildItem $portableRoot -File -Recurse | ForEach-Object {
+            $relative = $_.FullName.Substring($portableRoot.Length).TrimStart('\\')
+            $installed = Join-Path $testDir $relative
+            if (-not (Test-Path $installed)) {
+              $missing += $relative
+            } elseif ((Get-FileHash $_.FullName -Algorithm SHA256).Hash -ne (Get-FileHash $installed -Algorithm SHA256).Hash) {
+              $different += $relative
+            }
+          }
+          if ($missing.Count -gt 0) {
+            throw "El instalador omitió archivos del portable: $($missing -join ', ')"
+          }
+          if ($different.Count -gt 0) {
+            throw "El instalador alteró archivos del portable: $($different -join ', ')"
+          }
+
+          $required = @(
+            "bin\\libgcc_s_seh-1.dll",
+            "bin\\libcrypto-3-x64.dll",
+            "bin\\libopencore-amrnb-0.dll",
+            "bin\\libopus-0.dll",
+            "bin\\libssl-3-x64.dll"
+          )
+          foreach ($relative in $required) {
+            if (-not (Test-Path (Join-Path $testDir $relative))) {
+              throw "Falta dependencia obligatoria después de instalar: $relative"
+            }
+          }
+
+      - name: Generar SHA-256 y aviso de distribución
+        shell: powershell
+        run: |
+          $file = "CgPhone-Setup-0.3.1-x64.exe"
+          $hash = (Get-FileHash $file -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $file" | Set-Content "CgPhone-Setup-0.3.1-x64.exe.sha256" -Encoding ascii
+          @"
+          CgPhone Free 0.3.1 - Windows x64
+
+          AVISO DE SMARTSCREEN
+          Este instalador todavía no posee una firma digital pública con reputación
+          Microsoft SmartScreen. Windows puede mostrar el aviso "Windows protegió su PC".
+          Descargue CgPhone únicamente desde el repositorio oficial y verifique el SHA-256.
+
+          LINUX
+          La versión nativa para Linux se encuentra en desarrollo y será publicada
+          después de completar las pruebas de compatibilidad y empaquetado.
+
+          Proyecto gratuito y de código abierto.
+          "@ | Set-Content "LEEME-ANTES-DE-INSTALAR.txt" -Encoding utf8
+
       - uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-0.3.0-windows-x64-portable
+          name: CgPhone-Free-0.3.1-Windows-x64
+          path: |
+            CgPhone-Setup-0.3.1-x64.exe
+            CgPhone-Setup-0.3.1-x64.exe.sha256
+            LEEME-ANTES-DE-INSTALAR.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CgPhone-Free-0.3.1-Windows-x64-portable
           path: CgPhone-0.3.0-windows-x64-portable.zip
           if-no-files-found: error
           retention-days: 14

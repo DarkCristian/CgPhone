@@ -1,5 +1,5 @@
 #define MyAppName "CgPhone"
-#define MyAppVersion "0.3.0"
+#define MyAppVersion "0.3.1"
 #define MyAppExeName "CgPhone.exe"
 #define MyAppExePath "bin\CgPhone.exe"
 
@@ -23,9 +23,9 @@ SetupIconFile=..\assets\app\CgPhone.ico
 Name: "{commonappdata}\CgPhone"; Permissions: users-readexec
 
 [Files]
-Source: "..\package\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Include only an x64 encoder in the x64 installer. Never package the supplied x86 DLL here.
-Source: "..\third_party\lame\x64\lame_enc.dll"; DestDir: "{app}\codecs\x64"; Flags: ignoreversion skipifsourcedoesntexist
+; Install the exact runtime tree already validated and zipped as portable.
+; package/ lacks the MinGW runtime and transitive multimedia dependencies.
+Source: "..\CgPhone-portable\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\CgPhone"; Filename: "{app}\{#MyAppExePath}"; IconFilename: "{app}\{#MyAppExePath}"
@@ -35,7 +35,7 @@ Name: "{commondesktop}\CgPhone"; Filename: "{app}\{#MyAppExePath}"; IconFilename
 Filename: "{app}\{#MyAppExePath}"; Description: "Iniciar CgPhone"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-Filename: "{sys}\\netsh.exe"; Parameters: "advfirewall firewall delete rule name=\"CgPhone SIP-RTP\" program=\"{app}\\{#MyAppExePath}\""; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""CgPhone SIP-RTP"" program=""{app}\{#MyAppExePath}"""; Flags: runhidden
 ; CgPhone administra el valor desde Cuenta; al desinstalar se elimina para no
 ; dejar una ruta de autoarranque huérfana.
 Filename: "{cmd}"; Parameters: "/c reg delete HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v CgPhone /f"; Flags: runhidden
