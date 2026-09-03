@@ -39,3 +39,28 @@ Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=
 ; CgPhone administra el valor desde Cuenta; al desinstalar se elimina para no
 ; dejar una ruta de autoarranque huérfana.
 Filename: "{cmd}"; Parameters: "/c reg delete HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v CgPhone /f"; Flags: runhidden
+
+
+[Code]
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  SettingsFile: string;
+begin
+  if CurUninstallStep = usUninstall then
+  begin
+    SettingsFile := ExpandConstant('{commonappdata}\CgPhone\CgPhone.ini');
+    if FileExists(SettingsFile) and
+       (MsgBox(
+          '¿Desea eliminar también la cuenta SIP y la configuración de CgPhone?' + #13#10 + #13#10 +
+          'Seleccione No para conservarlas y reutilizarlas en una futura instalación.',
+          mbConfirmation, MB_YESNO) = IDYES) then
+    begin
+      if not DeleteFile(SettingsFile) then
+        MsgBox(
+          'No se pudo eliminar la configuración de CgPhone. Puede borrarla manualmente desde:' +
+          #13#10 + SettingsFile,
+          mbError, MB_OK);
+      RemoveDir(ExpandConstant('{commonappdata}\CgPhone'));
+    end;
+  end;
+end;
