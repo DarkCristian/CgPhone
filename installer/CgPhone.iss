@@ -23,9 +23,9 @@ SetupIconFile=..\assets\app\CgPhone.ico
 Name: "{commonappdata}\CgPhone"; Permissions: users-readexec
 
 [Files]
-Source: "..\package\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Include only an x64 encoder in the x64 installer. Never package the supplied x86 DLL here.
-Source: "..\third_party\lame\x64\lame_enc.dll"; DestDir: "{app}\codecs\x64"; Flags: ignoreversion skipifsourcedoesntexist
+; Install the exact runtime tree already validated and zipped as portable.
+; package/ lacks the MinGW runtime and transitive multimedia dependencies.
+Source: "..\CgPhone-portable\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\CgPhone"; Filename: "{app}\{#MyAppExePath}"; IconFilename: "{app}\{#MyAppExePath}"
