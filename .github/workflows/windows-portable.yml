@@ -2,6 +2,11 @@ name: Windows Free installer
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - release/free-0.3.1
+    paths:
+      - .github/workflows/windows-portable.yml
 
 jobs:
   build:
