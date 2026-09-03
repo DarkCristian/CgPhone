@@ -8,7 +8,6 @@
 |---|---|---|
 | 0.3.1 beta | Laboratorio controlado | Sí, durante la etapa beta |
 | 0.3.0 y anteriores | Reemplazadas | No |
-| Builds Pro experimentales | Congelados / no soportados | No |
 
 CgPhone Free 0.3.1 todavía no está aprobado para despliegue productivo ni para
 exposición SIP directa a Internet. La compatibilidad con una central no
@@ -51,8 +50,7 @@ El instalador actual:
 - no posee todavía firma Authenticode pública;
 - puede activar Microsoft SmartScreen;
 - incluye un SHA-256 para comprobar integridad;
-- está destinado a pruebas controladas;
-- no habilita Qt WebEngine, video, SRTP/SDES, SIP2 ni doble canal.
+- está destinado a pruebas controladas.
 
 SHA-256 publicado de `CgPhone-Setup-0.3.1-x64.exe`:
 
@@ -69,10 +67,6 @@ CgPhone procesa mensajes SDP/SIP y audio provenientes de la red. La versión
 actual utiliza PJPROJECT/PJSUA2 2.17, que posee advisories posteriores
 relevantes. Por eso no se considera una release productiva hasta integrar y
 documentar los parches aplicables.
-
-La rama Free no enlaza Qt WebEngine. Los avisos específicos de Chromium/Qt
-WebEngine no resultan automáticamente aplicables a esta compilación; deben
-analizarse nuevamente si se incorpora ese módulo.
 
 La ausencia de telemetría no elimina otros riesgos: la configuración, los logs,
 las grabaciones y las credenciales requieren permisos de archivo apropiados.
