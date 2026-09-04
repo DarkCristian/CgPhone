@@ -250,6 +250,17 @@ documentados en:
 La firma digital, SmartScreen, el análisis de dependencias y las pruebas
 funcionales son controles distintos. Ninguno sustituye a los demás.
 
+La pre-release `v0.3.1-beta.35` publica además un
+[SBOM SPDX 2.3](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.1-beta.35/CgPhone-0.3.1-beta.35-sbom.spdx.json)
+generado desde los 231 archivos del runtime distribuido. Su SHA-256 es:
+
+```text
+bc2031ea10e0a59209c01c38abd2dd696969e66ca69e0b4f943b9a75b476ca5a
+```
+
+El SBOM permite inventariar componentes y evaluar CVE; no es ejecutable, no es
+un certificado y no evita por sí mismo alertas de SmartScreen o Trellix.
+
 ## Licencias
 
 CgPhone Free se prepara para distribución como software libre. Qt y PJPROJECT
