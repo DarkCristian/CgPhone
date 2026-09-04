@@ -4,10 +4,14 @@
 
 ## Versiones soportadas
 
-| Versión | Estado | Actualizaciones de seguridad |
-|---|---|---|
-| v0.3.1-beta.35 | Laboratorio controlado | Sí, durante la etapa beta |
+| Versión | Plataforma | Estado | Actualizaciones de seguridad |
+|---|---|---|---|
+| [v0.3.1-beta.35](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.35) | Windows x64 | Laboratorio controlado | Sí, durante la etapa beta |
+| Linux | Ubuntu, Debian, Mint, LMDE, Zorin, Arch y derivados | En desarrollo, sin paquete soportado | Evaluación comunitaria |
 
+Versiones anteriores y artefactos generados por otros workflows no deben
+considerarse equivalentes aunque conserven el nombre 0.3.1. Cada archivo debe
+validarse mediante su SHA-256.
 
 ## Reportar una vulnerabilidad
 
@@ -20,13 +24,13 @@ No publiques en un issue abierto:
 - certificados, tokens o datos personales;
 - instrucciones explotables antes de disponer de una corrección.
 
-Utilizá un **Private Vulnerability Report / Security Advisory** de GitHub cuando
-el repositorio público tenga habilitada esa función. Mientras el proyecto
-permanezca privado, reportalo directamente al responsable del repositorio.
+Utilizá un **Private Vulnerability Report / Security Advisory** de GitHub. Si
+esa función no estuviera disponible, contactá directamente al responsable del
+repositorio antes de divulgar información sensible.
 
 Incluí, si es posible:
 
-- versión de CgPhone;
+- versión y tag de CgPhone;
 - SHA-256 del instalador o portable;
 - commit utilizado;
 - Windows o distribución Linux y arquitectura;
@@ -38,31 +42,76 @@ Incluí, si es posible:
 No se promete una recompensa económica. Los reportes se evaluarán según
 reproducibilidad, alcance e impacto.
 
-## Estado de la beta v0.3.1-beta.35
+## Evidencia de v0.3.1-beta.35
 
-El instalador actual:
+| Campo | Valor |
+|---|---|
+| Workflow validado | Windows Free installer, run #35 |
+| Commit exacto del build | `e4fbcb2623cc58dd2676fffeaa1cf73afbe14d41` |
+| Commit del tag/merge en `main` | `a6dba9e96240405b7725fb4fcf60e89554ee9bd0` |
+| Instalador | `CgPhone-Setup-0.3.1-x64.exe` |
+| Portable publicado | `CgPhone-Free-0.3.1-Windows-x64-portable.zip` |
+| Firma Authenticode | No aplicada |
+| Clasificación | Beta de laboratorio / pre-release |
 
-- fue generado correctamente mediante GitHub Actions;
-- no posee todavía firma Authenticode pública;
-- puede activar Microsoft SmartScreen;
-- incluye un SHA-256 para comprobar integridad;
-- está destinado a pruebas controladas.
-
-SHA-256 publicado de `CgPhone-Setup-0.3.1-x64.exe`:
+### SHA-256 del instalador
 
 ```text
 40dfdf77fac4cbb98d3131c0835445da4db77cb9da3ed45c229850f4da7f43c1
 ```
 
-Este hash identifica solamente ese archivo exacto. Toda recompilación produce
-un archivo diferente y requiere un hash nuevo.
+### SHA-256 del portable publicado
+
+```text
+70052f48df73a62670831760e36bb7366e6e62cc8d8012a719cc6943e4f8aa09
+```
+
+Estos hashes identifican únicamente los archivos exactos publicados en la
+Release. Toda recompilación, reempaquetado o modificación produce un hash
+diferente y requiere nueva evidencia.
+
+El instalador y el portable:
+
+- fueron generados mediante GitHub Actions;
+- no poseen firma Authenticode pública;
+- pueden activar Microsoft SmartScreen;
+- están destinados a pruebas controladas;
+- deben descargarse únicamente desde la Release oficial.
+
+Un motor de VirusTotal marcó heurísticamente el instalador. Una detección
+aislada no confirma malware ni permite declarar por sí sola un falso positivo.
+La procedencia reproducible, los hashes, la firma y los resultados antivirus
+son controles separados.
+
+## Dependencias observadas en el build #35
+
+Estas versiones provienen del archivo
+`COMPLIANCE/DEPENDENCY-VERSIONS.txt` incluido en el portable:
+
+| Componente | Versión/revisión observada |
+|---|---|
+| Qt Base | 6.11.2-2 |
+| Qt Declarative / Multimedia / SVG | 6.11.2-1 |
+| PJPROJECT/PJSUA2 | 2.17, commit `5a457451fa2712ba18e12b01738e8ff3af2b26fd` |
+| OpenSSL | 3.6.4-1 |
+| FFmpeg | 9.0.1-3 |
+| Opus | 1.6.1-1 |
+| LAME | 3.100-3 |
+| GCC/MinGW | 16.2.0-3 |
+| CMake | 4.4.2-2 |
+
+MSYS2 utiliza paquetes móviles. Esta evidencia describe el build #35, pero no
+garantiza que una ejecución futura del workflow obtenga las mismas versiones.
 
 ## Dependencias y límites conocidos
 
 CgPhone procesa mensajes SDP/SIP y audio provenientes de la red. La versión
-actual utiliza PJPROJECT/PJSUA2 2.17, que posee advisories posteriores
-relevantes. Por eso no se considera una release productiva hasta integrar y
-documentar los parches aplicables.
+actual utiliza PJPROJECT/PJSUA2 2.17, que requiere revisar advisories y parches
+aplicables antes de declarar una release productiva.
+
+La edición Free no integra Qt WebEngine ni Qt WebView. Los avisos de Chromium o
+Qt WebEngine no son automáticamente aplicables: sólo deben reevaluarse si esos
+módulos vuelven a incorporarse.
 
 La ausencia de telemetría no elimina otros riesgos: la configuración, los logs,
 las grabaciones y las credenciales requieren permisos de archivo apropiados.
