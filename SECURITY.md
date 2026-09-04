@@ -1,6 +1,6 @@
 # Política de seguridad de CgPhone Free
 
-Última revisión: 2026-09-04.
+Última revisión: 2026-09-04 (SBOM de beta.35 incorporado).
 
 ## Versiones soportadas
 
@@ -51,6 +51,8 @@ reproducibilidad, alcance e impacto.
 | Commit del tag/merge en `main` | `a6dba9e96240405b7725fb4fcf60e89554ee9bd0` |
 | Instalador | `CgPhone-Setup-0.3.1-x64.exe` |
 | Portable publicado | `CgPhone-Free-0.3.1-Windows-x64-portable.zip` |
+| SBOM publicado | `CgPhone-0.3.1-beta.35-sbom.spdx.json` (SPDX 2.3) |
+| SHA-256 SBOM | `bc2031ea10e0a59209c01c38abd2dd696969e66ca69e0b4f943b9a75b476ca5a` |
 | Firma Authenticode | No aplicada |
 | Clasificación | Beta de laboratorio / pre-release |
 
@@ -65,6 +67,18 @@ reproducibilidad, alcance e impacto.
 ```text
 70052f48df73a62670831760e36bb7366e6e62cc8d8012a719cc6943e4f8aa09
 ```
+
+### SHA-256 del SBOM SPDX 2.3
+
+```text
+bc2031ea10e0a59209c01c38abd2dd696969e66ca69e0b4f943b9a75b476ca5a
+```
+
+El [SBOM de beta.35](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.1-beta.35/CgPhone-0.3.1-beta.35-sbom.spdx.json)
+fue generado a partir del árbol final del portable: inventaría 231 archivos y
+17 paquetes/componentes. No es un certificado, no se ejecuta y no reemplaza la
+firma Authenticode ni el análisis antivirus. Los campos `NOASSERTION` indican
+licencias o metadatos que todavía requieren evidencia y revisión.
 
 Estos hashes identifican únicamente los archivos exactos publicados en la
 Release. Toda recompilación, reempaquetado o modificación produce un hash
@@ -122,7 +136,7 @@ Una versión estable requiere completar y documentar el gate definido en
 [Seguridad y compliance](docs/SECURITY_COMPLIANCE.md), incluyendo:
 
 - revisión y parcheo de dependencias;
-- SBOM y escaneo de vulnerabilidades;
+- SBOM publicado y escaneo de vulnerabilidades pendiente;
 - análisis estático;
 - análisis del paquete final con Microsoft Defender;
 - pruebas SIP en laboratorio;
@@ -133,3 +147,8 @@ Una versión estable requiere completar y documentar el gate definido en
 SmartScreen, una firma válida, un hash coincidente o un antivirus sin
 detecciones son evidencias independientes; ninguna demuestra por sí sola que el
 software sea seguro.
+
+Los controles gratuitos pendientes —licencia explícita del proyecto, textos de
+terceros, CodeQL, análisis de CVE, secret scanning, ACL, sanitización de logs,
+atestación del build y pruebas con Defender/Trellix— se mantienen en el
+[checklist de compliance](docs/SECURITY_COMPLIANCE.md#controles-pendientes-que-no-requieren-pagar).
