@@ -34,7 +34,10 @@ y no existe una edición Pro/Full mantenida.
 
 El run #35 completó la aplicación, el instalador y los artefactos. La instalación
 y desinstalación fueron verificadas manualmente, incluida la eliminación
-opcional de la configuración SIP. Un workflow exitoso y una prueba funcional no
+opcional de la configuración SIP. También se completó la validación funcional
+del registro y operación SIP con centrales Asterisk y Neotel, según la matriz
+publicada en el README. Estos resultados corresponden a beta.35 y deben
+repetirse en cada release. Un workflow exitoso y una prueba funcional no
 sustituyen una auditoría de seguridad.
 
 ## Baseline observada en el artefacto #35
@@ -96,7 +99,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | SHA-256 de instalador y portable | Implementado y publicado |
 | Portable con información de build | Implementado |
 | Instalación y desinstalación | Probadas manualmente en #35 |
-| Pruebas funcionales SIP | Manuales, requieren repetición por release |
+| Pruebas funcionales SIP | Validadas manualmente con Asterisk y Neotel en beta.35; repetir por release |
 | Firma Authenticode pública | Pendiente |
 | Timestamp RFC 3161 | Pendiente |
 | SBOM SPDX 2.3 de beta.35 | Generado y publicado como asset independiente |
