@@ -55,6 +55,7 @@ reproducibilidad, alcance e impacto.
 | SHA-256 SBOM | `bc2031ea10e0a59209c01c38abd2dd696969e66ca69e0b4f943b9a75b476ca5a` |
 | Firma Authenticode | No aplicada |
 | Clasificación | Beta de laboratorio / pre-release |
+| Validación SIP | Pruebas manuales satisfactorias con Asterisk y Neotel |
 
 ### SHA-256 del instalador
 
@@ -144,7 +145,7 @@ Una versión estable requiere completar y documentar el gate definido en
 - SBOM publicado y escaneo de vulnerabilidades pendiente;
 - análisis estático;
 - análisis del paquete final con Microsoft Defender;
-- pruebas SIP en laboratorio;
+- pruebas SIP en laboratorio con Asterisk y Neotel, repetibles por release;
 - revisión de logs y permisos;
 - firma Authenticode y timestamp cuando esté disponible;
 - publicación del código fuente y licencias correspondientes.
