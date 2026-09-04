@@ -100,8 +100,7 @@ son controles separados.
 Los EDR corporativos, incluido Trellix, pueden generar alertas según las
 políticas configuradas por cada organización y por tratarse de binarios todavía
 no firmados. Una alerta de política o reputación no equivale por sí sola a una
-detección de malware. Los registros internos de endpoints y empresas no se
-publican; cualquier evidencia compartida debe estar previamente sanitizada.
+detección de malware.
 
 ## Dependencias observadas en el build #35
 
