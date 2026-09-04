@@ -1,6 +1,6 @@
 # Política de seguridad de CgPhone Free
 
-Última revisión: 2026-09-03.
+Última revisión: 2026-09-04.
 
 ## Versiones soportadas
 
