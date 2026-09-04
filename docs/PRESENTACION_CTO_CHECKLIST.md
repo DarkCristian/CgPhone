@@ -153,7 +153,8 @@ Dependencias relevantes: Qt, PJPROJECT/PJSIP, compilador/toolchain y LAME opcion
 - Fijar PJPROJECT a un **commit SHA exacto**, no sólo a una rama o versión nominal.
 - Fijar acciones de GitHub Actions a SHA completos.
 - Registrar versiones exactas de paquetes MSYS2/Qt y sus hashes.
-- Generar SBOM CycloneDX o SPDX por release.
+- Generar SBOM CycloneDX o SPDX por release. Beta.35 ya publica un SBOM SPDX
+  2.3 del runtime; queda automatizar el análisis y triage de CVE.
 - Conservar avisos de licencia y procedencia de cada dependencia.
 - Ejecutar análisis de CVE contra el SBOM y documentar triage, severidad, aplicabilidad y remediación.
 - Activar revisión de dependencias, CodeQL/Cppcheck y escaneo de secretos.
@@ -228,7 +229,7 @@ Por defecto, CgPhone no realiza comprobaciones de actualización. En entornos co
 | Origen UDP no restringido | ACL de IP PBX/SBC y rango RTP fijo | GPO y prueba de conectividad | Obligatorio antes de producción |
 | Robo de credencial SIP | DPAPI máquina + ACL + logs redactados | Inspección de config y ACL | Parcial; auditar |
 | Binario alterado/suplantado | Authenticode + timestamp + SHA-256 | Firma válida y manifiesto | Pendiente release final |
-| Dependencia vulnerable | SBOM + CVE scan + pinning | SBOM, reporte y triage | Pendiente automatización |
+| Dependencia vulnerable | SBOM + CVE scan + pinning | SBOM, reporte y triage | SBOM beta.35 publicado; scan/triage pendiente |
 | DLL no confiable | Procedencia, licencia, hash y arquitectura | Manifiesto de dependencias | Parcial |
 | Exposición de grabaciones | Política de acceso/retención y fallback controlado | ACL y prueba de borrado | Pendiente política corporativa |
 | Secretos en logs | Sanitización y revisión automatizada | Casos de prueba | Debe validarse |
@@ -269,7 +270,7 @@ Por defecto, CgPhone no realiza comprobaciones de actualización. En entornos co
 No promover a producción hasta contar con:
 
 1. Firma Authenticode válida y timestamp.
-2. SBOM, hashes y licencia de todas las dependencias.
+2. SBOM y hashes publicados; completar licencia y avisos de todas las dependencias.
 3. PJPROJECT y acciones del workflow fijados a SHA.
 4. Regla corporativa restringida a IP/rangos necesarios.
 5. Prueba en dominio con GPO real y usuario estándar.
