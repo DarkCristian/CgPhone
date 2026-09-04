@@ -43,6 +43,7 @@ llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 - Diagnóstico SIP mediante `Shift+F12`, con lectura del log nativo de PJSIP; puede mostrarse u ocultarse sin cerrar CgPhone.
 - Pantalla de Créditos con autor y licencias de los componentes utilizados.
 - Desinstalador con opción explícita para conservar o eliminar la cuenta SIP y la configuración local, sin borrar grabaciones ni documentos personales.
+- Opcion para Atender llamadas, maximizar y desloguearse de la central en las opciones del system tray.
 
 El alcance mantenido se concentra en telefonía SIP de audio con una cuenta por
 terminal. CgPhone no incorpora telemetría y no puede supervisar controles
