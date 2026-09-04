@@ -87,18 +87,24 @@ El resultado debe coincidir exactamente con el hash publicado arriba. Esta
 beta está destinada a pruebas controladas; no se presenta todavía como una
 release aprobada para producción.
 
-## Prueba mínima de la beta
+## Validación funcional de la beta
 
-1. Instalar y desinstalar en una terminal Windows x64 limpia.
-2. Configurar una cuenta mediante el engranaje y confirmar el cierre de UAC.
-3. Verificar registro SIP y recuperación después de una interrupción de red.
-4. Realizar al menos dos llamadas salientes consecutivas.
-5. Probar llamada entrante, atender, rechazar, DND y autorespuesta.
-6. Probar DTMF, hold/unhold, mute y transferencia.
-7. Validar audio, prueba local, volumen y nivel de micrófono.
-8. Verificar historial, grabación WAV, tray y autoarranque.
-9. Abrir y ocultar el diagnóstico mediante `Shift+F12`.
-10. Confirmar que `cgphone-sip.log` no exponga contraseñas ni secretos.
+La beta.35 fue probada manualmente en Windows x64 contra centrales **Asterisk y
+Neotel**. En ambos entornos se validaron satisfactoriamente:
+
+- instalación, desinstalación y limpieza opcional de la configuración;
+- configuración de la cuenta desde Ajustes con elevación UAC;
+- registro SIP y recuperación después de una interrupción de red;
+- llamadas salientes consecutivas y llamadas entrantes;
+- atender, rechazar, DND y autorespuesta;
+- DTMF, hold/unhold, mute y transferencia;
+- audio, prueba local, volumen y nivel de micrófono;
+- historial, grabación WAV, bandeja del sistema y autoarranque;
+- apertura y ocultamiento del diagnóstico mediante `Shift+F12`;
+- revisión del log SIP para evitar la exposición de contraseñas o secretos.
+
+Esta validación corresponde al artefacto exacto de la beta.35. Debe repetirse
+en cada release y no sustituye un análisis de seguridad, compatibilidad o carga.
 
 ## Linux
 
