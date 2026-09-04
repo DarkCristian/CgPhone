@@ -21,7 +21,7 @@ llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 - Transferencia ciega mediante SIP REFER, con confirmación visible del interno ingresado antes de ejecutar la transferencia.
 - DND con respuesta `486 Busy Here`.
 - Autorespuesta con `200 OK`.
-- Grabación local en formato WAV cuando el administrador habilita la función desde Ajustes.
+- Grabación local en formato WAV o Mp3 cuando el administrador habilita la función desde Ajustes.
 
 ### Audio y experiencia de uso
 
