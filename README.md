@@ -10,25 +10,44 @@ llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 
 ## Funciones actuales
 
-- Una cuenta SIP por terminal mediante PJPROJECT/PJSUA2.
-- Registro automático y estado visible de la cuenta.
-- Llamadas entrantes y salientes, ringtone, atender, rechazar y colgar.
-- DTMF desde el pad y el teclado.
+### Operación de llamadas
+
+- Una cuenta SIP por terminal mediante PJPROJECT/PJSUA2, con registro automático y estado visible.
+- Llamadas entrantes y salientes con ringtone, identificación, popup para atender o rechazar y control para colgar.
+- Marcación DTMF desde el pad gráfico y el teclado numérico físico.
+- Early media y reproducción de anuncios recibidos desde la central antes de establecer la llamada.
+- **Hold con recordatorios operacionales:** mientras una llamada permanece en espera, CgPhone muestra un aviso emergente cada 30 segundos para reducir olvidos y facilitar que el operador retome la comunicación.
+- **Mute con advertencia persistente:** si el micrófono se silencia desde CgPhone, aparece un aviso emergente cada 3 segundos. Este control no puede detectar el mute físico o analógico realizado directamente desde una vincha o headset.
+- Transferencia ciega mediante SIP REFER, con confirmación visible del interno ingresado antes de ejecutar la transferencia.
 - DND con respuesta `486 Busy Here`.
 - Autorespuesta con `200 OK`.
-- Early media y anuncios SIP recibidos desde la central.
-- Hold, mute, transferencia ciega mediante SIP REFER y grabación WAV.
-- Historial persistente con filtros, rellamada y borrado.
-- Volumen real del headset y nivel del micrófono.
-- Prueba local de audio.
-- Inicio con Windows, siempre visible y funcionamiento en el system tray.
-- Configuración administrativa separada mediante UAC.
+- Grabación local en formato WAV cuando el administrador habilita la función desde Ajustes.
+
+### Audio y experiencia de uso
+
+- Control integrado del volumen de salida y del nivel del micrófono, conectado al subsistema de audio de Windows.
+- Botón de prueba local para verificar parlantes/auriculares y micrófono antes de operar.
+- Interfaz compacta inspirada en Fluent UI, optimizada para escritorios de operación.
+- Estados de llamada y registro diferenciados visualmente.
+- Avisos emergentes no intrusivos para hold, mute y acciones que requieren atención.
+- Confirmación antes de cerrar CgPhone para evitar finalizar accidentalmente la aplicación y dejar de recibir llamadas.
+
+### Administración y continuidad operativa
+
+- Ajustes administrativos accesibles únicamente mediante elevación UAC.
 - Contraseña SIP protegida con DPAPI de máquina en Windows.
-- Diagnóstico SIP con `Shift+F12` y lectura del log nativo de PJSIP.
-- Pantalla de Créditos con autor y licencias.
+- Inicio automático con Windows, opción de mantener la ventana siempre visible y funcionamiento en el system tray.
+- Al minimizar, CgPhone continúa registrado y disponible para recibir llamadas.
+- Historial persistente con filtros de llamadas entrantes, salientes y perdidas, además de rellamada y borrado.
+- Accesos directos instalados en el escritorio público y el menú Inicio para que estén disponibles a todos los usuarios del equipo.
+- Diagnóstico SIP mediante `Shift+F12`, con lectura del log nativo de PJSIP; puede mostrarse u ocultarse sin cerrar CgPhone.
+- Pantalla de Créditos con autor y licencias de los componentes utilizados.
+- Desinstalador con opción explícita para conservar o eliminar la cuenta SIP y la configuración local, sin borrar grabaciones ni documentos personales.
 
 El alcance mantenido se concentra en telefonía SIP de audio con una cuenta por
-terminal. Las nuevas funciones deberán preservar esa base simple y auditable.
+terminal. CgPhone no incorpora telemetría y no puede supervisar controles
+eléctricos o analógicos propios del headset. Las nuevas funciones deberán
+preservar esta base simple, auditable y orientada al uso operacional.
 
 ## Descargar y probar
 
