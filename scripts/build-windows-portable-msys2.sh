@@ -176,6 +176,6 @@ cp "$root_dir/PORTABLE-LEEME.txt" "$portable_dir/"
 bash "$root_dir/scripts/generate-compliance-manifest.sh" "$root_dir" "$portable_dir" "$pj_dir"
 
 pushd "$root_dir"
-rm -f CgPhone-0.3.0-windows-x64-portable.zip
-zip -qr CgPhone-0.3.0-windows-x64-portable.zip CgPhone-portable
+rm -f CgPhone-0.3.1-windows-x64-portable.zip
+zip -qr CgPhone-0.3.1-windows-x64-portable.zip CgPhone-portable
 popd
