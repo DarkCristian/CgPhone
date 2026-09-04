@@ -6,7 +6,7 @@
 
 | Versión | Estado | Actualizaciones de seguridad |
 |---|---|---|
-| 0.3.1 beta | Laboratorio controlado | Sí, durante la etapa beta |
+| v0.3.1-beta.35 | Laboratorio controlado | Sí, durante la etapa beta |
 
 
 ## Reportar una vulnerabilidad
@@ -38,7 +38,7 @@ Incluí, si es posible:
 No se promete una recompensa económica. Los reportes se evaluarán según
 reproducibilidad, alcance e impacto.
 
-## Estado de la beta 0.3.1
+## Estado de la beta v0.3.1-beta.35
 
 El instalador actual:
 
@@ -51,7 +51,7 @@ El instalador actual:
 SHA-256 publicado de `CgPhone-Setup-0.3.1-x64.exe`:
 
 ```text
-85a4744787827e2816865b0538ffe4f8d7157dc1be79abb26c27007776375b73
+40dfdf77fac4cbb98d3131c0835445da4db77cb9da3ed45c229850f4da7f43c1
 ```
 
 Este hash identifica solamente ese archivo exacto. Toda recompilación produce
