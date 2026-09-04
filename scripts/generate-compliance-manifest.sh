@@ -23,10 +23,15 @@ mkdir -p "$compliance_dir"
   pacman -Q | grep -E '^(mingw-w64-x86_64-(qt6|ffmpeg|openssl|lame|opus|opencore-amr|gcc|cmake|ninja)|git |make )' || true
 } > "$compliance_dir/DEPENDENCY-VERSIONS.txt"
 
+python "$root_dir/scripts/generate-spdx-sbom.py" \
+  "$portable_dir" \
+  "$compliance_dir/CgPhone-sbom.spdx.json" \
+  --version "${CGPHONE_VERSION:-0.3.1}" \
+  --commit "$(git -C "$root_dir" rev-parse HEAD 2>/dev/null || echo NOASSERTION)"
+
 (
   cd "$portable_dir"
   find . -type f ! -path './COMPLIANCE/SHA256SUMS.txt' -print0 |
     sort -z |
     xargs -0 sha256sum
 ) > "$compliance_dir/SHA256SUMS.txt"
-
