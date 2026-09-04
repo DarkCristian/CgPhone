@@ -184,6 +184,14 @@ aislada no permite concluir que el archivo sea malware ni confirmar un falso
 positivo. Debe conservarse el nombre del motor, la firma de detección y la fecha
 del análisis, y solicitar revisión al proveedor si el hallazgo persiste.
 
+Los EDR corporativos, incluido Trellix, pueden generar alertas según las
+políticas de seguridad de cada organización y por tratarse de binarios todavía
+no firmados. Una alerta de política, ejecución desde Descargas o reputación no
+equivale por sí sola a una detección de malware. Los logs completos de endpoints
+no deben publicarse porque pueden revelar usuarios, dominios, rutas, direcciones
+de red y políticas internas; para evidencia pública sólo deben usarse resúmenes
+sanitizados vinculados al SHA-256 exacto del artefacto.
+
 ## Publicación y licencias
 
 La edición Free debe publicarse con el código fuente correspondiente al binario,
