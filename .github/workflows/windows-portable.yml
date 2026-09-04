@@ -121,12 +121,30 @@ jobs:
           Proyecto gratuito y de código abierto.
           "@ | Set-Content "LEEME-ANTES-DE-INSTALAR.txt" -Encoding utf8
 
+      - name: Publicar evidencia SBOM independiente
+        shell: powershell
+        run: |
+          $source = "CgPhone-portable\COMPLIANCE\CgPhone-sbom.spdx.json"
+          if (-not (Test-Path $source)) {
+            throw "No se generó el SBOM SPDX esperado: $source"
+          }
+          Copy-Item $source "CgPhone-0.3.1-sbom.spdx.json"
+          $sbomHash = (Get-FileHash "CgPhone-0.3.1-sbom.spdx.json" -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$sbomHash  CgPhone-0.3.1-sbom.spdx.json" | Set-Content "CgPhone-0.3.1-sbom.spdx.json.sha256" -Encoding ascii
+
+          $sbom = Get-Content "CgPhone-0.3.1-sbom.spdx.json" -Raw | ConvertFrom-Json
+          if ($sbom.spdxVersion -ne "SPDX-2.3" -or $sbom.SPDXID -ne "SPDXRef-DOCUMENT") {
+            throw "El documento generado no cumple la cabecera SPDX 2.3 esperada"
+          }
+
       - uses: actions/upload-artifact@v4
         with:
           name: CgPhone-Free-0.3.1-Windows-x64
           path: |
             CgPhone-Setup-0.3.1-x64.exe
             CgPhone-Setup-0.3.1-x64.exe.sha256
+            CgPhone-0.3.1-sbom.spdx.json
+            CgPhone-0.3.1-sbom.spdx.json.sha256
             LEEME-ANTES-DE-INSTALAR.txt
           if-no-files-found: error
           retention-days: 14
