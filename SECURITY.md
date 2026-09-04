@@ -7,11 +7,7 @@
 | Versión | Estado | Actualizaciones de seguridad |
 |---|---|---|
 | 0.3.1 beta | Laboratorio controlado | Sí, durante la etapa beta |
-| 0.3.0 y anteriores | Reemplazadas | No |
 
-CgPhone Free 0.3.1 todavía no está aprobado para despliegue productivo ni para
-exposición SIP directa a Internet. La compatibilidad con una central no
-constituye una certificación de seguridad.
 
 ## Reportar una vulnerabilidad
 
