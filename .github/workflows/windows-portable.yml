@@ -11,6 +11,11 @@ on:
       - .github/workflows/windows-portable.yml
       - installer/CgPhone.iss
 
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+
 jobs:
   build:
     runs-on: windows-2022
@@ -137,6 +142,32 @@ jobs:
             throw "El documento generado no cumple la cabecera SPDX 2.3 esperada"
           }
 
+      - name: Generar manifiesto SHA-256 de la distribución
+        shell: powershell
+        run: |
+          $files = @(
+            "CgPhone-Setup-0.3.1-x64.exe",
+            "CgPhone-0.3.1-windows-x64-portable.zip",
+            "CgPhone-0.3.1-sbom.spdx.json"
+          )
+          $lines = foreach ($file in $files) {
+            if (-not (Test-Path $file)) {
+              throw "No existe el artefacto esperado: $file"
+            }
+            $hash = (Get-FileHash $file -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $file"
+          }
+          $lines | Set-Content "SHA256SUMS.txt" -Encoding ascii
+
+      - name: Generar atestación de procedencia
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            CgPhone-Setup-0.3.1-x64.exe
+            CgPhone-0.3.1-windows-x64-portable.zip
+            CgPhone-0.3.1-sbom.spdx.json
+            SHA256SUMS.txt
+
       - uses: actions/upload-artifact@v4
         with:
           name: CgPhone-Free-0.3.1-Windows-x64
@@ -145,6 +176,7 @@ jobs:
             CgPhone-Setup-0.3.1-x64.exe.sha256
             CgPhone-0.3.1-sbom.spdx.json
             CgPhone-0.3.1-sbom.spdx.json.sha256
+            SHA256SUMS.txt
             LEEME-ANTES-DE-INSTALAR.txt
           if-no-files-found: error
           retention-days: 14
@@ -152,6 +184,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: CgPhone-Free-0.3.1-Windows-x64-portable
-          path: CgPhone-0.3.0-windows-x64-portable.zip
+          path: CgPhone-0.3.1-windows-x64-portable.zip
           if-no-files-found: error
           retention-days: 14
