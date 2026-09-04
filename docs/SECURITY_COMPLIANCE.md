@@ -101,6 +101,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | Timestamp RFC 3161 | Pendiente |
 | SBOM SPDX 2.3 de beta.35 | Generado y publicado como asset independiente |
 | Generación automática de SBOM | Incorporada al workflow para futuros builds |
+| SHA256SUMS y atestaciones de artefactos | Implementadas en rama de seguridad; pendientes de validar mediante workflow |
 | OSV-Scanner o Trivy | Pendiente |
 | CodeQL C/C++ | No existe workflow activo |
 | Microsoft Defender sobre paquete final | Pendiente de evidencia automatizada |
@@ -159,9 +160,14 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
 - [ ] Probar instalación, actualización y desinstalación en una VM limpia y en
   una terminal piloto con las políticas corporativas activas.
 
-Opcionalmente puede firmarse el SBOM y `SHA256SUMS.txt` con Sigstore/cosign de
-forma gratuita. Esa firma aporta integridad y procedencia pública, pero **no es
-una firma Authenticode** y no crea reputación en Microsoft SmartScreen.
+El workflow de la rama `security/artifact-attestations` genera
+`SHA256SUMS.txt` y usa las atestaciones de GitHub Actions basadas en Sigstore
+para vincular el instalador, el portable, el SBOM y el manifiesto con el
+repositorio, commit y workflow de origen. El control se considerará implementado
+después de que un build complete correctamente y la verificación con
+`gh attestation verify` resulte válida. Esta atestación aporta integridad y
+procedencia pública, pero **no es una firma Authenticode** y no crea reputación
+en Microsoft SmartScreen.
 
 ## Firma, SmartScreen y antivirus
 
