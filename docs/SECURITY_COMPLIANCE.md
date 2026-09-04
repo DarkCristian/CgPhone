@@ -1,6 +1,6 @@
 # Seguridad y compliance de CgPhone Free
 
-Última revisión: 2026-09-04.
+Última revisión: 2026-09-04 (SBOM de beta.35 incorporado).
 
 ## Alcance actual
 
@@ -26,6 +26,9 @@ y no existe una edición Pro/Full mantenida.
 | SHA-256 instalador | `40dfdf77fac4cbb98d3131c0835445da4db77cb9da3ed45c229850f4da7f43c1` |
 | Portable | `CgPhone-Free-0.3.1-Windows-x64-portable.zip` |
 | SHA-256 portable | `70052f48df73a62670831760e36bb7366e6e62cc8d8012a719cc6943e4f8aa09` |
+| SBOM | `CgPhone-0.3.1-beta.35-sbom.spdx.json` (SPDX 2.3) |
+| Alcance del SBOM | 231 archivos del runtime, 17 paquetes/componentes |
+| SHA-256 SBOM | `bc2031ea10e0a59209c01c38abd2dd696969e66ca69e0b4f943b9a75b476ca5a` |
 | Firma Authenticode | No aplicada |
 | Clasificación | Beta de laboratorio / pre-release |
 
@@ -51,7 +54,11 @@ sustituyen una auditoría de seguridad.
 La evidencia proviene de `COMPLIANCE/BUILD-INFO.txt` y
 `COMPLIANCE/DEPENDENCY-VERSIONS.txt` incluidos en el portable. MSYS2 se
 actualiza durante el workflow: esta tabla registra lo utilizado, pero no fija
-versiones de forma reproducible ni reemplaza un SBOM.
+versiones de forma reproducible. El SBOM publicado complementa esta evidencia:
+enumera el árbol final, sus checksums y las relaciones conocidas. Los campos de
+licencia que todavía no cuentan con evidencia suficiente se declaran
+`NOASSERTION`; eso evita afirmar licencias no verificadas y mantiene pendiente
+la revisión legal de los textos redistribuidos.
 
 ## Advisories analizados
 
@@ -92,7 +99,8 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | Pruebas funcionales SIP | Manuales, requieren repetición por release |
 | Firma Authenticode pública | Pendiente |
 | Timestamp RFC 3161 | Pendiente |
-| SBOM CycloneDX/SPDX | Pendiente |
+| SBOM SPDX 2.3 de beta.35 | Generado y publicado como asset independiente |
+| Generación automática de SBOM | Incorporada al workflow para futuros builds |
 | OSV-Scanner o Trivy | Pendiente |
 | CodeQL C/C++ | No existe workflow activo |
 | Microsoft Defender sobre paquete final | Pendiente de evidencia automatizada |
@@ -106,7 +114,8 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 - [ ] Integrar y documentar todos los parches PJSIP aplicables.
 - [ ] Mantener SRTP/SDES deshabilitado hasta parchearlo y probarlo.
 - [ ] Deshabilitar video, CLI Telnet, HTTP client y módulos no usados.
-- [ ] Generar SBOM CycloneDX o SPDX por artefacto.
+- [x] Generar y publicar SBOM SPDX 2.3 del runtime de beta.35.
+- [x] Automatizar el SBOM dentro de `COMPLIANCE/` y como artefacto independiente.
 - [ ] Ejecutar OSV-Scanner o Trivy y resolver hallazgos altos/críticos.
 - [ ] Incorporar CodeQL para C/C++ y revisar sus resultados.
 - [ ] Analizar el árbol final y el instalador con Microsoft Defender.
@@ -120,6 +129,39 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 - [ ] Revisar ACL de configuración, logs y grabaciones.
 - [x] Publicar código fuente correspondiente, licencias y avisos.
 - [ ] Obtener aceptación formal antes de un despliegue productivo.
+
+## Controles pendientes que no requieren pagar
+
+Estos controles pueden completarse con GitHub Actions, herramientas libres y
+pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
+
+- [ ] Elegir y publicar una licencia explícita para el código propio de CgPhone.
+- [ ] Adjuntar los textos completos y avisos de todas las dependencias
+  redistribuidas; resolver cada `NOASSERTION` del SBOM.
+- [ ] Fijar acciones de GitHub por SHA de commit y activar Dependabot para
+  mantenerlas actualizadas.
+- [ ] Activar CodeQL C/C++ y corregir o justificar sus hallazgos.
+- [ ] Analizar el SBOM con OSV-Scanner, Grype o Trivy y documentar el triage de
+  CVE según versión, módulo y alcanzabilidad real.
+- [ ] Ejecutar Microsoft Defender y Trellix ENS/EDR sobre el instalador y el
+  runtime final; conservar fecha, motor, versión de firmas y resultado.
+- [ ] Generar una atestación de procedencia del build y conservar el vínculo
+  workflow → commit → artefacto → hash → SBOM.
+- [ ] Automatizar la búsqueda de secretos y revisar también el historial Git.
+- [ ] Sanitizar logs SIP y probar que nunca registren Authorization, contraseñas
+  ni datos internos innecesarios.
+- [ ] Verificar ACL de `ProgramData`, logs y grabaciones con usuario estándar y
+  administrador.
+- [ ] Restringir firewall a PBX/SBC y puertos SIP/RTP autorizados para el piloto.
+- [ ] Completar y conservar la matriz funcional SIP por cada release.
+- [ ] Documentar falso positivo/revisión del proveedor si Trellix o cualquier
+  motor mantiene una detección sobre el hash exacto publicado.
+- [ ] Probar instalación, actualización y desinstalación en una VM limpia y en
+  una terminal piloto con las políticas corporativas activas.
+
+Opcionalmente puede firmarse el SBOM y `SHA256SUMS.txt` con Sigstore/cosign de
+forma gratuita. Esa firma aporta integridad y procedencia pública, pero **no es
+una firma Authenticode** y no crea reputación en Microsoft SmartScreen.
 
 ## Firma, SmartScreen y antivirus
 
@@ -166,3 +208,6 @@ Cada release debe conservar:
 - resultado de antivirus;
 - checklist funcional;
 - notas de cambios y limitaciones conocidas.
+
+El asset independiente de beta.35 es:
+[`CgPhone-0.3.1-beta.35-sbom.spdx.json`](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.1-beta.35/CgPhone-0.3.1-beta.35-sbom.spdx.json).
