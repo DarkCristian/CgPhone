@@ -115,6 +115,13 @@ portable y el SBOM. Los hashes del manifiesto coincidieron con los artefactos
 generados. Estas atestaciones permiten comprobar el origen del build mediante
 `gh attestation verify`, pero no reemplazan Authenticode ni evitan SmartScreen.
 
+La rama `security/windows-defender-scan` agrega un gate sobre la distribución
+final: actualiza la inteligencia de seguridad de Microsoft Defender, analiza el
+instalador, el runtime portable, el ZIP y el árbol instalado, y publica un
+reporte sanitizado. El control se considera pendiente hasta que el workflow
+termine correctamente; no se afirmará que una release fue analizada sólo porque
+el código del control exista.
+
 ## Linux
 
 El soporte Linux se encuentra en fase de desarrollo comunitario. La interfaz y
