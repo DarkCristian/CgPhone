@@ -1,6 +1,6 @@
 # Seguridad y compliance de CgPhone Free
 
-Última revisión: 2026-09-04 (SBOM de beta.35 incorporado).
+Última revisión: 2026-09-07 (gate automatizado de Microsoft Defender validado).
 
 ## Alcance actual
 
@@ -107,7 +107,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | SHA256SUMS y atestaciones de artefactos | Workflow validado correctamente en run 33923023903 |
 | OSV-Scanner o Trivy | Pendiente |
 | CodeQL C/C++ | No existe workflow activo |
-| Microsoft Defender sobre paquete final | Implementado en `security/windows-defender-scan`; pendiente de validar por workflow |
+| Microsoft Defender sobre paquete final | Validado en workflow #37: 0 detecciones |
 | Reproducibilidad con dependencias fijadas | Pendiente |
 | Paquete Linux | En desarrollo |
 
@@ -122,7 +122,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 - [x] Automatizar el SBOM dentro de `COMPLIANCE/` y como artefacto independiente.
 - [ ] Ejecutar OSV-Scanner o Trivy y resolver hallazgos altos/críticos.
 - [ ] Incorporar CodeQL para C/C++ y revisar sus resultados.
-- [ ] Validar por workflow el análisis de Defender sobre instalador, portable, ZIP y árbol instalado.
+- [x] Validar por workflow el análisis de Defender sobre instalador, portable, ZIP y árbol instalado (#37).
 - [x] Generar y publicar SHA-256 del instalador y portable #35.
 - [ ] Firmar ejecutables propios e instalador con Authenticode.
 - [ ] Aplicar timestamp de una autoridad confiable.
@@ -147,9 +147,9 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
 - [ ] Activar CodeQL C/C++ y corregir o justificar sus hallazgos.
 - [ ] Analizar el SBOM con OSV-Scanner, Grype o Trivy y documentar el triage de
   CVE según versión, módulo y alcanzabilidad real.
-- [ ] Validar el gate automatizado de Microsoft Defender y conservar su reporte
-  sanitizado; Trellix ENS/EDR continúa como prueba separada según las políticas
-  del laboratorio.
+- [x] Validar el gate automatizado de Microsoft Defender y conservar su reporte
+  sanitizado (workflow #37); Trellix ENS/EDR continúa como prueba separada según
+  las políticas del laboratorio.
 - [x] Generar una atestación de procedencia del build y conservar el vínculo
   workflow → commit → artefacto → hash → SBOM (validado en run 33923023903).
 - [ ] Automatizar la búsqueda de secretos y revisar también el historial Git.
@@ -174,17 +174,18 @@ firma Authenticode** y no crea reputación en Microsoft SmartScreen.
 
 ## Gate automatizado de Microsoft Defender
 
-La rama `security/windows-defender-scan` actualiza la inteligencia de seguridad,
-comprueba que Defender esté activo y analiza cuatro objetivos finales: instalador,
-runtime portable, archivo ZIP y árbol instalado. Ante una detección, ausencia
-del motor o error de análisis, el workflow falla. El reporte se publica incluso
-si el gate falla, pero omite hostname, usuario, rutas, logs SIP y datos de la
-empresa. Hasta completar un run exitoso, este control no debe marcarse como
-validado ni atribuirse a `v0.3.1-beta.35`.
+El [workflow #37](https://github.com/DarkCristian/CgPhone/actions/runs/34141605443)
+validó el gate: motor 1.1.26080.3, plataforma 4.18.26080.3, inteligencia
+1.459.97.0, cuatro objetivos analizados y cero detecciones (`CLEAN`). El reporte
+sanitizado tiene SHA-256
+`2e5a8169087f4410dc6eab98ad94baad77ba33221effe27d6a505f02e79e6ccf`.
+Ante una detección, ausencia del motor o error, el workflow falla y aun así
+publica el reporte sin hostname, usuario, rutas, logs SIP ni datos de la empresa.
 
-El resultado limpio de Defender es evidencia de un motor en una fecha concreta;
-no sustituye Trellix, VirusTotal, revisión de CVE, firma Authenticode ni pruebas
-funcionales.
+El resultado corresponde al commit
+`bbd61191872e91f94eb0be53b1c5078bc47e3b1f` y no se atribuye
+retroactivamente a `v0.3.1-beta.35`. Tampoco sustituye Trellix, VirusTotal,
+revisión de CVE, firma Authenticode ni pruebas funcionales.
 
 ## Firma, SmartScreen y antivirus
 
