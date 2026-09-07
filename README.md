@@ -115,12 +115,13 @@ portable y el SBOM. Los hashes del manifiesto coincidieron con los artefactos
 generados. Estas atestaciones permiten comprobar el origen del build mediante
 `gh attestation verify`, pero no reemplazan Authenticode ni evitan SmartScreen.
 
-La rama `security/windows-defender-scan` agrega un gate sobre la distribución
-final: actualiza la inteligencia de seguridad de Microsoft Defender, analiza el
-instalador, el runtime portable, el ZIP y el árbol instalado, y publica un
-reporte sanitizado. El control se considera pendiente hasta que el workflow
-termine correctamente; no se afirmará que una release fue analizada sólo porque
-el código del control exista.
+El [workflow #37](https://github.com/DarkCristian/CgPhone/actions/runs/34141605443)
+validó el gate de Microsoft Defender sobre la distribución final: actualizó la
+inteligencia de seguridad y analizó el instalador, el runtime portable, el ZIP
+y el árbol instalado. El resultado fue `CLEAN`, con cero detecciones, usando el
+motor 1.1.26080.3 y la inteligencia 1.459.97.0. El reporte sanitizado forma
+parte de `SHA256SUMS.txt` y de la atestación del build. Este resultado corresponde
+sólo a ese commit y fecha; no convierte automáticamente en limpio otro archivo.
 
 ## Linux
 
