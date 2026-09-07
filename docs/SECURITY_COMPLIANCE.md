@@ -107,7 +107,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | SHA256SUMS y atestaciones de artefactos | Workflow validado correctamente en run 33923023903 |
 | OSV-Scanner o Trivy | Pendiente |
 | CodeQL C/C++ | No existe workflow activo |
-| Microsoft Defender sobre paquete final | Pendiente de evidencia automatizada |
+| Microsoft Defender sobre paquete final | Implementado en `security/windows-defender-scan`; pendiente de validar por workflow |
 | Reproducibilidad con dependencias fijadas | Pendiente |
 | Paquete Linux | En desarrollo |
 
@@ -122,7 +122,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 - [x] Automatizar el SBOM dentro de `COMPLIANCE/` y como artefacto independiente.
 - [ ] Ejecutar OSV-Scanner o Trivy y resolver hallazgos altos/críticos.
 - [ ] Incorporar CodeQL para C/C++ y revisar sus resultados.
-- [ ] Analizar el árbol final y el instalador con Microsoft Defender.
+- [ ] Validar por workflow el análisis de Defender sobre instalador, portable, ZIP y árbol instalado.
 - [x] Generar y publicar SHA-256 del instalador y portable #35.
 - [ ] Firmar ejecutables propios e instalador con Authenticode.
 - [ ] Aplicar timestamp de una autoridad confiable.
@@ -147,8 +147,9 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
 - [ ] Activar CodeQL C/C++ y corregir o justificar sus hallazgos.
 - [ ] Analizar el SBOM con OSV-Scanner, Grype o Trivy y documentar el triage de
   CVE según versión, módulo y alcanzabilidad real.
-- [ ] Ejecutar Microsoft Defender y Trellix ENS/EDR sobre el instalador y el
-  runtime final; conservar fecha, motor, versión de firmas y resultado.
+- [ ] Validar el gate automatizado de Microsoft Defender y conservar su reporte
+  sanitizado; Trellix ENS/EDR continúa como prueba separada según las políticas
+  del laboratorio.
 - [x] Generar una atestación de procedencia del build y conservar el vínculo
   workflow → commit → artefacto → hash → SBOM (validado en run 33923023903).
 - [ ] Automatizar la búsqueda de secretos y revisar también el historial Git.
@@ -170,6 +171,20 @@ instalador, el portable, el SBOM y el manifiesto. El run
 finalizó correctamente: los hashes coincidieron y el paso de atestación fue
 exitoso. Este control aporta integridad y procedencia pública, pero **no es una
 firma Authenticode** y no crea reputación en Microsoft SmartScreen.
+
+## Gate automatizado de Microsoft Defender
+
+La rama `security/windows-defender-scan` actualiza la inteligencia de seguridad,
+comprueba que Defender esté activo y analiza cuatro objetivos finales: instalador,
+runtime portable, archivo ZIP y árbol instalado. Ante una detección, ausencia
+del motor o error de análisis, el workflow falla. El reporte se publica incluso
+si el gate falla, pero omite hostname, usuario, rutas, logs SIP y datos de la
+empresa. Hasta completar un run exitoso, este control no debe marcarse como
+validado ni atribuirse a `v0.3.1-beta.35`.
+
+El resultado limpio de Defender es evidencia de un motor en una fecha concreta;
+no sustituye Trellix, VirusTotal, revisión de CVE, firma Authenticode ni pruebas
+funcionales.
 
 ## Firma, SmartScreen y antivirus
 
