@@ -112,6 +112,21 @@ mismo run, y GitHub completó la atestación de procedencia. Esta evidencia aún
 modifica los hashes ni los assets de la release `v0.3.1-beta.35`; comenzará a
 aplicar a releases creadas desde el workflow mergeado.
 
+## Microsoft Defender en compilaciones futuras
+
+La rama `security/windows-defender-scan` incorpora un gate automatizado que
+analiza el instalador, el runtime portable, el archivo ZIP y el árbol resultante
+de una instalación silenciosa. Antes del análisis intenta actualizar la
+inteligencia de seguridad y verifica que el servicio antivirus esté activo.
+El build falla si Defender no está disponible, el análisis no termina o aparece
+una detección.
+
+El reporte publicado excluye hostname, usuario, rutas locales, registros SIP y
+datos corporativos. Registra únicamente commit, workflow, fecha UTC, versiones
+del motor/plataforma/inteligencia, objetivos genéricos, cantidad de detecciones
+y resultado. Este control permanece **pendiente de validación por workflow** y
+no modifica la evidencia histórica de `v0.3.1-beta.35`.
+
 ## Dependencias observadas en el build #35
 
 Estas versiones provienen del archivo
