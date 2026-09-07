@@ -21,7 +21,7 @@ llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 - Transferencia ciega mediante SIP REFER, con confirmación visible del interno ingresado antes de ejecutar la transferencia.
 - DND con respuesta `486 Busy Here`.
 - Autorespuesta con `200 OK`.
-- Grabación local en formato WAV cuando el administrador habilita la función desde Ajustes.
+- Grabación local en formato WAV o Mp3 cuando el administrador habilita la función desde Ajustes.
 
 ### Audio y experiencia de uso
 
@@ -87,18 +87,33 @@ El resultado debe coincidir exactamente con el hash publicado arriba. Esta
 beta está destinada a pruebas controladas; no se presenta todavía como una
 release aprobada para producción.
 
-## Prueba mínima de la beta
+## Validación funcional de la beta
 
-1. Instalar y desinstalar en una terminal Windows x64 limpia.
-2. Configurar una cuenta mediante el engranaje y confirmar el cierre de UAC.
-3. Verificar registro SIP y recuperación después de una interrupción de red.
-4. Realizar al menos dos llamadas salientes consecutivas.
-5. Probar llamada entrante, atender, rechazar, DND y autorespuesta.
-6. Probar DTMF, hold/unhold, mute y transferencia.
-7. Validar audio, prueba local, volumen y nivel de micrófono.
-8. Verificar historial, grabación WAV, tray y autoarranque.
-9. Abrir y ocultar el diagnóstico mediante `Shift+F12`.
-10. Confirmar que `cgphone-sip.log` no exponga contraseñas ni secretos.
+La beta.35 fue probada manualmente en Windows x64 contra centrales **Asterisk y
+Neotel**. En ambos entornos se validaron satisfactoriamente:
+
+- instalación, desinstalación y limpieza opcional de la configuración;
+- configuración de la cuenta desde Ajustes con elevación UAC;
+- registro SIP y recuperación después de una interrupción de red;
+- llamadas salientes consecutivas y llamadas entrantes;
+- atender, rechazar, DND y autorespuesta;
+- DTMF, hold/unhold, mute y transferencia;
+- audio, prueba local, volumen y nivel de micrófono;
+- historial, grabación WAV, bandeja del sistema y autoarranque;
+- apertura y ocultamiento del diagnóstico mediante `Shift+F12`;
+- revisión del log SIP para evitar la exposición de contraseñas o secretos.
+
+Esta validación corresponde al artefacto exacto de la beta.35. Debe repetirse
+en cada release y no sustituye un análisis de seguridad, compatibilidad o carga.
+
+## Integridad y procedencia de futuras compilaciones
+
+El workflow de la rama `security/artifact-attestations` fue validado en el
+[run 33923023903](https://github.com/DarkCristian/CgPhone/actions/runs/33923023903).
+Genera `SHA256SUMS.txt` y atestaciones de procedencia para el instalador, el
+portable y el SBOM. Los hashes del manifiesto coincidieron con los artefactos
+generados. Estas atestaciones permiten comprobar el origen del build mediante
+`gh attestation verify`, pero no reemplazan Authenticode ni evitan SmartScreen.
 
 ## Linux
 
