@@ -1,6 +1,6 @@
 # Política de seguridad de CgPhone Free
 
-Última revisión: 2026-09-04 (SBOM de beta.35 incorporado).
+Última revisión: 2026-09-07 (gate automatizado de Microsoft Defender validado).
 
 ## Versiones soportadas
 
@@ -111,6 +111,29 @@ manifiesto `SHA256SUMS.txt` coincidió con el instalador, portable y SBOM del
 mismo run, y GitHub completó la atestación de procedencia. Esta evidencia aún no
 modifica los hashes ni los assets de la release `v0.3.1-beta.35`; comenzará a
 aplicar a releases creadas desde el workflow mergeado.
+
+## Microsoft Defender en compilaciones futuras
+
+El [workflow #37](https://github.com/DarkCristian/CgPhone/actions/runs/34141605443)
+validó el gate automatizado sobre el instalador, el runtime portable, el ZIP y
+el árbol de una instalación silenciosa. Antes del análisis actualizó la
+inteligencia de seguridad y comprobó que Defender estuviera activo.
+
+| Campo | Resultado |
+|---|---|
+| Fecha UTC | 2026-09-07 16:18:51 |
+| Commit analizado | `bbd61191872e91f94eb0be53b1c5078bc47e3b1f` |
+| Motor | 1.1.26080.3 |
+| Plataforma | 4.18.26080.3 |
+| Inteligencia de seguridad | 1.459.97.0 |
+| Detecciones | 0 |
+| Resultado | `CLEAN` |
+| SHA-256 del reporte | `2e5a8169087f4410dc6eab98ad94baad77ba33221effe27d6a505f02e79e6ccf` |
+
+El reporte excluye hostname, usuario, rutas locales, registros SIP y datos
+corporativos. El gate falla si Defender no está disponible, el análisis no
+termina o aparece una detección. Esta evidencia corresponde al build #37; no
+modifica retroactivamente la evidencia de `v0.3.1-beta.35`.
 
 ## Dependencias observadas en el build #35
 

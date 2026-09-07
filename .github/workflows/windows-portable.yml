@@ -7,6 +7,7 @@ on:
       - release/free-0.3.1
       - fix/windows-installer-dependencies
       - fix/uninstaller-remove-settings
+      - security/windows-defender-scan
     paths:
       - .github/workflows/windows-portable.yml
       - installer/CgPhone.iss
@@ -105,6 +106,127 @@ jobs:
             }
           }
 
+      - name: Analizar distribución con Microsoft Defender
+        id: defender_scan
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $report = "Microsoft-Defender-scan-report.txt"
+          $result = "ERROR"
+          $engineVersion = "unavailable"
+          $platformVersion = "unavailable"
+          $signatureVersion = "unavailable"
+          $signatureUpdated = "unavailable"
+          $detectionCount = 0
+          $failureReason = "Defender scan did not complete"
+
+          try {
+            foreach ($command in @("Get-MpComputerStatus", "Update-MpSignature", "Start-MpScan", "Get-MpThreatDetection")) {
+              if (-not (Get-Command $command -ErrorAction SilentlyContinue)) {
+                throw "Microsoft Defender cmdlet unavailable: $command"
+              }
+            }
+
+            Update-MpSignature
+            $status = Get-MpComputerStatus
+            $engineVersion = [string]$status.AMEngineVersion
+            $platformVersion = [string]$status.AMProductVersion
+            $signatureVersion = [string]$status.AntivirusSignatureVersion
+            $signatureUpdated = ([DateTime]$status.AntivirusSignatureLastUpdated).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+
+            if (-not $status.AMServiceEnabled -or -not $status.AntivirusEnabled) {
+              throw "Microsoft Defender Antivirus is not active on the runner"
+            }
+
+            $scanStarted = Get-Date
+            $targets = @(
+              (Join-Path $PWD "CgPhone-Setup-0.3.1-x64.exe"),
+              (Join-Path $PWD "CgPhone-portable"),
+              (Join-Path $PWD "CgPhone-0.3.1-windows-x64-portable.zip"),
+              (Join-Path $env:RUNNER_TEMP "CgPhone-installed-test")
+            )
+            foreach ($target in $targets) {
+              if (-not (Test-Path $target)) {
+                throw "Expected scan target is missing"
+              }
+              Start-MpScan -ScanType CustomScan -ScanPath $target
+            }
+
+            Start-Sleep -Seconds 5
+            $newDetections = @(
+              Get-MpThreatDetection -ErrorAction SilentlyContinue |
+                Where-Object {
+                  $_.InitialDetectionTime -and
+                  ([DateTime]$_.InitialDetectionTime) -ge $scanStarted.AddSeconds(-5)
+                }
+            )
+            $detectionCount = $newDetections.Count
+
+            $targetsIntact = (Test-Path "CgPhone-Setup-0.3.1-x64.exe") -and
+              (Test-Path "CgPhone-0.3.1-windows-x64-portable.zip") -and
+              (Test-Path "CgPhone-portable\bin\CgPhone.exe")
+            if (-not $targetsIntact) {
+              throw "One or more artifacts were removed or quarantined during the scan"
+            }
+            if ($detectionCount -gt 0) {
+              $result = "DETECTED"
+              $failureReason = "Microsoft Defender reported one or more detections"
+            } else {
+              $result = "CLEAN"
+              $failureReason = "none"
+            }
+          } catch {
+            if ($result -ne "DETECTED") {
+              $result = "ERROR"
+              if ($_.Exception.Message -match "not active") {
+                $failureReason = "Microsoft Defender Antivirus was not active"
+              } elseif ($_.Exception.Message -match "cmdlet unavailable") {
+                $failureReason = "Required Microsoft Defender command was unavailable"
+              } elseif ($_.Exception.Message -match "missing") {
+                $failureReason = "An expected scan target was missing"
+              } elseif ($_.Exception.Message -match "removed or quarantined") {
+                $failureReason = "An artifact was removed or quarantined"
+              } else {
+                $failureReason = "Microsoft Defender scan failed; inspect the private workflow log"
+              }
+            }
+          }
+
+          @(
+            "Product=CgPhone Free 0.3.1"
+            "Commit=$env:GITHUB_SHA"
+            "WorkflowRun=$env:GITHUB_RUN_ID"
+            "ScannedAtUtc=$((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'))"
+            "EngineVersion=$engineVersion"
+            "PlatformVersion=$platformVersion"
+            "SecurityIntelligenceVersion=$signatureVersion"
+            "SecurityIntelligenceUpdatedUtc=$signatureUpdated"
+            "Targets=installer;portable-runtime;portable-archive;installed-runtime"
+            "DetectionCount=$detectionCount"
+            "Result=$result"
+            "FailureReason=$failureReason"
+            "Privacy=No endpoint hostname, username, local path, SIP log or company data included"
+          ) | Set-Content $report -Encoding ascii
+
+          "DEFENDER_SCAN_RESULT=$result" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Microsoft Defender result: $result"
+
+      - name: Publicar evidencia de Microsoft Defender
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: CgPhone-Free-0.3.1-Microsoft-Defender-report
+          path: Microsoft-Defender-scan-report.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Aplicar gate de Microsoft Defender
+        shell: powershell
+        run: |
+          if ($env:DEFENDER_SCAN_RESULT -ne "CLEAN") {
+            throw "Microsoft Defender gate failed with result: $env:DEFENDER_SCAN_RESULT"
+          }
+
       - name: Generar SHA-256 y aviso de distribución
         shell: powershell
         run: |
@@ -148,7 +270,8 @@ jobs:
           $files = @(
             "CgPhone-Setup-0.3.1-x64.exe",
             "CgPhone-0.3.1-windows-x64-portable.zip",
-            "CgPhone-0.3.1-sbom.spdx.json"
+            "CgPhone-0.3.1-sbom.spdx.json",
+            "Microsoft-Defender-scan-report.txt"
           )
           $lines = foreach ($file in $files) {
             if (-not (Test-Path $file)) {
@@ -166,6 +289,7 @@ jobs:
             CgPhone-Setup-0.3.1-x64.exe
             CgPhone-0.3.1-windows-x64-portable.zip
             CgPhone-0.3.1-sbom.spdx.json
+            Microsoft-Defender-scan-report.txt
             SHA256SUMS.txt
 
       - uses: actions/upload-artifact@v4
@@ -176,6 +300,7 @@ jobs:
             CgPhone-Setup-0.3.1-x64.exe.sha256
             CgPhone-0.3.1-sbom.spdx.json
             CgPhone-0.3.1-sbom.spdx.json.sha256
+            Microsoft-Defender-scan-report.txt
             SHA256SUMS.txt
             LEEME-ANTES-DE-INSTALAR.txt
           if-no-files-found: error
