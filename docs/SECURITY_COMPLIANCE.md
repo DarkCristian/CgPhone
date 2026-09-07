@@ -34,7 +34,10 @@ y no existe una edición Pro/Full mantenida.
 
 El run #35 completó la aplicación, el instalador y los artefactos. La instalación
 y desinstalación fueron verificadas manualmente, incluida la eliminación
-opcional de la configuración SIP. Un workflow exitoso y una prueba funcional no
+opcional de la configuración SIP. También se completó la validación funcional
+del registro y operación SIP con centrales Asterisk y Neotel, según la matriz
+publicada en el README. Estos resultados corresponden a beta.35 y deben
+repetirse en cada release. Un workflow exitoso y una prueba funcional no
 sustituyen una auditoría de seguridad.
 
 ## Baseline observada en el artefacto #35
@@ -96,12 +99,12 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | SHA-256 de instalador y portable | Implementado y publicado |
 | Portable con información de build | Implementado |
 | Instalación y desinstalación | Probadas manualmente en #35 |
-| Pruebas funcionales SIP | Manuales, requieren repetición por release |
+| Pruebas funcionales SIP | Validadas manualmente con Asterisk y Neotel en beta.35; repetir por release |
 | Firma Authenticode pública | Pendiente |
 | Timestamp RFC 3161 | Pendiente |
 | SBOM SPDX 2.3 de beta.35 | Generado y publicado como asset independiente |
 | Generación automática de SBOM | Incorporada al workflow para futuros builds |
-| SHA256SUMS y atestaciones de artefactos | Implementadas en rama de seguridad; pendientes de validar mediante workflow |
+| SHA256SUMS y atestaciones de artefactos | Workflow validado correctamente en run 33923023903 |
 | OSV-Scanner o Trivy | Pendiente |
 | CodeQL C/C++ | No existe workflow activo |
 | Microsoft Defender sobre paquete final | Pendiente de evidencia automatizada |
@@ -146,8 +149,8 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
   CVE según versión, módulo y alcanzabilidad real.
 - [ ] Ejecutar Microsoft Defender y Trellix ENS/EDR sobre el instalador y el
   runtime final; conservar fecha, motor, versión de firmas y resultado.
-- [ ] Generar una atestación de procedencia del build y conservar el vínculo
-  workflow → commit → artefacto → hash → SBOM.
+- [x] Generar una atestación de procedencia del build y conservar el vínculo
+  workflow → commit → artefacto → hash → SBOM (validado en run 33923023903).
 - [ ] Automatizar la búsqueda de secretos y revisar también el historial Git.
 - [ ] Sanitizar logs SIP y probar que nunca registren Authorization, contraseñas
   ni datos internos innecesarios.
@@ -161,13 +164,12 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
   una terminal piloto con las políticas corporativas activas.
 
 El workflow de la rama `security/artifact-attestations` genera
-`SHA256SUMS.txt` y usa las atestaciones de GitHub Actions basadas en Sigstore
-para vincular el instalador, el portable, el SBOM y el manifiesto con el
-repositorio, commit y workflow de origen. El control se considerará implementado
-después de que un build complete correctamente y la verificación con
-`gh attestation verify` resulte válida. Esta atestación aporta integridad y
-procedencia pública, pero **no es una firma Authenticode** y no crea reputación
-en Microsoft SmartScreen.
+`SHA256SUMS.txt` y atestaciones de GitHub Actions basadas en Sigstore para el
+instalador, el portable, el SBOM y el manifiesto. El run
+[33923023903](https://github.com/DarkCristian/CgPhone/actions/runs/33923023903)
+finalizó correctamente: los hashes coincidieron y el paso de atestación fue
+exitoso. Este control aporta integridad y procedencia pública, pero **no es una
+firma Authenticode** y no crea reputación en Microsoft SmartScreen.
 
 ## Firma, SmartScreen y antivirus
 
