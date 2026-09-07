@@ -104,6 +104,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | Timestamp RFC 3161 | Pendiente |
 | SBOM SPDX 2.3 de beta.35 | Generado y publicado como asset independiente |
 | Generación automática de SBOM | Incorporada al workflow para futuros builds |
+| SHA256SUMS y atestaciones de artefactos | Workflow validado correctamente en run 33923023903 |
 | OSV-Scanner o Trivy | Pendiente |
 | CodeQL C/C++ | No existe workflow activo |
 | Microsoft Defender sobre paquete final | Pendiente de evidencia automatizada |
@@ -148,8 +149,8 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
   CVE según versión, módulo y alcanzabilidad real.
 - [ ] Ejecutar Microsoft Defender y Trellix ENS/EDR sobre el instalador y el
   runtime final; conservar fecha, motor, versión de firmas y resultado.
-- [ ] Generar una atestación de procedencia del build y conservar el vínculo
-  workflow → commit → artefacto → hash → SBOM.
+- [x] Generar una atestación de procedencia del build y conservar el vínculo
+  workflow → commit → artefacto → hash → SBOM (validado en run 33923023903).
 - [ ] Automatizar la búsqueda de secretos y revisar también el historial Git.
 - [ ] Sanitizar logs SIP y probar que nunca registren Authorization, contraseñas
   ni datos internos innecesarios.
@@ -162,9 +163,13 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
 - [ ] Probar instalación, actualización y desinstalación en una VM limpia y en
   una terminal piloto con las políticas corporativas activas.
 
-Opcionalmente puede firmarse el SBOM y `SHA256SUMS.txt` con Sigstore/cosign de
-forma gratuita. Esa firma aporta integridad y procedencia pública, pero **no es
-una firma Authenticode** y no crea reputación en Microsoft SmartScreen.
+El workflow de la rama `security/artifact-attestations` genera
+`SHA256SUMS.txt` y atestaciones de GitHub Actions basadas en Sigstore para el
+instalador, el portable, el SBOM y el manifiesto. El run
+[33923023903](https://github.com/DarkCristian/CgPhone/actions/runs/33923023903)
+finalizó correctamente: los hashes coincidieron y el paso de atestación fue
+exitoso. Este control aporta integridad y procedencia pública, pero **no es una
+firma Authenticode** y no crea reputación en Microsoft SmartScreen.
 
 ## Firma, SmartScreen y antivirus
 

@@ -106,6 +106,15 @@ Neotel**. En ambos entornos se validaron satisfactoriamente:
 Esta validación corresponde al artefacto exacto de la beta.35. Debe repetirse
 en cada release y no sustituye un análisis de seguridad, compatibilidad o carga.
 
+## Integridad y procedencia de futuras compilaciones
+
+El workflow de la rama `security/artifact-attestations` fue validado en el
+[run 33923023903](https://github.com/DarkCristian/CgPhone/actions/runs/33923023903).
+Genera `SHA256SUMS.txt` y atestaciones de procedencia para el instalador, el
+portable y el SBOM. Los hashes del manifiesto coincidieron con los artefactos
+generados. Estas atestaciones permiten comprobar el origen del build mediante
+`gh attestation verify`, pero no reemplazan Authenticode ni evitan SmartScreen.
+
 ## Linux
 
 El soporte Linux se encuentra en fase de desarrollo comunitario. La interfaz y

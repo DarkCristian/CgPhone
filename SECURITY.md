@@ -103,6 +103,15 @@ políticas configuradas por cada organización y por tratarse de binarios todav�
 no firmados. Una alerta de política o reputación no equivale por sí sola a una
 detección de malware.
 
+## Atestación de compilaciones futuras
+
+El [workflow de atestaciones](https://github.com/DarkCristian/CgPhone/actions/runs/33923023903)
+se ejecutó correctamente sobre la rama `security/artifact-attestations`. El
+manifiesto `SHA256SUMS.txt` coincidió con el instalador, portable y SBOM del
+mismo run, y GitHub completó la atestación de procedencia. Esta evidencia aún no
+modifica los hashes ni los assets de la release `v0.3.1-beta.35`; comenzará a
+aplicar a releases creadas desde el workflow mergeado.
+
 ## Dependencias observadas en el build #35
 
 Estas versiones provienen del archivo
