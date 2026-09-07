@@ -1,6 +1,6 @@
 # Política de seguridad de CgPhone Free
 
-Última revisión: 2026-09-04 (SBOM de beta.35 incorporado).
+Última revisión: 2026-09-07 (gate automatizado de Microsoft Defender validado).
 
 ## Versiones soportadas
 
@@ -114,18 +114,26 @@ aplicar a releases creadas desde el workflow mergeado.
 
 ## Microsoft Defender en compilaciones futuras
 
-La rama `security/windows-defender-scan` incorpora un gate automatizado que
-analiza el instalador, el runtime portable, el archivo ZIP y el árbol resultante
-de una instalación silenciosa. Antes del análisis intenta actualizar la
-inteligencia de seguridad y verifica que el servicio antivirus esté activo.
-El build falla si Defender no está disponible, el análisis no termina o aparece
-una detección.
+El [workflow #37](https://github.com/DarkCristian/CgPhone/actions/runs/34141605443)
+validó el gate automatizado sobre el instalador, el runtime portable, el ZIP y
+el árbol de una instalación silenciosa. Antes del análisis actualizó la
+inteligencia de seguridad y comprobó que Defender estuviera activo.
 
-El reporte publicado excluye hostname, usuario, rutas locales, registros SIP y
-datos corporativos. Registra únicamente commit, workflow, fecha UTC, versiones
-del motor/plataforma/inteligencia, objetivos genéricos, cantidad de detecciones
-y resultado. Este control permanece **pendiente de validación por workflow** y
-no modifica la evidencia histórica de `v0.3.1-beta.35`.
+| Campo | Resultado |
+|---|---|
+| Fecha UTC | 2026-09-07 16:18:51 |
+| Commit analizado | `bbd61191872e91f94eb0be53b1c5078bc47e3b1f` |
+| Motor | 1.1.26080.3 |
+| Plataforma | 4.18.26080.3 |
+| Inteligencia de seguridad | 1.459.97.0 |
+| Detecciones | 0 |
+| Resultado | `CLEAN` |
+| SHA-256 del reporte | `2e5a8169087f4410dc6eab98ad94baad77ba33221effe27d6a505f02e79e6ccf` |
+
+El reporte excluye hostname, usuario, rutas locales, registros SIP y datos
+corporativos. El gate falla si Defender no está disponible, el análisis no
+termina o aparece una detección. Esta evidencia corresponde al build #37; no
+modifica retroactivamente la evidencia de `v0.3.1-beta.35`.
 
 ## Dependencias observadas en el build #35
 
