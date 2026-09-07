@@ -55,6 +55,7 @@ reproducibilidad, alcance e impacto.
 | SHA-256 SBOM | `bc2031ea10e0a59209c01c38abd2dd696969e66ca69e0b4f943b9a75b476ca5a` |
 | Firma Authenticode | No aplicada |
 | Clasificación | Beta de laboratorio / pre-release |
+| Validación SIP | Pruebas manuales satisfactorias con Asterisk y Neotel |
 
 ### SHA-256 del instalador
 
@@ -102,6 +103,15 @@ políticas configuradas por cada organización y por tratarse de binarios todav�
 no firmados. Una alerta de política o reputación no equivale por sí sola a una
 detección de malware.
 
+## Atestación de compilaciones futuras
+
+El [workflow de atestaciones](https://github.com/DarkCristian/CgPhone/actions/runs/33923023903)
+se ejecutó correctamente sobre la rama `security/artifact-attestations`. El
+manifiesto `SHA256SUMS.txt` coincidió con el instalador, portable y SBOM del
+mismo run, y GitHub completó la atestación de procedencia. Esta evidencia aún no
+modifica los hashes ni los assets de la release `v0.3.1-beta.35`; comenzará a
+aplicar a releases creadas desde el workflow mergeado.
+
 ## Dependencias observadas en el build #35
 
 Estas versiones provienen del archivo
@@ -144,7 +154,7 @@ Una versión estable requiere completar y documentar el gate definido en
 - SBOM publicado y escaneo de vulnerabilidades pendiente;
 - análisis estático;
 - análisis del paquete final con Microsoft Defender;
-- pruebas SIP en laboratorio;
+- pruebas SIP en laboratorio con Asterisk y Neotel, repetibles por release;
 - revisión de logs y permisos;
 - firma Authenticode y timestamp cuando esté disponible;
 - publicación del código fuente y licencias correspondientes.
