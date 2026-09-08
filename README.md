@@ -5,8 +5,8 @@ Windows y, próximamente, Linux. El objetivo es ofrecer una aplicación simple,
 liviana y transparente para registrar una cuenta SIP, realizar y recibir
 llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 
-> **Estado actual:** versión 0.3.1 beta para laboratorio. Windows x64 dispone de
-> instalador y portable. La compilación nativa para Linux está en desarrollo.
+> **Estado actual:** `v0.3.1-beta.37` para laboratorio controlado. Windows x64
+> dispone de instalador y portable; Linux continúa en desarrollo experimental.
 
 ## Funciones actuales
 
@@ -52,28 +52,27 @@ preservar esta base simple, auditable y orientada al uso operacional.
 
 ## Descargar y probar
 
-La versión preparada actualmente es:
+La pre-release actual es [CgPhone Free v0.3.1-beta.37](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.37) para Windows x64:
 
-- **CgPhone Free 0.3.1 beta**
-- Windows x64.
 - Instalador: `CgPhone-Setup-0.3.1-x64.exe`.
-- Portable disponible como artefacto independiente.
-- Commit de compilación validada:
-  `c548e15b2545ab79b2eeea14c5dd2767d0b6a4ef`.
-- SHA-256 del instalador:
+- Portable: `CgPhone-0.3.1-windows-x64-portable.zip`.
+- Commit exacto compilado: `bbd61191872e91f94eb0be53b1c5078bc47e3b1f`.
+- Workflow validado: [#37](https://github.com/DarkCristian/CgPhone/actions/runs/34141605443).
 
 ```text
-85a4744787827e2816865b0538ffe4f8d7157dc1be79abb26c27007776375b73
+9cfd527a5991490f34a87e000439e0b7fa7385a8db8c41eb7355b1fe7b21c900  CgPhone-Setup-0.3.1-x64.exe
+3fbff9df4abf20d42e1af0e08dfbe770e19b5a919e2b7f8f2452dd452b0f6241  CgPhone-0.3.1-windows-x64-portable.zip
+4c6c5a3485be72e941d8c2ff7912dd80aa75bc016f1ecc4d7c63471e4b54166f  CgPhone-0.3.1-sbom.spdx.json
+2e5a8169087f4410dc6eab98ad94baad77ba33221effe27d6a505f02e79e6ccf  Microsoft-Defender-scan-report.txt
+1572fa0f2b4f54106e3ebff530254830c5de9cc3f85e6775bb251fb9ac022832  SHA256SUMS.txt
 ```
 
-El código fuente público está disponible en este repositorio. Los instaladores
-oficiales se publicarán en la sección **Releases** después de completar la
-auditoría de secretos, licencias y archivos de distribución. No descargues
-CgPhone desde sitios o enlaces no oficiales.
+Descargá CgPhone únicamente desde la Release oficial y verificá el archivo
+individual, no sólo el ZIP contenedor que genera GitHub para los artifacts.
 
 ### Aviso de Microsoft SmartScreen
 
-El instalador 0.3.1 beta todavía no posee una firma Authenticode pública.
+El instalador de beta.37 todavía no posee una firma Authenticode pública.
 Windows puede mostrar el aviso **“Windows protegió su PC”**. La presencia o
 ausencia de ese aviso no reemplaza la verificación del SHA-256.
 
@@ -84,8 +83,8 @@ Get-FileHash .\CgPhone-Setup-0.3.1-x64.exe -Algorithm SHA256
 ```
 
 El resultado debe coincidir exactamente con el hash publicado arriba. Esta
-beta está destinada a pruebas controladas; no se presenta todavía como una
-release aprobada para producción.
+beta está destinada a pruebas controladas; no es una release aprobada para
+producción.
 
 ## Validación funcional de la beta
 
@@ -106,7 +105,7 @@ Neotel**. En ambos entornos se validaron satisfactoriamente:
 Esta validación corresponde al artefacto exacto de la beta.35. Debe repetirse
 en cada release y no sustituye un análisis de seguridad, compatibilidad o carga.
 
-## Integridad y procedencia de futuras compilaciones
+## Integridad, procedencia y análisis
 
 El workflow de la rama `security/artifact-attestations` fue validado en el
 [run 33923023903](https://github.com/DarkCristian/CgPhone/actions/runs/33923023903).
@@ -122,6 +121,26 @@ y el árbol instalado. El resultado fue `CLEAN`, con cero detecciones, usando el
 motor 1.1.26080.3 y la inteligencia 1.459.97.0. El reporte sanitizado forma
 parte de `SHA256SUMS.txt` y de la atestación del build. Este resultado corresponde
 sólo a ese commit y fecha; no convierte automáticamente en limpio otro archivo.
+
+### Validación con Trellix Endpoint Security
+
+Beta.37 fue probada manualmente como portable y después de instalarse en la
+ubicación estándar de aplicaciones. Un análisis rápido examinó 302.857
+elementos y finalizó con cero detecciones; no se observó un evento nuevo
+atribuible a estos binarios.
+
+Un evento histórico correspondía a una regla corporativa de Protección de
+acceso asociada a iniciar desde el navegador archivos ubicados en Descargas.
+La acción era de auditoría (“bloquearía”) y no una detección de malware. Ejecutar
+la aplicación instalada separa el runtime de esa regla específica, aunque el
+instalador descargado todavía puede activar políticas, reputación o SmartScreen.
+
+Si aparece una alerta: verificá el SHA-256 y el origen; no desactives Trellix ni
+excluyas carpetas completas; usá distribución corporativa controlada; solicitá
+a Seguridad revisar módulo, regla, acción y hash exactos; y limitá cualquier
+allowlisting temporal al hash del release. Una detección real o cuarentena
+requiere detener el despliegue y enviar la muestra a Trellix. Nunca publiques
+logs completos de endpoints ni datos internos.
 
 ## Linux
 
@@ -273,12 +292,13 @@ documentados en:
 La firma digital, SmartScreen, el análisis de dependencias y las pruebas
 funcionales son controles distintos. Ninguno sustituye a los demás.
 
-La pre-release `v0.3.1-beta.35` publica además un
-[SBOM SPDX 2.3](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.1-beta.35/CgPhone-0.3.1-beta.35-sbom.spdx.json)
-generado desde los 231 archivos del runtime distribuido. Su SHA-256 es:
+La pre-release `v0.3.1-beta.37` publica además un
+[SBOM SPDX 2.3](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.1-beta.37/CgPhone-0.3.1-sbom.spdx.json)
+generado desde los 231 archivos del runtime distribuido y 16 paquetes. Su
+SHA-256 es:
 
 ```text
-bc2031ea10e0a59209c01c38abd2dd696969e66ca69e0b4f943b9a75b476ca5a
+4c6c5a3485be72e941d8c2ff7912dd80aa75bc016f1ecc4d7c63471e4b54166f
 ```
 
 El SBOM permite inventariar componentes y evaluar CVE; no es ejecutable, no es
