@@ -1,12 +1,13 @@
 # Política de seguridad de CgPhone Free
 
-Última revisión: 2026-09-07 (gate automatizado de Microsoft Defender validado).
+Última revisión: 2026-09-08 (beta.37, Defender y Trellix documentados).
 
 ## Versiones soportadas
 
 | Versión | Plataforma | Estado | Actualizaciones de seguridad |
 |---|---|---|---|
-| [v0.3.1-beta.35](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.35) | Windows x64 | Laboratorio controlado | Sí, durante la etapa beta |
+| [v0.3.1-beta.37](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.37) | Windows x64 | Pre-release actual para laboratorio | Sí, durante la etapa beta |
+| [v0.3.1-beta.35](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.35) | Windows x64 | Histórica; reemplazada por beta.37 | Sólo referencia |
 | Linux | Ubuntu, Debian, Mint, LMDE, Zorin, Arch y derivados | En desarrollo, sin paquete soportado | Evaluación comunitaria |
 
 Versiones anteriores y artefactos generados por otros workflows no deben
@@ -42,7 +43,52 @@ Incluí, si es posible:
 No se promete una recompensa económica. Los reportes se evaluarán según
 reproducibilidad, alcance e impacto.
 
-## Evidencia de v0.3.1-beta.35
+## Evidencia de v0.3.1-beta.37
+
+| Campo | Valor |
+|---|---|
+| Workflow validado | [Windows Free installer #37](https://github.com/DarkCristian/CgPhone/actions/runs/34141605443) |
+| Commit exacto del build/tag | `bbd61191872e91f94eb0be53b1c5078bc47e3b1f` |
+| Instalador | `CgPhone-Setup-0.3.1-x64.exe` |
+| SHA-256 instalador | `9cfd527a5991490f34a87e000439e0b7fa7385a8db8c41eb7355b1fe7b21c900` |
+| Portable | `CgPhone-0.3.1-windows-x64-portable.zip` |
+| SHA-256 portable | `3fbff9df4abf20d42e1af0e08dfbe770e19b5a919e2b7f8f2452dd452b0f6241` |
+| SBOM | `CgPhone-0.3.1-sbom.spdx.json` (SPDX 2.3; 231 archivos; 16 paquetes) |
+| SHA-256 SBOM | `4c6c5a3485be72e941d8c2ff7912dd80aa75bc016f1ecc4d7c63471e4b54166f` |
+| SHA-256 reporte Defender | `2e5a8169087f4410dc6eab98ad94baad77ba33221effe27d6a505f02e79e6ccf` |
+| SHA-256 manifiesto | `1572fa0f2b4f54106e3ebff530254830c5de9cc3f85e6775bb251fb9ac022832` |
+| Firma Authenticode | No aplicada |
+| Clasificación | Beta de laboratorio / pre-release |
+
+Los hashes fueron recalculados desde los assets extraídos y coincidieron con
+`SHA256SUMS.txt`. La atestación de GitHub vincula los archivos con el workflow
+y commit de origen, pero no equivale a Authenticode.
+
+### Evidencia antivirus/EDR
+
+- Microsoft Defender analizó instalador, portable, ZIP y árbol instalado: cero
+  detecciones (`CLEAN`).
+- Trellix Endpoint Security: prueba manual del portable y del runtime instalado,
+  seguida de análisis rápido de 302.857 elementos con cero detecciones.
+- No se observó un evento nuevo atribuible a beta.37 durante esa validación.
+- El resultado histórico de VirusTotal corresponde al hash de beta.35 y no debe
+  trasladarse a beta.37; queda pendiente repetirlo sobre los hashes actuales.
+
+Un evento previo de Trellix correspondía a una regla corporativa de Protección
+de acceso asociada a ejecutar desde el navegador archivos ubicados en Descargas.
+La política estaba en auditoría (“bloquearía”): no fue una detección de malware.
+La ejecución desde la ubicación estándar de aplicaciones no reprodujo ese evento
+en la prueba actual. El resultado puede variar según la configuración de cada
+organización.
+
+Ante una alerta: verificar hash y origen, no desactivar el EDR, no excluir
+carpetas completas, distribuir desde una ubicación corporativa controlada,
+solicitar a Seguridad el análisis del módulo/regla/acción/hash y limitar una
+autorización temporal al hash exacto. Si hay detección o cuarentena, detener el
+despliegue y enviar la muestra a Trellix. No publicar logs de endpoints, rutas,
+usuarios, dominios, direcciones ni políticas internas.
+
+## Evidencia histórica de v0.3.1-beta.35
 
 | Campo | Valor |
 |---|---|
@@ -103,16 +149,15 @@ políticas configuradas por cada organización y por tratarse de binarios todav�
 no firmados. Una alerta de política o reputación no equivale por sí sola a una
 detección de malware.
 
-## Atestación de compilaciones futuras
+## Atestación de compilaciones
 
 El [workflow de atestaciones](https://github.com/DarkCristian/CgPhone/actions/runs/33923023903)
 se ejecutó correctamente sobre la rama `security/artifact-attestations`. El
 manifiesto `SHA256SUMS.txt` coincidió con el instalador, portable y SBOM del
-mismo run, y GitHub completó la atestación de procedencia. Esta evidencia aún no
-modifica los hashes ni los assets de la release `v0.3.1-beta.35`; comenzará a
-aplicar a releases creadas desde el workflow mergeado.
+mismo run, y GitHub completó la atestación de procedencia. Beta.37 es la primera pre-release que publica el manifiesto, el SBOM y la
+evidencia Defender generados por este flujo.
 
-## Microsoft Defender en compilaciones futuras
+## Microsoft Defender
 
 El [workflow #37](https://github.com/DarkCristian/CgPhone/actions/runs/34141605443)
 validó el gate automatizado sobre el instalador, el runtime portable, el ZIP y
@@ -132,13 +177,13 @@ inteligencia de seguridad y comprobó que Defender estuviera activo.
 
 El reporte excluye hostname, usuario, rutas locales, registros SIP y datos
 corporativos. El gate falla si Defender no está disponible, el análisis no
-termina o aparece una detección. Esta evidencia corresponde al build #37; no
-modifica retroactivamente la evidencia de `v0.3.1-beta.35`.
+termina o aparece una detección. Esta evidencia corresponde al build #37 y a los hashes publicados en beta.37;
+no modifica retroactivamente beta.35.
 
-## Dependencias observadas en el build #35
+## Dependencias observadas en el build #37
 
 Estas versiones provienen del archivo
-`COMPLIANCE/DEPENDENCY-VERSIONS.txt` incluido en el portable:
+`COMPLIANCE/DEPENDENCY-VERSIONS.txt` incluido en el portable de beta.37:
 
 | Componente | Versión/revisión observada |
 |---|---|
@@ -150,9 +195,9 @@ Estas versiones provienen del archivo
 | Opus | 1.6.1-1 |
 | LAME | 3.100-3 |
 | GCC/MinGW | 16.2.0-3 |
-| CMake | 4.4.2-2 |
+| CMake | 4.4.3-2 |
 
-MSYS2 utiliza paquetes móviles. Esta evidencia describe el build #35, pero no
+MSYS2 utiliza paquetes móviles. Esta evidencia describe el build #37, pero no
 garantiza que una ejecución futura del workflow obtenga las mismas versiones.
 
 ## Dependencias y límites conocidos
@@ -187,6 +232,6 @@ detecciones son evidencias independientes; ninguna demuestra por sí sola que el
 software sea seguro.
 
 Los controles gratuitos pendientes —licencia explícita del proyecto, textos de
-terceros, CodeQL, análisis de CVE, secret scanning, ACL, sanitización de logs,
-atestación del build y pruebas con Defender/Trellix— se mantienen en el
+terceros, CodeQL, análisis de CVE, secret scanning, ACL y sanitización de logs—
+se mantienen en el
 [checklist de compliance](docs/SECURITY_COMPLIANCE.md#controles-pendientes-que-no-requieren-pagar).
