@@ -1,10 +1,10 @@
 # Seguridad y compliance de CgPhone Free
 
-Última revisión: 2026-09-07 (gate automatizado de Microsoft Defender validado).
+Última revisión: 2026-09-08 (beta.37 y validación Trellix sanitizada).
 
 ## Alcance actual
 
-CgPhone Free v0.3.1-beta.35 es una pre-release para laboratorio controlado con
+CgPhone Free v0.3.1-beta.37 es una pre-release para laboratorio controlado con
 centrales SIP como Asterisk o Neotel. Windows x64 dispone de instalador y
 portable. La versión nativa para Linux continúa en desarrollo y todavía no se
 distribuye como paquete soportado.
@@ -12,35 +12,42 @@ distribuye como paquete soportado.
 CgPhone Free es la única línea mantenida. No integra Qt WebEngine ni Qt WebView
 y no existe una edición Pro/Full mantenida.
 
-## Evidencia del build v0.3.1-beta.35
+## Evidencia del build v0.3.1-beta.37
 
 | Campo | Valor |
 |---|---|
-| Workflow | Windows Free installer |
-| Run exitoso y probado | #35 |
-| Rama del build | `fix/uninstaller-remove-settings` |
-| Commit exacto del build | `e4fbcb2623cc58dd2676fffeaa1cf73afbe14d41` |
-| Tag publicado | `v0.3.1-beta.35` |
-| Commit del tag/merge | `a6dba9e96240405b7725fb4fcf60e89554ee9bd0` |
+| Workflow | [Windows Free installer #37](https://github.com/DarkCristian/CgPhone/actions/runs/34141605443) |
+| Commit exacto del build/tag | `bbd61191872e91f94eb0be53b1c5078bc47e3b1f` |
+| Tag publicado | `v0.3.1-beta.37` |
 | Instalador | `CgPhone-Setup-0.3.1-x64.exe` |
-| SHA-256 instalador | `40dfdf77fac4cbb98d3131c0835445da4db77cb9da3ed45c229850f4da7f43c1` |
-| Portable | `CgPhone-Free-0.3.1-Windows-x64-portable.zip` |
-| SHA-256 portable | `70052f48df73a62670831760e36bb7366e6e62cc8d8012a719cc6943e4f8aa09` |
-| SBOM | `CgPhone-0.3.1-beta.35-sbom.spdx.json` (SPDX 2.3) |
-| Alcance del SBOM | 231 archivos del runtime, 17 paquetes/componentes |
-| SHA-256 SBOM | `bc2031ea10e0a59209c01c38abd2dd696969e66ca69e0b4f943b9a75b476ca5a` |
+| SHA-256 instalador | `9cfd527a5991490f34a87e000439e0b7fa7385a8db8c41eb7355b1fe7b21c900` |
+| Portable | `CgPhone-0.3.1-windows-x64-portable.zip` |
+| SHA-256 portable | `3fbff9df4abf20d42e1af0e08dfbe770e19b5a919e2b7f8f2452dd452b0f6241` |
+| SBOM | `CgPhone-0.3.1-sbom.spdx.json` (SPDX 2.3) |
+| Alcance del SBOM | 231 archivos; 16 paquetes |
+| SHA-256 SBOM | `4c6c5a3485be72e941d8c2ff7912dd80aa75bc016f1ecc4d7c63471e4b54166f` |
+| SHA-256 reporte Defender | `2e5a8169087f4410dc6eab98ad94baad77ba33221effe27d6a505f02e79e6ccf` |
+| SHA-256 `SHA256SUMS.txt` | `1572fa0f2b4f54106e3ebff530254830c5de9cc3f85e6775bb251fb9ac022832` |
 | Firma Authenticode | No aplicada |
 | Clasificación | Beta de laboratorio / pre-release |
 
-El run #35 completó la aplicación, el instalador y los artefactos. La instalación
-y desinstalación fueron verificadas manualmente, incluida la eliminación
-opcional de la configuración SIP. También se completó la validación funcional
-del registro y operación SIP con centrales Asterisk y Neotel, según la matriz
-publicada en el README. Estos resultados corresponden a beta.35 y deben
-repetirse en cada release. Un workflow exitoso y una prueba funcional no
-sustituyen una auditoría de seguridad.
+Los hashes del instalador, portable, SBOM y reporte Defender fueron recalculados
+y coincidieron con el manifiesto. Defender finalizó con cero detecciones. La
+prueba manual con Trellix cubrió portable, instalación y ejecución desde la
+ubicación estándar de aplicaciones; el análisis rápido examinó 302.857 elementos
+con cero detecciones y no se observó un evento nuevo atribuible a beta.37.
 
-## Baseline observada en el artefacto #35
+Esto no demuestra ausencia total de vulnerabilidades. El resultado se limita a
+los motores, firmas, políticas, fecha y archivos exactos evaluados. La matriz
+funcional completa con Asterisk y Neotel pertenece a beta.35 y debe repetirse
+antes de declarar una versión estable.
+
+## Evidencia histórica
+
+Beta.35 conserva su Release, hashes, SBOM y validación funcional con Asterisk y
+Neotel. No deben reemplazarse ni atribuirse a beta.37.
+
+## Baseline observada en el artefacto #37
 
 | Componente | Versión observada | Evaluación actual |
 |---|---:|---|
@@ -51,11 +58,11 @@ sustituyen una auditoría de seguridad.
 | OpenSSL | 3.6.4-1 | Registrar y verificar en cada build |
 | Opus | 1.6.1-1 | Incluido para audio |
 | LAME | 3.100-3 | MP3 requiere binario x64 y licencia verificados |
-| GCC/MinGW | 16.2.0-3 | Toolchain del build #35 |
-| CMake | 4.4.2-2 | Herramienta del build #35 |
+| GCC/MinGW | 16.2.0-3 | Toolchain del build #37 |
+| CMake | 4.4.3-2 | Herramienta del build #37 |
 
 La evidencia proviene de `COMPLIANCE/BUILD-INFO.txt` y
-`COMPLIANCE/DEPENDENCY-VERSIONS.txt` incluidos en el portable. MSYS2 se
+`COMPLIANCE/DEPENDENCY-VERSIONS.txt` incluidos en el portable de beta.37. MSYS2 se
 actualiza durante el workflow: esta tabla registra lo utilizado, pero no fija
 versiones de forma reproducible. El SBOM publicado complementa esta evidencia:
 enumera el árbol final, sus checksums y las relaciones conocidas. Los campos de
@@ -95,19 +102,20 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | Control | Estado |
 |---|---|
 | Build automatizado Windows x64 | Implementado |
-| Instalador Inno Setup | Implementado y probado en #35 |
-| SHA-256 de instalador y portable | Implementado y publicado |
+| Instalador Inno Setup | Implementado y probado en #37 |
+| SHA-256 de instalador, portable, SBOM y reporte | Publicados en beta.37 |
 | Portable con información de build | Implementado |
-| Instalación y desinstalación | Probadas manualmente en #35 |
+| Instalación y ejecución | Probadas manualmente en beta.37; desinstalación validada en beta.35 |
 | Pruebas funcionales SIP | Validadas manualmente con Asterisk y Neotel en beta.35; repetir por release |
 | Firma Authenticode pública | Pendiente |
 | Timestamp RFC 3161 | Pendiente |
-| SBOM SPDX 2.3 de beta.35 | Generado y publicado como asset independiente |
+| SBOM SPDX 2.3 de beta.37 | Generado y publicado como asset independiente |
 | Generación automática de SBOM | Incorporada al workflow para futuros builds |
 | SHA256SUMS y atestaciones de artefactos | Workflow validado correctamente en run 33923023903 |
 | OSV-Scanner o Trivy | Pendiente |
 | CodeQL C/C++ | No existe workflow activo |
 | Microsoft Defender sobre paquete final | Validado en workflow #37: 0 detecciones |
+| Trellix Endpoint Security | Portable, instalado y análisis rápido: 0 detecciones; sin evento nuevo atribuible |
 | Reproducibilidad con dependencias fijadas | Pendiente |
 | Paquete Linux | En desarrollo |
 
@@ -118,12 +126,12 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 - [ ] Integrar y documentar todos los parches PJSIP aplicables.
 - [ ] Mantener SRTP/SDES deshabilitado hasta parchearlo y probarlo.
 - [ ] Deshabilitar video, CLI Telnet, HTTP client y módulos no usados.
-- [x] Generar y publicar SBOM SPDX 2.3 del runtime de beta.35.
+- [x] Generar y publicar SBOM SPDX 2.3 del runtime de beta.37.
 - [x] Automatizar el SBOM dentro de `COMPLIANCE/` y como artefacto independiente.
 - [ ] Ejecutar OSV-Scanner o Trivy y resolver hallazgos altos/críticos.
 - [ ] Incorporar CodeQL para C/C++ y revisar sus resultados.
 - [x] Validar por workflow el análisis de Defender sobre instalador, portable, ZIP y árbol instalado (#37).
-- [x] Generar y publicar SHA-256 del instalador y portable #35.
+- [x] Publicar SHA-256 del instalador, portable, SBOM, reporte Defender y manifiesto de beta.37.
 - [ ] Firmar ejecutables propios e instalador con Authenticode.
 - [ ] Aplicar timestamp de una autoridad confiable.
 - [ ] Verificar firma mediante `signtool verify /pa /all /v`.
@@ -148,8 +156,9 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
 - [ ] Analizar el SBOM con OSV-Scanner, Grype o Trivy y documentar el triage de
   CVE según versión, módulo y alcanzabilidad real.
 - [x] Validar el gate automatizado de Microsoft Defender y conservar su reporte
-  sanitizado (workflow #37); Trellix ENS/EDR continúa como prueba separada según
-  las políticas del laboratorio.
+  sanitizado (workflow #37).
+- [x] Probar beta.37 con Trellix Endpoint Security: portable, runtime instalado y
+  análisis rápido con cero detecciones; sin publicar evidencia sensible.
 - [x] Generar una atestación de procedencia del build y conservar el vínculo
   workflow → commit → artefacto → hash → SBOM (validado en run 33923023903).
 - [ ] Automatizar la búsqueda de secretos y revisar también el historial Git.
@@ -208,6 +217,26 @@ aislada no permite concluir que el archivo sea malware ni confirmar un falso
 positivo. Debe conservarse el nombre del motor, la firma de detección y la fecha
 del análisis, y solicitar revisión al proveedor si el hallazgo persiste.
 
+### Trellix Endpoint Security
+
+La validación de beta.37 no reprodujo un evento nuevo atribuible al portable o
+al runtime instalado y el análisis rápido finalizó con cero detecciones. Un
+evento histórico correspondía a una regla corporativa de Protección de acceso
+para archivos iniciados por un navegador desde Descargas, configurada en modo
+auditoría (“bloquearía”). No fue una detección de malware.
+
+La instalación en la ubicación estándar de aplicaciones separa la ejecución
+cotidiana de esa regla específica. Aun así, el instalador descargado, un cambio
+de hash o una política diferente pueden producir avisos. Procedimiento:
+
+1. verificar SHA-256, tag y origen oficial;
+2. identificar módulo, regla, acción y hash sin divulgar datos internos;
+3. no desactivar Trellix ni excluir Descargas o la carpeta completa;
+4. distribuir mediante una ubicación/herramienta corporativa controlada;
+5. si es imprescindible para el piloto, autorizar sólo el hash exacto;
+6. ante detección o cuarentena, detener el despliegue y remitir la muestra a
+   Trellix para análisis.
+
 Los EDR corporativos, incluido Trellix, pueden generar alertas según las
 políticas de seguridad de cada organización y por tratarse de binarios todavía
 no firmados. Una alerta de política, ejecución desde Descargas o reputación no
@@ -241,5 +270,5 @@ Cada release debe conservar:
 - checklist funcional;
 - notas de cambios y limitaciones conocidas.
 
-El asset independiente de beta.35 es:
-[`CgPhone-0.3.1-beta.35-sbom.spdx.json`](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.1-beta.35/CgPhone-0.3.1-beta.35-sbom.spdx.json).
+Los assets de beta.37, incluido el SBOM, el manifiesto y el reporte Defender,
+se publican en la [Release v0.3.1-beta.37](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.37). Beta.35 permanece disponible como evidencia histórica.
