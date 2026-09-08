@@ -127,8 +127,7 @@ sólo a ese commit y fecha; no convierte automáticamente en limpio otro archivo
 ### Validación con Trellix Endpoint Security
 
 Beta.37 fue probada manualmente como portable y después de instalarse en la
-ubicación estándar de aplicaciones. Un análisis rápido examinó 302.857
-elementos y finalizó con cero detecciones; no se observó un evento nuevo
+ubicación estándar de aplicaciones. Un análisis rápido examinó elementos y finalizó con cero detecciones; no se observó un evento nuevo
 atribuible a estos binarios.
 
 Un evento histórico correspondía a una regla corporativa de Protección de
