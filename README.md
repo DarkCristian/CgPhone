@@ -88,8 +88,9 @@ producción.
 
 ## Validación funcional de la beta
 
-La beta.35 fue probada manualmente en Windows x64 contra centrales **Asterisk y
-Neotel**. En ambos entornos se validaron satisfactoriamente:
+La matriz funcional se validó manualmente en Windows x64 con beta.35 y se
+replicó satisfactoriamente en beta.37 contra centrales **Asterisk y Neotel**.
+En ambos entornos se comprobaron:
 
 - instalación, desinstalación y limpieza opcional de la configuración;
 - configuración de la cuenta desde Ajustes con elevación UAC;
@@ -102,8 +103,9 @@ Neotel**. En ambos entornos se validaron satisfactoriamente:
 - apertura y ocultamiento del diagnóstico mediante `Shift+F12`;
 - revisión del log SIP para evitar la exposición de contraseñas o secretos.
 
-Esta validación corresponde al artefacto exacto de la beta.35. Debe repetirse
-en cada release y no sustituye un análisis de seguridad, compatibilidad o carga.
+La validación fue completada sobre los artefactos exactos de beta.35 y beta.37.
+Debe repetirse en cada release y no sustituye un análisis de seguridad,
+compatibilidad o carga.
 
 ## Integridad, procedencia y análisis
 
