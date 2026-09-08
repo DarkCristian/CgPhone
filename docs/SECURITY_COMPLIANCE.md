@@ -38,14 +38,15 @@ ubicación estándar de aplicaciones; el análisis rápido examinó 302.857 elem
 con cero detecciones y no se observó un evento nuevo atribuible a beta.37.
 
 Esto no demuestra ausencia total de vulnerabilidades. El resultado se limita a
-los motores, firmas, políticas, fecha y archivos exactos evaluados. La matriz
-funcional completa con Asterisk y Neotel pertenece a beta.35 y debe repetirse
-antes de declarar una versión estable.
+los motores, firmas, políticas, fecha y archivos exactos evaluados. La matriz funcional validada en beta.35 se replicó satisfactoriamente en
+beta.37 contra Asterisk y Neotel. Esta evidencia corresponde a los artefactos y
+entornos ensayados y debe repetirse para cada release posterior.
 
 ## Evidencia histórica
 
 Beta.35 conserva su Release, hashes, SBOM y validación funcional con Asterisk y
-Neotel. No deben reemplazarse ni atribuirse a beta.37.
+Neotel como evidencia histórica independiente. Beta.37 cuenta con su propia
+replicación satisfactoria de esa matriz funcional.
 
 ## Baseline observada en el artefacto #37
 
@@ -106,7 +107,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | SHA-256 de instalador, portable, SBOM y reporte | Publicados en beta.37 |
 | Portable con información de build | Implementado |
 | Instalación y ejecución | Probadas manualmente en beta.37; desinstalación validada en beta.35 |
-| Pruebas funcionales SIP | Validadas manualmente con Asterisk y Neotel en beta.35; repetir por release |
+| Pruebas funcionales SIP | Matriz de beta.35 replicada satisfactoriamente en beta.37 con Asterisk y Neotel |
 | Firma Authenticode pública | Pendiente |
 | Timestamp RFC 3161 | Pendiente |
 | SBOM SPDX 2.3 de beta.37 | Generado y publicado como asset independiente |
@@ -167,7 +168,7 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
 - [ ] Verificar ACL de `ProgramData`, logs y grabaciones con usuario estándar y
   administrador.
 - [ ] Restringir firewall a PBX/SBC y puertos SIP/RTP autorizados para el piloto.
-- [ ] Completar y conservar la matriz funcional SIP por cada release.
+- [x] Completar y conservar la matriz funcional SIP de beta.37 con Asterisk y Neotel.
 - [ ] Documentar falso positivo/revisión del proveedor si Trellix o cualquier
   motor mantiene una detección sobre el hash exacto publicado.
 - [ ] Probar instalación, actualización y desinstalación en una VM limpia y en
