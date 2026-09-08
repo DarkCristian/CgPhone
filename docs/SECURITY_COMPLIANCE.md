@@ -106,7 +106,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | Instalador Inno Setup | Implementado y probado en #37 |
 | SHA-256 de instalador, portable, SBOM y reporte | Publicados en beta.37 |
 | Portable con información de build | Implementado |
-| Instalación y ejecución | Probadas manualmente en beta.37; desinstalación validada en beta.35 |
+| Instalación, desinstalación y limpieza opcional | Validadas manualmente en beta.37 |
 | Pruebas funcionales SIP | Matriz de beta.35 replicada satisfactoriamente en beta.37 con Asterisk y Neotel |
 | Firma Authenticode pública | Pendiente |
 | Timestamp RFC 3161 | Pendiente |
@@ -123,7 +123,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 ## Gate para una release estable
 
 - [ ] Fijar Qt, toolchain y paquetes MSYS2 por versión y registrar hashes.
-- [x] Registrar la revisión exacta de PJPROJECT usada en el build #35.
+- [x] Registrar la revisión exacta de PJPROJECT usada en el build #37.
 - [ ] Integrar y documentar todos los parches PJSIP aplicables.
 - [ ] Mantener SRTP/SDES deshabilitado hasta parchearlo y probarlo.
 - [ ] Deshabilitar video, CLI Telnet, HTTP client y módulos no usados.
@@ -136,7 +136,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 - [ ] Firmar ejecutables propios e instalador con Authenticode.
 - [ ] Aplicar timestamp de una autoridad confiable.
 - [ ] Verificar firma mediante `signtool verify /pa /all /v`.
-- [ ] Completar una matriz formal de pruebas SIP por release.
+- [x] Completar la matriz formal de pruebas SIP de beta.37 con Asterisk y Neotel.
 - [x] Verificar instalación, desinstalación y limpieza opcional de configuración.
 - [ ] Sanitizar logs y comprobar que no contengan secretos.
 - [ ] Revisar ACL de configuración, logs y grabaciones.
