@@ -58,7 +58,7 @@ Neotel. No deben reemplazarse ni atribuirse a beta.37.
 | OpenSSL | 3.6.4-1 | Registrar y verificar en cada build |
 | Opus | 1.6.1-1 | Incluido para audio |
 | LAME | 3.100-3 | MP3 requiere binario x64 y licencia verificados |
-| GCC/MinGW | 16.2.0-3 | Toolchain del build #35 |
+| GCC/MinGW | 16.2.0-3 | Toolchain del build #37 |
 | CMake | 4.4.3-2 | Herramienta del build #37 |
 
 La evidencia proviene de `COMPLIANCE/BUILD-INFO.txt` y
