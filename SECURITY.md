@@ -59,10 +59,13 @@ reproducibilidad, alcance e impacto.
 | SHA-256 manifiesto | `1572fa0f2b4f54106e3ebff530254830c5de9cc3f85e6775bb251fb9ac022832` |
 | Firma Authenticode | No aplicada |
 | Clasificación | Beta de laboratorio / pre-release |
+| Validación funcional | Matriz de beta.35 replicada satisfactoriamente en beta.37 contra Asterisk y Neotel |
 
 Los hashes fueron recalculados desde los assets extraídos y coincidieron con
 `SHA256SUMS.txt`. La atestación de GitHub vincula los archivos con el workflow
-y commit de origen, pero no equivale a Authenticode.
+y commit de origen, pero no equivale a Authenticode. La matriz funcional
+previamente validada en beta.35 se replicó satisfactoriamente en beta.37 contra
+centrales Asterisk y Neotel.
 
 ### Evidencia antivirus/EDR
 
