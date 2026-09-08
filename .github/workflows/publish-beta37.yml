@@ -1,0 +1,90 @@
+name: Publish CgPhone Free beta.37
+
+on:
+  push:
+    branches:
+      - release/free-0.3.1-beta.37
+    paths:
+      - .github/workflows/publish-beta37.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    name: Publish validated build #37
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BUILD_RUN_ID: "34141605443"
+      BUILD_SHA: "bbd61191872e91f94eb0be53b1c5078bc47e3b1f"
+      TAG: "v0.3.1-beta.37"
+
+    steps:
+      - name: Checkout release metadata
+        uses: actions/checkout@v4
+
+      - name: Download exact workflow artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          gh run download "$BUILD_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "CgPhone-Free-0.3.1-Windows-x64" \
+            --dir release-assets
+          gh run download "$BUILD_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "CgPhone-Free-0.3.1-Windows-x64-portable" \
+            --dir release-assets
+
+      - name: Verify filenames and SHA-256
+        shell: bash
+        working-directory: release-assets
+        run: |
+          set -euo pipefail
+          test -f CgPhone-Setup-0.3.1-x64.exe
+          test -f CgPhone-0.3.1-windows-x64-portable.zip
+          test -f CgPhone-0.3.1-sbom.spdx.json
+          test -f Microsoft-Defender-scan-report.txt
+          test -f SHA256SUMS.txt
+          echo "9cfd527a5991490f34a87e000439e0b7fa7385a8db8c41eb7355b1fe7b21c900  CgPhone-Setup-0.3.1-x64.exe" | sha256sum -c -
+          echo "3fbff9df4abf20d42e1af0e08dfbe770e19b5a919e2b7f8f2452dd452b0f6241  CgPhone-0.3.1-windows-x64-portable.zip" | sha256sum -c -
+          echo "4c6c5a3485be72e941d8c2ff7912dd80aa75bc016f1ecc4d7c63471e4b54166f  CgPhone-0.3.1-sbom.spdx.json" | sha256sum -c -
+          echo "2e5a8169087f4410dc6eab98ad94baad77ba33221effe27d6a505f02e79e6ccf  Microsoft-Defender-scan-report.txt" | sha256sum -c -
+          echo "1572fa0f2b4f54106e3ebff530254830c5de9cc3f85e6775bb251fb9ac022832  SHA256SUMS.txt" | sha256sum -c -
+          sha256sum -c SHA256SUMS.txt
+
+      - name: Ensure tag and release do not already exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; refusing to overwrite it."
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists; refusing to move it."
+            exit 1
+          fi
+
+      - name: Publish pre-release
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" \
+            release-assets/CgPhone-Setup-0.3.1-x64.exe \
+            release-assets/CgPhone-0.3.1-windows-x64-portable.zip \
+            release-assets/CgPhone-0.3.1-sbom.spdx.json \
+            release-assets/CgPhone-0.3.1-sbom.spdx.json.sha256 \
+            release-assets/CgPhone-Setup-0.3.1-x64.exe.sha256 \
+            release-assets/Microsoft-Defender-scan-report.txt \
+            release-assets/SHA256SUMS.txt \
+            release-assets/LEEME-ANTES-DE-INSTALAR.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$BUILD_SHA" \
+            --title "CgPhone Free 0.3.1 beta.37 — Windows x64" \
+            --notes-file docs/releases/v0.3.1-beta.37.md \
+            --prerelease
