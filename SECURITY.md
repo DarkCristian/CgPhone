@@ -183,6 +183,30 @@ corporativos. El gate falla si Defender no está disponible, el análisis no
 termina o aparece una detección. Esta evidencia corresponde al build #37 y a los hashes publicados en beta.37;
 no modifica retroactivamente beta.35.
 
+## Candidata de seguridad v0.3.2-beta.38
+
+La rama `security/pjproject-cve-fixes-beta-38` genera una candidata nueva,
+separada de beta.37. Mantiene PJPROJECT 2.17 como base compatible y fija el
+código exactamente al commit oficial
+[`a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9`](https://github.com/pjsip/pjproject/commit/a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9),
+que contiene los parches publicados por upstream para:
+
+- [CVE-2026-57159](https://github.com/pjsip/pjproject/security/advisories/GHSA-rfwg-w9gq-9mw2):
+  validación de límites en payload types SDP dinámicos;
+- [CVE-2026-57160](https://github.com/pjsip/pjproject/security/advisories/GHSA-277r-3q2j-mxcw):
+  escritura fuera de límites al serializar encabezados SIP genéricos;
+- [CVE-2026-57162](https://github.com/pjsip/pjproject/security/advisories/GHSA-m9g3-jcj8-qjfm):
+  límite de atributos `a=crypto` en SRTP/SDES.
+
+Además, el build fija explícitamente `PJMEDIA_HAS_SRTP=0`,
+`PJMEDIA_HAS_VIDEO=0` y
+`PJMEDIA_SDP_NEG_MAINTAIN_REMOTE_PT_MAP=0`. Estas defensas no sustituyen los
+parches: ambos controles se aplican simultáneamente.
+
+La candidata no reemplaza beta.37 hasta que el workflow finalice, coincidan sus
+hashes, Defender informe `CLEAN` y se repita la matriz funcional con Asterisk
+y Neotel. Los hashes de beta.37 no son válidos para los nuevos binarios.
+
 ## Dependencias observadas en el build #37
 
 Estas versiones provienen del archivo
