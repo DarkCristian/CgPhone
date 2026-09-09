@@ -192,9 +192,16 @@ de compilar y registra esa revisión en el SBOM y
 `COMPLIANCE/DEPENDENCY-VERSIONS.txt`.
 
 Como defensa adicional, SRTP, vídeo y el remapeo remoto de payload types quedan
-deshabilitados explícitamente. Antes de fusionar o publicar esta candidata se
-requieren: build exitoso, gate Defender `CLEAN`, hashes/atestación nuevos y
-repetición de las pruebas funcionales con Asterisk y Neotel.
+deshabilitados explícitamente.
+
+El [workflow #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867)
+completó compilación, pruebas automáticas, validación del árbol instalado,
+Defender `CLEAN`, SBOM, SHA-256 y atestación. Los hashes principales son:
+`cf3224819d10e892c250efb35f961b36caa9ac30c0dd377ef6d8e4777161eb09`
+(instalador) y
+`e6fb2a737a0729b642d5d3e4d7285d8ef153d5586be03493536d9d255a50c7d3`
+(portable). Antes de fusionar o publicar todavía se debe repetir la matriz
+funcional con Asterisk y Neotel.
 
 ## Gate automatizado de Microsoft Defender
 
