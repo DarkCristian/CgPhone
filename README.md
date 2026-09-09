@@ -8,7 +8,9 @@ llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 > **Estado publicado:** `v0.3.1-beta.37` para laboratorio controlado.
 > **Candidata en validación:** `v0.3.2-beta.38`, con PJPROJECT fijado a una
 > revisión upstream que corrige CVE-2026-57159, CVE-2026-57160 y
-> CVE-2026-57162. No reemplaza beta.37 hasta completar build y pruebas SIP.
+> CVE-2026-57162. El [build #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867)
+> pasó compilación, Defender, hashes, SBOM y atestación; no reemplaza beta.37
+> hasta repetir las pruebas SIP con Asterisk y Neotel.
 > Windows x64 dispone de instalador y portable; Linux continúa en desarrollo
 > experimental.
 
