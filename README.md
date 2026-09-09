@@ -5,8 +5,12 @@ Windows y, próximamente, Linux. El objetivo es ofrecer una aplicación simple,
 liviana y transparente para registrar una cuenta SIP, realizar y recibir
 llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 
-> **Estado actual:** `v0.3.1-beta.37` para laboratorio controlado. Windows x64
-> dispone de instalador y portable; Linux continúa en desarrollo experimental.
+> **Estado publicado:** `v0.3.1-beta.37` para laboratorio controlado.
+> **Candidata en validación:** `v0.3.2-beta.38`, con PJPROJECT fijado a una
+> revisión upstream que corrige CVE-2026-57159, CVE-2026-57160 y
+> CVE-2026-57162. No reemplaza beta.37 hasta completar build y pruebas SIP.
+> Windows x64 dispone de instalador y portable; Linux continúa en desarrollo
+> experimental.
 
 ## Funciones actuales
 
