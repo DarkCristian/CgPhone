@@ -203,9 +203,22 @@ Además, el build fija explícitamente `PJMEDIA_HAS_SRTP=0`,
 `PJMEDIA_SDP_NEG_MAINTAIN_REMOTE_PT_MAP=0`. Estas defensas no sustituyen los
 parches: ambos controles se aplican simultáneamente.
 
-La candidata no reemplaza beta.37 hasta que el workflow finalice, coincidan sus
-hashes, Defender informe `CLEAN` y se repita la matriz funcional con Asterisk
-y Neotel. Los hashes de beta.37 no son válidos para los nuevos binarios.
+El [workflow #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867)
+finalizó correctamente sobre el commit
+`6d752cbbf5115a3a1f1f30db6d4eeddc41c06cf5`. Compiló el PJPROJECT fijado,
+validó el instalador contra el árbol portable, obtuvo cero detecciones de
+Microsoft Defender (`CLEAN`), generó SBOM SPDX 2.3 y completó la atestación.
+
+| Archivo beta.38 | SHA-256 |
+|---|---|
+| `CgPhone-Setup-0.3.2-x64.exe` | `cf3224819d10e892c250efb35f961b36caa9ac30c0dd377ef6d8e4777161eb09` |
+| `CgPhone-0.3.2-windows-x64-portable.zip` | `e6fb2a737a0729b642d5d3e4d7285d8ef153d5586be03493536d9d255a50c7d3` |
+| `CgPhone-0.3.2-sbom.spdx.json` | `68b4afae287052cba2f0be05808a3b668c1e599d04e835798301e9d59e2d59aa` |
+| `Microsoft-Defender-scan-report.txt` | `0f100027a17286a6ec3b9cfe1619b784a963021740a3418dd0e837eacc32ce40` |
+
+Beta.38 todavía no reemplaza beta.37 ni debe publicarse como funcionalmente
+validada hasta repetir la matriz con Asterisk y Neotel. Los hashes de beta.37
+no son válidos para estos binarios.
 
 ## Dependencias observadas en el build #37
 
