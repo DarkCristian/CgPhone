@@ -26,7 +26,7 @@ mkdir -p "$compliance_dir"
 python "$root_dir/scripts/generate-spdx-sbom.py" \
   "$portable_dir" \
   "$compliance_dir/CgPhone-sbom.spdx.json" \
-  --version "${CGPHONE_VERSION:-0.3.1}" \
+  --version "${CGPHONE_VERSION:-0.3.2}" \
   --commit "$(git -C "$root_dir" rev-parse HEAD 2>/dev/null || echo NOASSERTION)"
 
 (
