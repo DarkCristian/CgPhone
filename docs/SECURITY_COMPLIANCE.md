@@ -124,7 +124,7 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 
 - [ ] Fijar Qt, toolchain y paquetes MSYS2 por versión y registrar hashes.
 - [x] Registrar la revisión exacta de PJPROJECT usada en el build #37.
-- [ ] Integrar y documentar todos los parches PJSIP aplicables.
+- [ ] Validar y mergear la candidata beta.38, que integra y documenta los parches PJSIP aplicables.
 - [ ] Mantener SRTP/SDES deshabilitado hasta parchearlo y probarlo.
 - [ ] Deshabilitar video, CLI Telnet, HTTP client y módulos no usados.
 - [x] Generar y publicar SBOM SPDX 2.3 del runtime de beta.37.
@@ -181,6 +181,20 @@ instalador, el portable, el SBOM y el manifiesto. El run
 finalizó correctamente: los hashes coincidieron y el paso de atestación fue
 exitoso. Este control aporta integridad y procedencia pública, pero **no es una
 firma Authenticode** y no crea reputación en Microsoft SmartScreen.
+
+## Remediación PJPROJECT preparada en beta.38
+
+La candidata `v0.3.2-beta.38` fija PJPROJECT al commit upstream
+[`a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9`](https://github.com/pjsip/pjproject/commit/a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9).
+Ese punto contiene las correcciones oficiales para CVE-2026-57159,
+CVE-2026-57160 y CVE-2026-57162. El workflow comprueba el commit exacto antes
+de compilar y registra esa revisión en el SBOM y
+`COMPLIANCE/DEPENDENCY-VERSIONS.txt`.
+
+Como defensa adicional, SRTP, vídeo y el remapeo remoto de payload types quedan
+deshabilitados explícitamente. Antes de fusionar o publicar esta candidata se
+requieren: build exitoso, gate Defender `CLEAN`, hashes/atestación nuevos y
+repetición de las pruebas funcionales con Asterisk y Neotel.
 
 ## Gate automatizado de Microsoft Defender
 
