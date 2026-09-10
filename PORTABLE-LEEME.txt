@@ -1,4 +1,4 @@
-CgPhone 0.2.10 - portable SIP experimental
+CgPhone 0.3.2 beta.38 - portable SIP con parches de seguridad
 ===========================================
 
 Este build utiliza PJSUA2/PJPROJECT y realiza registro y llamadas SIP reales.
@@ -46,9 +46,16 @@ Limitaciones de esta compilación experimental:
 - sin TLS/SRTP ni video;
 - sin selección de dispositivos de audio;
 - sin validación específica de NAT/firewall;
-- grabación todavía no funcional;
 - no usar en producción ni con una campaña activa.
 
 Para diagnosticar, correlacione el estado mostrado con el log de Asterisk:
   pjsip set logger on
   core set verbose 5
+
+
+Seguridad de esta compilación:
+- PJPROJECT fijado al commit a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9;
+- incorpora los parches oficiales para CVE-2026-57159,
+  CVE-2026-57160 y CVE-2026-57162;
+- SRTP, vídeo y el remapeo remoto de payload types permanecen deshabilitados;
+- verifique SHA256SUMS.txt y el SBOM antes de instalar.

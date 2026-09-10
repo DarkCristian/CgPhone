@@ -4,15 +4,27 @@ set -euo pipefail
 root_dir="$(cd "$(dirname "$0")/.." && pwd)"
 work_dir="${RUNNER_TEMP:-$root_dir/.build-deps}/cgphone"
 pj_dir="$work_dir/pjproject"
+pj_commit="a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9"
+export CGPHONE_VERSION="0.3.2"
 
 mkdir -p "$work_dir"
 if [[ ! -d "$pj_dir/.git" ]]; then
-  git clone --depth 1 --branch 2.17 https://github.com/pjsip/pjproject.git "$pj_dir"
+  mkdir -p "$pj_dir"
+  git -C "$pj_dir" init
+  git -C "$pj_dir" remote add origin https://github.com/pjsip/pjproject.git
+fi
+git -C "$pj_dir" fetch --depth 1 origin "$pj_commit"
+git -C "$pj_dir" checkout --detach --force FETCH_HEAD
+if [[ "$(git -C "$pj_dir" rev-parse HEAD)" != "$pj_commit" ]]; then
+  echo "PJPROJECT no quedó fijado al commit de seguridad esperado" >&2
+  exit 1
 fi
 
 mkdir -p "$pj_dir/pjlib/include/pj"
 cat > "$pj_dir/pjlib/include/pj/config_site.h" <<'EOF'
 #define PJMEDIA_HAS_VIDEO 0
+#define PJMEDIA_HAS_SRTP 0
+#define PJMEDIA_SDP_NEG_MAINTAIN_REMOTE_PT_MAP 0
 #define PJSUA_MAX_CALLS 2
 #include <pj/config_site_sample.h>
 EOF
@@ -176,6 +188,6 @@ cp "$root_dir/PORTABLE-LEEME.txt" "$portable_dir/"
 bash "$root_dir/scripts/generate-compliance-manifest.sh" "$root_dir" "$portable_dir" "$pj_dir"
 
 pushd "$root_dir"
-rm -f CgPhone-0.3.1-windows-x64-portable.zip
-zip -qr CgPhone-0.3.1-windows-x64-portable.zip CgPhone-portable
+rm -f CgPhone-0.3.2-windows-x64-portable.zip
+zip -qr CgPhone-0.3.2-windows-x64-portable.zip CgPhone-portable
 popd

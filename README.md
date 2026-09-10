@@ -5,8 +5,12 @@ Windows y, próximamente, Linux. El objetivo es ofrecer una aplicación simple,
 liviana y transparente para registrar una cuenta SIP, realizar y recibir
 llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 
-> **Estado actual:** `v0.3.1-beta.37` para laboratorio controlado. Windows x64
-> dispone de instalador y portable; Linux continúa en desarrollo experimental.
+> **Estado actual:** `v0.3.2-beta.38`, validada para laboratorio controlado
+> con Asterisk y Neotel. El [build #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867)
+> incorporó los parches de PJPROJECT para CVE-2026-57159, CVE-2026-57160 y
+> CVE-2026-57162, y pasó compilación, Defender, hashes, SBOM y atestación.
+> Windows x64 dispone de instalador y portable; Linux continúa en desarrollo
+> experimental.
 
 ## Funciones actuales
 
@@ -52,34 +56,35 @@ preservar esta base simple, auditable y orientada al uso operacional.
 
 ## Descargar y probar
 
-La pre-release actual es [CgPhone Free v0.3.1-beta.37](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.37) para Windows x64:
+La compilación actual es **CgPhone Free v0.3.2-beta.38** para Windows x64:
 
-- Instalador: `CgPhone-Setup-0.3.1-x64.exe`.
-- Portable: `CgPhone-0.3.1-windows-x64-portable.zip`.
-- Commit exacto compilado: `bbd61191872e91f94eb0be53b1c5078bc47e3b1f`.
-- Workflow validado: [#37](https://github.com/DarkCristian/CgPhone/actions/runs/34141605443).
+- Instalador: `CgPhone-Setup-0.3.2-x64.exe`.
+- Portable: `CgPhone-0.3.2-windows-x64-portable.zip`.
+- Commit exacto compilado: `6d752cbbf5115a3a1f1f30db6d4eeddc41c06cf5`.
+- Workflow validado: [#38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867).
+- SBOM: SPDX 2.3, 231 archivos y 16 paquetes.
 
 ```text
-9cfd527a5991490f34a87e000439e0b7fa7385a8db8c41eb7355b1fe7b21c900  CgPhone-Setup-0.3.1-x64.exe
-3fbff9df4abf20d42e1af0e08dfbe770e19b5a919e2b7f8f2452dd452b0f6241  CgPhone-0.3.1-windows-x64-portable.zip
-4c6c5a3485be72e941d8c2ff7912dd80aa75bc016f1ecc4d7c63471e4b54166f  CgPhone-0.3.1-sbom.spdx.json
-2e5a8169087f4410dc6eab98ad94baad77ba33221effe27d6a505f02e79e6ccf  Microsoft-Defender-scan-report.txt
-1572fa0f2b4f54106e3ebff530254830c5de9cc3f85e6775bb251fb9ac022832  SHA256SUMS.txt
+cf3224819d10e892c250efb35f961b36caa9ac30c0dd377ef6d8e4777161eb09  CgPhone-Setup-0.3.2-x64.exe
+e6fb2a737a0729b642d5d3e4d7285d8ef153d5586be03493536d9d255a50c7d3  CgPhone-0.3.2-windows-x64-portable.zip
+68b4afae287052cba2f0be05808a3b668c1e599d04e835798301e9d59e2d59aa  CgPhone-0.3.2-sbom.spdx.json
+0f100027a17286a6ec3b9cfe1619b784a963021740a3418dd0e837eacc32ce40  Microsoft-Defender-scan-report.txt
+e1e9adbf001bdb6da0ab3efced9d3a9318723e4bf319f5a84b8c2024af505491  SHA256SUMS.txt
 ```
 
-Descargá CgPhone únicamente desde la Release oficial y verificá el archivo
-individual, no sólo el ZIP contenedor que genera GitHub para los artifacts.
+Descargá CgPhone únicamente desde el workflow/release oficial y verificá el
+archivo individual, no sólo el ZIP contenedor generado por GitHub.
 
 ### Aviso de Microsoft SmartScreen
 
-El instalador de beta.37 todavía no posee una firma Authenticode pública.
+El instalador de beta.38 todavía no posee una firma Authenticode pública.
 Windows puede mostrar el aviso **“Windows protegió su PC”**. La presencia o
 ausencia de ese aviso no reemplaza la verificación del SHA-256.
 
 Para verificar el archivo en PowerShell:
 
 ```powershell
-Get-FileHash .\CgPhone-Setup-0.3.1-x64.exe -Algorithm SHA256
+Get-FileHash .\CgPhone-Setup-0.3.2-x64.exe -Algorithm SHA256
 ```
 
 El resultado debe coincidir exactamente con el hash publicado arriba. Esta
@@ -88,8 +93,9 @@ producción.
 
 ## Validación funcional de la beta
 
-La matriz funcional se validó manualmente en Windows x64 con beta.35 y se
-replicó satisfactoriamente en beta.37 contra centrales **Asterisk y Neotel**.
+La matriz funcional se validó manualmente en Windows x64 con beta.35, se
+replicó en beta.37 y volvió a completarse satisfactoriamente en beta.38 contra
+centrales **Asterisk y Neotel**.
 En ambos entornos se comprobaron:
 
 - instalación, desinstalación y limpieza opcional de la configuración;
@@ -103,7 +109,7 @@ En ambos entornos se comprobaron:
 - apertura y ocultamiento del diagnóstico mediante `Shift+F12`;
 - revisión del log SIP para evitar la exposición de contraseñas o secretos.
 
-La validación fue completada sobre los artefactos exactos de beta.35 y beta.37.
+La validación fue completada sobre los artefactos exactos de beta.35, beta.37 y beta.38.
 Debe repetirse en cada release y no sustituye un análisis de seguridad,
 compatibilidad o carga.
 
@@ -116,13 +122,13 @@ portable y el SBOM. Los hashes del manifiesto coincidieron con los artefactos
 generados. Estas atestaciones permiten comprobar el origen del build mediante
 `gh attestation verify`, pero no reemplazan Authenticode ni evitan SmartScreen.
 
-El [workflow #37](https://github.com/DarkCristian/CgPhone/actions/runs/34141605443)
-validó el gate de Microsoft Defender sobre la distribución final: actualizó la
-inteligencia de seguridad y analizó el instalador, el runtime portable, el ZIP
-y el árbol instalado. El resultado fue `CLEAN`, con cero detecciones, usando el
-motor 1.1.26080.3 y la inteligencia 1.459.97.0. El reporte sanitizado forma
-parte de `SHA256SUMS.txt` y de la atestación del build. Este resultado corresponde
-sólo a ese commit y fecha; no convierte automáticamente en limpio otro archivo.
+El [workflow #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867)
+validó el gate de Microsoft Defender sobre la distribución final: instalador,
+runtime portable, ZIP y árbol instalado. El resultado fue `CLEAN`, con cero
+detecciones, usando motor 1.1.26080.3 e inteligencia 1.459.130.0. El reporte
+sanitizado forma parte de `SHA256SUMS.txt` y de la atestación. Este resultado
+corresponde sólo al commit y archivos indicados; no convierte automáticamente
+en limpio otro archivo.
 
 ### Validación con Trellix Endpoint Security
 
@@ -158,7 +164,7 @@ representan todavía un paquete Linux oficialmente soportado.
 ### Windows
 
 El workflow `.github/workflows/windows-portable.yml` compila CgPhone y
-PJPROJECT mediante MSYS2/MinGW. La rama de release 0.3.1 también genera el
+PJPROJECT mediante MSYS2/MinGW. El workflow actual también genera el
 instalador con Inno Setup y publica el hash SHA-256 como artefacto.
 
 Para ejecutar el build portable en MSYS2 MINGW64:
@@ -293,13 +299,11 @@ documentados en:
 La firma digital, SmartScreen, el análisis de dependencias y las pruebas
 funcionales son controles distintos. Ninguno sustituye a los demás.
 
-La pre-release `v0.3.1-beta.37` publica además un
-[SBOM SPDX 2.3](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.1-beta.37/CgPhone-0.3.1-sbom.spdx.json)
-generado desde los 231 archivos del runtime distribuido y 16 paquetes. Su
-SHA-256 es:
+El build `v0.3.2-beta.38` genera un SBOM SPDX 2.3 desde los 231 archivos
+del runtime distribuido y 16 paquetes. Su SHA-256 es:
 
 ```text
-4c6c5a3485be72e941d8c2ff7912dd80aa75bc016f1ecc4d7c63471e4b54166f
+68b4afae287052cba2f0be05808a3b668c1e599d04e835798301e9d59e2d59aa
 ```
 
 El SBOM permite inventariar componentes y evaluar CVE; no es ejecutable, no es

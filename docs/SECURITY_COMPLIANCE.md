@@ -1,18 +1,46 @@
 # Seguridad y compliance de CgPhone Free
 
-Última revisión: 2026-09-08 (beta.37 y validación Trellix sanitizada).
+Última revisión: 2026-09-10 (beta.38, parches PJPROJECT y validación funcional).
 
 ## Alcance actual
 
-CgPhone Free v0.3.1-beta.37 es una pre-release para laboratorio controlado con
-centrales SIP como Asterisk o Neotel. Windows x64 dispone de instalador y
+CgPhone Free v0.3.2-beta.38 es la beta actual para laboratorio controlado,
+validada con centrales SIP Asterisk y Neotel. Windows x64 dispone de instalador y
 portable. La versión nativa para Linux continúa en desarrollo y todavía no se
 distribuye como paquete soportado.
 
 CgPhone Free es la única línea mantenida. No integra Qt WebEngine ni Qt WebView
 y no existe una edición Pro/Full mantenida.
 
-## Evidencia del build v0.3.1-beta.37
+## Evidencia del build v0.3.2-beta.38
+
+| Campo | Valor |
+|---|---|
+| Workflow | [Windows Free installer #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867) |
+| Commit exacto del build | `6d752cbbf5115a3a1f1f30db6d4eeddc41c06cf5` |
+| PJPROJECT | 2.17 con parches, commit `a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9` |
+| Instalador | `CgPhone-Setup-0.3.2-x64.exe` |
+| SHA-256 instalador | `cf3224819d10e892c250efb35f961b36caa9ac30c0dd377ef6d8e4777161eb09` |
+| Portable | `CgPhone-0.3.2-windows-x64-portable.zip` |
+| SHA-256 portable | `e6fb2a737a0729b642d5d3e4d7285d8ef153d5586be03493536d9d255a50c7d3` |
+| SBOM | `CgPhone-0.3.2-sbom.spdx.json` (SPDX 2.3; 231 archivos; 16 paquetes) |
+| SHA-256 SBOM | `68b4afae287052cba2f0be05808a3b668c1e599d04e835798301e9d59e2d59aa` |
+| SHA-256 reporte Defender | `0f100027a17286a6ec3b9cfe1619b784a963021740a3418dd0e837eacc32ce40` |
+| SHA-256 `SHA256SUMS.txt` | `e1e9adbf001bdb6da0ab3efced9d3a9318723e4bf319f5a84b8c2024af505491` |
+| Defender | `CLEAN`, cero detecciones |
+| Atestación | Generada correctamente por GitHub Actions |
+| Validación SIP | Completada con Asterisk y Neotel |
+| Firma Authenticode | No aplicada; SmartScreen puede advertir inicialmente |
+| Clasificación | Beta validada para laboratorio controlado |
+
+La validación manual confirmó portable, instalación y operación SIP. SmartScreen
+continúa mostrando un aviso en la primera ejecución o instalación porque el
+binario carece de una firma Authenticode pública. El SHA-256, el SBOM y la
+atestación prueban integridad/procedencia, pero no generan reputación SmartScreen.
+
+## Evidencia histórica del build v0.3.1-beta.37
+
+
 
 | Campo | Valor |
 |---|---|
@@ -103,19 +131,19 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 | Control | Estado |
 |---|---|
 | Build automatizado Windows x64 | Implementado |
-| Instalador Inno Setup | Implementado y probado en #37 |
-| SHA-256 de instalador, portable, SBOM y reporte | Publicados en beta.37 |
+| Instalador Inno Setup | Implementado y probado en #38 |
+| SHA-256 de instalador, portable, SBOM y reporte | Generados y verificados en beta.38 |
 | Portable con información de build | Implementado |
-| Instalación, desinstalación y limpieza opcional | Validadas manualmente en beta.37 |
-| Pruebas funcionales SIP | Matriz de beta.35 replicada satisfactoriamente en beta.37 con Asterisk y Neotel |
+| Instalación, desinstalación y limpieza opcional | Validadas manualmente en beta.38 |
+| Pruebas funcionales SIP | Completadas en beta.38 con Asterisk y Neotel |
 | Firma Authenticode pública | Pendiente |
 | Timestamp RFC 3161 | Pendiente |
-| SBOM SPDX 2.3 de beta.37 | Generado y publicado como asset independiente |
+| SBOM SPDX 2.3 de beta.38 | Generado y verificado como artifact independiente |
 | Generación automática de SBOM | Incorporada al workflow para futuros builds |
 | SHA256SUMS y atestaciones de artefactos | Workflow validado correctamente en run 33923023903 |
 | OSV-Scanner o Trivy | Pendiente |
 | CodeQL C/C++ | No existe workflow activo |
-| Microsoft Defender sobre paquete final | Validado en workflow #37: 0 detecciones |
+| Microsoft Defender sobre paquete final | Validado en workflow #38: 0 detecciones |
 | Trellix Endpoint Security | Portable, instalado y análisis rápido: 0 detecciones; sin evento nuevo atribuible |
 | Reproducibilidad con dependencias fijadas | Pendiente |
 | Paquete Linux | En desarrollo |
@@ -123,20 +151,20 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 ## Gate para una release estable
 
 - [ ] Fijar Qt, toolchain y paquetes MSYS2 por versión y registrar hashes.
-- [x] Registrar la revisión exacta de PJPROJECT usada en el build #37.
-- [ ] Integrar y documentar todos los parches PJSIP aplicables.
-- [ ] Mantener SRTP/SDES deshabilitado hasta parchearlo y probarlo.
+- [x] Registrar y fijar la revisión exacta de PJPROJECT usada en el build #38.
+- [x] Validar e integrar beta.38 con los parches PJSIP aplicables.
+- [x] Mantener SRTP/SDES deshabilitado y compilar su parche preventivo.
 - [ ] Deshabilitar video, CLI Telnet, HTTP client y módulos no usados.
-- [x] Generar y publicar SBOM SPDX 2.3 del runtime de beta.37.
+- [x] Generar y verificar SBOM SPDX 2.3 del runtime de beta.38.
 - [x] Automatizar el SBOM dentro de `COMPLIANCE/` y como artefacto independiente.
 - [ ] Ejecutar OSV-Scanner o Trivy y resolver hallazgos altos/críticos.
 - [ ] Incorporar CodeQL para C/C++ y revisar sus resultados.
-- [x] Validar por workflow el análisis de Defender sobre instalador, portable, ZIP y árbol instalado (#37).
-- [x] Publicar SHA-256 del instalador, portable, SBOM, reporte Defender y manifiesto de beta.37.
+- [x] Validar por workflow el análisis de Defender sobre instalador, portable, ZIP y árbol instalado (#38).
+- [x] Generar y verificar SHA-256 del instalador, portable, SBOM, reporte Defender y manifiesto de beta.38.
 - [ ] Firmar ejecutables propios e instalador con Authenticode.
 - [ ] Aplicar timestamp de una autoridad confiable.
 - [ ] Verificar firma mediante `signtool verify /pa /all /v`.
-- [x] Completar la matriz formal de pruebas SIP de beta.37 con Asterisk y Neotel.
+- [x] Completar la matriz formal de pruebas SIP de beta.38 con Asterisk y Neotel.
 - [x] Verificar instalación, desinstalación y limpieza opcional de configuración.
 - [ ] Sanitizar logs y comprobar que no contengan secretos.
 - [ ] Revisar ACL de configuración, logs y grabaciones.
@@ -157,7 +185,7 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
 - [ ] Analizar el SBOM con OSV-Scanner, Grype o Trivy y documentar el triage de
   CVE según versión, módulo y alcanzabilidad real.
 - [x] Validar el gate automatizado de Microsoft Defender y conservar su reporte
-  sanitizado (workflow #37).
+  sanitizado (workflow #38).
 - [x] Probar beta.37 con Trellix Endpoint Security: portable, runtime instalado y
   análisis rápido con cero detecciones; sin publicar evidencia sensible.
 - [x] Generar una atestación de procedencia del build y conservar el vínculo
@@ -168,7 +196,7 @@ pruebas internas. No eliminan SmartScreen ni sustituyen Authenticode:
 - [ ] Verificar ACL de `ProgramData`, logs y grabaciones con usuario estándar y
   administrador.
 - [ ] Restringir firewall a PBX/SBC y puertos SIP/RTP autorizados para el piloto.
-- [x] Completar y conservar la matriz funcional SIP de beta.37 con Asterisk y Neotel.
+- [x] Completar y conservar la matriz funcional SIP de beta.38 con Asterisk y Neotel.
 - [ ] Documentar falso positivo/revisión del proveedor si Trellix o cualquier
   motor mantiene una detección sobre el hash exacto publicado.
 - [ ] Probar instalación, actualización y desinstalación en una VM limpia y en
@@ -181,6 +209,26 @@ instalador, el portable, el SBOM y el manifiesto. El run
 finalizó correctamente: los hashes coincidieron y el paso de atestación fue
 exitoso. Este control aporta integridad y procedencia pública, pero **no es una
 firma Authenticode** y no crea reputación en Microsoft SmartScreen.
+
+## Remediación PJPROJECT integrada en beta.38
+
+La versión validada `v0.3.2-beta.38` fija PJPROJECT al commit upstream
+[`a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9`](https://github.com/pjsip/pjproject/commit/a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9).
+Ese punto contiene las correcciones oficiales para CVE-2026-57159,
+CVE-2026-57160 y CVE-2026-57162. El workflow comprueba el commit exacto antes
+de compilar y registra esa revisión en el SBOM y
+`COMPLIANCE/DEPENDENCY-VERSIONS.txt`.
+
+Como defensa adicional, SRTP, vídeo y el remapeo remoto de payload types quedan
+deshabilitados explícitamente.
+
+El [workflow #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867)
+completó compilación, pruebas automáticas, validación del árbol instalado,
+Defender `CLEAN`, SBOM, SHA-256 y atestación. Los hashes principales son:
+`cf3224819d10e892c250efb35f961b36caa9ac30c0dd377ef6d8e4777161eb09`
+(instalador) y
+`e6fb2a737a0729b642d5d3e4d7285d8ef153d5586be03493536d9d255a50c7d3`
+(portable). La matriz funcional fue repetida satisfactoriamente con Asterisk y Neotel.
 
 ## Gate automatizado de Microsoft Defender
 
@@ -271,5 +319,7 @@ Cada release debe conservar:
 - checklist funcional;
 - notas de cambios y limitaciones conocidas.
 
-Los assets de beta.37, incluido el SBOM, el manifiesto y el reporte Defender,
-se publican en la [Release v0.3.1-beta.37](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.37). Beta.35 permanece disponible como evidencia histórica.
+Los artefactos de beta.38 —instalador, portable, SBOM, manifiesto y reporte
+Defender— fueron generados en el [workflow #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867).
+La Release v0.3.1-beta.37 y beta.35 permanecen disponibles como evidencia
+histórica; sus hashes no son intercambiables con beta.38.

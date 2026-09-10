@@ -1,17 +1,18 @@
 # Política de seguridad de CgPhone Free
 
-Última revisión: 2026-09-08 (beta.37, Defender y Trellix documentados).
+Última revisión: 2026-09-10 (beta.38 validada con Asterisk/Neotel y Defender).
 
 ## Versiones soportadas
 
 | Versión | Plataforma | Estado | Actualizaciones de seguridad |
 |---|---|---|---|
-| [v0.3.1-beta.37](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.37) | Windows x64 | Pre-release actual para laboratorio | Sí, durante la etapa beta |
+| v0.3.2-beta.38 ([workflow #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867)) | Windows x64 | Beta actual validada para laboratorio | Sí, durante la etapa beta |
+| [v0.3.1-beta.37](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.37) | Windows x64 | Histórica; reemplazada por beta.38 | Sólo referencia |
 | [v0.3.1-beta.35](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.35) | Windows x64 | Histórica; reemplazada por beta.37 | Sólo referencia |
 | Linux | Ubuntu, Debian, Mint, LMDE, Zorin, Arch y derivados | En desarrollo, sin paquete soportado | Evaluación comunitaria |
 
 Versiones anteriores y artefactos generados por otros workflows no deben
-considerarse equivalentes aunque conserven el nombre 0.3.1. Cada archivo debe
+considerarse equivalentes aunque compartan una misma versión base. Cada archivo debe
 validarse mediante su SHA-256.
 
 ## Reportar una vulnerabilidad
@@ -43,7 +44,33 @@ Incluí, si es posible:
 No se promete una recompensa económica. Los reportes se evaluarán según
 reproducibilidad, alcance e impacto.
 
-## Evidencia de v0.3.1-beta.37
+## Evidencia de v0.3.2-beta.38
+
+| Campo | Valor |
+|---|---|
+| Workflow validado | [Windows Free installer #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867) |
+| Commit exacto del build | `6d752cbbf5115a3a1f1f30db6d4eeddc41c06cf5` |
+| PJPROJECT/PJSUA2 | 2.17 más parches upstream, commit `a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9` |
+| Instalador | `CgPhone-Setup-0.3.2-x64.exe` |
+| SHA-256 instalador | `cf3224819d10e892c250efb35f961b36caa9ac30c0dd377ef6d8e4777161eb09` |
+| Portable | `CgPhone-0.3.2-windows-x64-portable.zip` |
+| SHA-256 portable | `e6fb2a737a0729b642d5d3e4d7285d8ef153d5586be03493536d9d255a50c7d3` |
+| SBOM | `CgPhone-0.3.2-sbom.spdx.json` (SPDX 2.3; 231 archivos; 16 paquetes) |
+| SHA-256 SBOM | `68b4afae287052cba2f0be05808a3b668c1e599d04e835798301e9d59e2d59aa` |
+| SHA-256 reporte Defender | `0f100027a17286a6ec3b9cfe1619b784a963021740a3418dd0e837eacc32ce40` |
+| SHA-256 manifiesto | `e1e9adbf001bdb6da0ab3efced9d3a9318723e4bf319f5a84b8c2024af505491` |
+| Microsoft Defender | `CLEAN`, cero detecciones |
+| Firma Authenticode | No aplicada; SmartScreen puede advertir en la primera ejecución |
+| Validación funcional | Completada satisfactoriamente con Asterisk y Neotel |
+| Clasificación | Beta validada para laboratorio controlado |
+
+Beta.38 incorpora los parches oficiales de PJPROJECT para CVE-2026-57159,
+CVE-2026-57160 y CVE-2026-57162. La validación manual confirmó que portable,
+instalador y operación SIP mantienen el comportamiento esperado. La advertencia de SmartScreen observada en la primera ejecución o instalación
+responde a la ausencia de una firma Authenticode pública
+y no queda resuelta por hashes, SBOM o atestaciones.
+
+## Evidencia histórica de v0.3.1-beta.37
 
 | Campo | Valor |
 |---|---|
@@ -183,16 +210,52 @@ corporativos. El gate falla si Defender no está disponible, el análisis no
 termina o aparece una detección. Esta evidencia corresponde al build #37 y a los hashes publicados en beta.37;
 no modifica retroactivamente beta.35.
 
-## Dependencias observadas en el build #37
+## Remediación de seguridad integrada en v0.3.2-beta.38
+
+La versión v0.3.2-beta.38 se generó desde la rama
+`security/pjproject-cve-fixes-beta-38` y reemplaza beta.37 como baseline. Mantiene PJPROJECT 2.17 como base compatible y fija el
+código exactamente al commit oficial
+[`a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9`](https://github.com/pjsip/pjproject/commit/a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9),
+que contiene los parches publicados por upstream para:
+
+- [CVE-2026-57159](https://github.com/pjsip/pjproject/security/advisories/GHSA-rfwg-w9gq-9mw2):
+  validación de límites en payload types SDP dinámicos;
+- [CVE-2026-57160](https://github.com/pjsip/pjproject/security/advisories/GHSA-277r-3q2j-mxcw):
+  escritura fuera de límites al serializar encabezados SIP genéricos;
+- [CVE-2026-57162](https://github.com/pjsip/pjproject/security/advisories/GHSA-m9g3-jcj8-qjfm):
+  límite de atributos `a=crypto` en SRTP/SDES.
+
+Además, el build fija explícitamente `PJMEDIA_HAS_SRTP=0`,
+`PJMEDIA_HAS_VIDEO=0` y
+`PJMEDIA_SDP_NEG_MAINTAIN_REMOTE_PT_MAP=0`. Estas defensas no sustituyen los
+parches: ambos controles se aplican simultáneamente.
+
+El [workflow #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867)
+finalizó correctamente sobre el commit
+`6d752cbbf5115a3a1f1f30db6d4eeddc41c06cf5`. Compiló el PJPROJECT fijado,
+validó el instalador contra el árbol portable, obtuvo cero detecciones de
+Microsoft Defender (`CLEAN`), generó SBOM SPDX 2.3 y completó la atestación.
+
+| Archivo beta.38 | SHA-256 |
+|---|---|
+| `CgPhone-Setup-0.3.2-x64.exe` | `cf3224819d10e892c250efb35f961b36caa9ac30c0dd377ef6d8e4777161eb09` |
+| `CgPhone-0.3.2-windows-x64-portable.zip` | `e6fb2a737a0729b642d5d3e4d7285d8ef153d5586be03493536d9d255a50c7d3` |
+| `CgPhone-0.3.2-sbom.spdx.json` | `68b4afae287052cba2f0be05808a3b668c1e599d04e835798301e9d59e2d59aa` |
+| `Microsoft-Defender-scan-report.txt` | `0f100027a17286a6ec3b9cfe1619b784a963021740a3418dd0e837eacc32ce40` |
+
+Beta.38 fue validada funcionalmente con Asterisk y Neotel. Los hashes de
+beta.37 no son válidos para estos binarios.
+
+## Dependencias observadas en el build #38
 
 Estas versiones provienen del archivo
-`COMPLIANCE/DEPENDENCY-VERSIONS.txt` incluido en el portable de beta.37:
+`COMPLIANCE/DEPENDENCY-VERSIONS.txt` incluido en el portable de beta.38:
 
 | Componente | Versión/revisión observada |
 |---|---|
 | Qt Base | 6.11.2-2 |
 | Qt Declarative / Multimedia / SVG | 6.11.2-1 |
-| PJPROJECT/PJSUA2 | 2.17, commit `5a457451fa2712ba18e12b01738e8ff3af2b26fd` |
+| PJPROJECT/PJSUA2 | 2.17 con parches, commit `a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9` |
 | OpenSSL | 3.6.4-1 |
 | FFmpeg | 9.0.1-3 |
 | Opus | 1.6.1-1 |
@@ -200,14 +263,14 @@ Estas versiones provienen del archivo
 | GCC/MinGW | 16.2.0-3 |
 | CMake | 4.4.3-2 |
 
-MSYS2 utiliza paquetes móviles. Esta evidencia describe el build #37, pero no
+MSYS2 utiliza paquetes móviles. Esta evidencia describe el build #38, pero no
 garantiza que una ejecución futura del workflow obtenga las mismas versiones.
 
 ## Dependencias y límites conocidos
 
-CgPhone procesa mensajes SDP/SIP y audio provenientes de la red. La versión
-actual utiliza PJPROJECT/PJSUA2 2.17, que requiere revisar advisories y parches
-aplicables antes de declarar una release productiva.
+CgPhone procesa mensajes SDP/SIP y audio provenientes de la red. La versión actual utiliza PJPROJECT/PJSUA2 2.17 fijado al commit parcheado
+`a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9`. Los advisories nuevos deben
+reevaluarse antes de cada publicación.
 
 La edición Free no integra Qt WebEngine ni Qt WebView. Los avisos de Chromium o
 Qt WebEngine no son automáticamente aplicables: sólo deben reevaluarse si esos

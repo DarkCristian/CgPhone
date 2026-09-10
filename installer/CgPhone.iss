@@ -1,5 +1,5 @@
 #define MyAppName "CgPhone"
-#define MyAppVersion "0.3.1"
+#define MyAppVersion "0.3.2"
 #define MyAppExeName "CgPhone.exe"
 #define MyAppExePath "bin\CgPhone.exe"
 

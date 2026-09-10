@@ -4,13 +4,17 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - release/free-0.3.1
+      - release/free-0.3.2
       - fix/windows-installer-dependencies
       - fix/uninstaller-remove-settings
       - security/windows-defender-scan
+      - security/pjproject-cve-fixes-beta-38
     paths:
       - .github/workflows/windows-portable.yml
       - installer/CgPhone.iss
+      - scripts/build-windows-portable-msys2.sh
+      - scripts/generate-compliance-manifest.sh
+      - CMakeLists.txt
 
 permissions:
   id-token: write
@@ -57,14 +61,14 @@ jobs:
             throw "No se encontró Inno Setup en $iscc"
           }
           & $iscc "/O$PWD" "installer\\CgPhone.iss"
-          if (-not (Test-Path "CgPhone-Setup-0.3.1-x64.exe")) {
+          if (-not (Test-Path "CgPhone-Setup-0.3.2-x64.exe")) {
             throw "No se generó el instalador esperado"
           }
 
       - name: Validar contenido del instalador
         shell: powershell
         run: |
-          $setup = Join-Path $PWD "CgPhone-Setup-0.3.1-x64.exe"
+          $setup = Join-Path $PWD "CgPhone-Setup-0.3.2-x64.exe"
           $testDir = Join-Path $env:RUNNER_TEMP "CgPhone-installed-test"
           if (Test-Path $testDir) {
             Remove-Item $testDir -Recurse -Force
@@ -140,9 +144,9 @@ jobs:
 
             $scanStarted = Get-Date
             $targets = @(
-              (Join-Path $PWD "CgPhone-Setup-0.3.1-x64.exe"),
+              (Join-Path $PWD "CgPhone-Setup-0.3.2-x64.exe"),
               (Join-Path $PWD "CgPhone-portable"),
-              (Join-Path $PWD "CgPhone-0.3.1-windows-x64-portable.zip"),
+              (Join-Path $PWD "CgPhone-0.3.2-windows-x64-portable.zip"),
               (Join-Path $env:RUNNER_TEMP "CgPhone-installed-test")
             )
             foreach ($target in $targets) {
@@ -162,8 +166,8 @@ jobs:
             )
             $detectionCount = $newDetections.Count
 
-            $targetsIntact = (Test-Path "CgPhone-Setup-0.3.1-x64.exe") -and
-              (Test-Path "CgPhone-0.3.1-windows-x64-portable.zip") -and
+            $targetsIntact = (Test-Path "CgPhone-Setup-0.3.2-x64.exe") -and
+              (Test-Path "CgPhone-0.3.2-windows-x64-portable.zip") -and
               (Test-Path "CgPhone-portable\bin\CgPhone.exe")
             if (-not $targetsIntact) {
               throw "One or more artifacts were removed or quarantined during the scan"
@@ -193,7 +197,7 @@ jobs:
           }
 
           @(
-            "Product=CgPhone Free 0.3.1"
+            "Product=CgPhone Free 0.3.2"
             "Commit=$env:GITHUB_SHA"
             "WorkflowRun=$env:GITHUB_RUN_ID"
             "ScannedAtUtc=$((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'))"
@@ -215,7 +219,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-Free-0.3.1-Microsoft-Defender-report
+          name: CgPhone-Free-0.3.2-beta.38-Microsoft-Defender-report
           path: Microsoft-Defender-scan-report.txt
           if-no-files-found: error
           retention-days: 14
@@ -230,11 +234,11 @@ jobs:
       - name: Generar SHA-256 y aviso de distribución
         shell: powershell
         run: |
-          $file = "CgPhone-Setup-0.3.1-x64.exe"
+          $file = "CgPhone-Setup-0.3.2-x64.exe"
           $hash = (Get-FileHash $file -Algorithm SHA256).Hash.ToLowerInvariant()
-          "$hash  $file" | Set-Content "CgPhone-Setup-0.3.1-x64.exe.sha256" -Encoding ascii
+          "$hash  $file" | Set-Content "CgPhone-Setup-0.3.2-x64.exe.sha256" -Encoding ascii
           @"
-          CgPhone Free 0.3.1 - Windows x64
+          CgPhone Free 0.3.2 - Windows x64
 
           AVISO DE SMARTSCREEN
           Este instalador todavía no posee una firma digital pública con reputación
@@ -255,11 +259,11 @@ jobs:
           if (-not (Test-Path $source)) {
             throw "No se generó el SBOM SPDX esperado: $source"
           }
-          Copy-Item $source "CgPhone-0.3.1-sbom.spdx.json"
-          $sbomHash = (Get-FileHash "CgPhone-0.3.1-sbom.spdx.json" -Algorithm SHA256).Hash.ToLowerInvariant()
-          "$sbomHash  CgPhone-0.3.1-sbom.spdx.json" | Set-Content "CgPhone-0.3.1-sbom.spdx.json.sha256" -Encoding ascii
+          Copy-Item $source "CgPhone-0.3.2-sbom.spdx.json"
+          $sbomHash = (Get-FileHash "CgPhone-0.3.2-sbom.spdx.json" -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$sbomHash  CgPhone-0.3.2-sbom.spdx.json" | Set-Content "CgPhone-0.3.2-sbom.spdx.json.sha256" -Encoding ascii
 
-          $sbom = Get-Content "CgPhone-0.3.1-sbom.spdx.json" -Raw | ConvertFrom-Json
+          $sbom = Get-Content "CgPhone-0.3.2-sbom.spdx.json" -Raw | ConvertFrom-Json
           if ($sbom.spdxVersion -ne "SPDX-2.3" -or $sbom.SPDXID -ne "SPDXRef-DOCUMENT") {
             throw "El documento generado no cumple la cabecera SPDX 2.3 esperada"
           }
@@ -268,9 +272,9 @@ jobs:
         shell: powershell
         run: |
           $files = @(
-            "CgPhone-Setup-0.3.1-x64.exe",
-            "CgPhone-0.3.1-windows-x64-portable.zip",
-            "CgPhone-0.3.1-sbom.spdx.json",
+            "CgPhone-Setup-0.3.2-x64.exe",
+            "CgPhone-0.3.2-windows-x64-portable.zip",
+            "CgPhone-0.3.2-sbom.spdx.json",
             "Microsoft-Defender-scan-report.txt"
           )
           $lines = foreach ($file in $files) {
@@ -286,20 +290,20 @@ jobs:
         uses: actions/attest@v4
         with:
           subject-path: |
-            CgPhone-Setup-0.3.1-x64.exe
-            CgPhone-0.3.1-windows-x64-portable.zip
-            CgPhone-0.3.1-sbom.spdx.json
+            CgPhone-Setup-0.3.2-x64.exe
+            CgPhone-0.3.2-windows-x64-portable.zip
+            CgPhone-0.3.2-sbom.spdx.json
             Microsoft-Defender-scan-report.txt
             SHA256SUMS.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-Free-0.3.1-Windows-x64
+          name: CgPhone-Free-0.3.2-beta.38-Windows-x64
           path: |
-            CgPhone-Setup-0.3.1-x64.exe
-            CgPhone-Setup-0.3.1-x64.exe.sha256
-            CgPhone-0.3.1-sbom.spdx.json
-            CgPhone-0.3.1-sbom.spdx.json.sha256
+            CgPhone-Setup-0.3.2-x64.exe
+            CgPhone-Setup-0.3.2-x64.exe.sha256
+            CgPhone-0.3.2-sbom.spdx.json
+            CgPhone-0.3.2-sbom.spdx.json.sha256
             Microsoft-Defender-scan-report.txt
             SHA256SUMS.txt
             LEEME-ANTES-DE-INSTALAR.txt
@@ -308,7 +312,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-Free-0.3.1-Windows-x64-portable
-          path: CgPhone-0.3.1-windows-x64-portable.zip
+          name: CgPhone-Free-0.3.2-beta.38-Windows-x64-portable
+          path: CgPhone-0.3.2-windows-x64-portable.zip
           if-no-files-found: error
           retention-days: 14
