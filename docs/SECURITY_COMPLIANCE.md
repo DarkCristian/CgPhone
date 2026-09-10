@@ -151,11 +151,11 @@ no corrige una dependencia vulnerable ni evita hallazgos de un scanner.
 ## Gate para una release estable
 
 - [ ] Fijar Qt, toolchain y paquetes MSYS2 por versión y registrar hashes.
-- [x] Registrar la revisión exacta de PJPROJECT usada en el build #37.
+- [x] Registrar y fijar la revisión exacta de PJPROJECT usada en el build #38.
 - [x] Validar e integrar beta.38 con los parches PJSIP aplicables.
 - [x] Mantener SRTP/SDES deshabilitado y compilar su parche preventivo.
 - [ ] Deshabilitar video, CLI Telnet, HTTP client y módulos no usados.
-- [x] Generar y publicar SBOM SPDX 2.3 del runtime de beta.37.
+- [x] Generar y verificar SBOM SPDX 2.3 del runtime de beta.38.
 - [x] Automatizar el SBOM dentro de `COMPLIANCE/` y como artefacto independiente.
 - [ ] Ejecutar OSV-Scanner o Trivy y resolver hallazgos altos/críticos.
 - [ ] Incorporar CodeQL para C/C++ y revisar sus resultados.
@@ -210,9 +210,9 @@ finalizó correctamente: los hashes coincidieron y el paso de atestación fue
 exitoso. Este control aporta integridad y procedencia pública, pero **no es una
 firma Authenticode** y no crea reputación en Microsoft SmartScreen.
 
-## Remediación PJPROJECT preparada en beta.38
+## Remediación PJPROJECT integrada en beta.38
 
-La candidata `v0.3.2-beta.38` fija PJPROJECT al commit upstream
+La versión validada `v0.3.2-beta.38` fija PJPROJECT al commit upstream
 [`a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9`](https://github.com/pjsip/pjproject/commit/a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9).
 Ese punto contiene las correcciones oficiales para CVE-2026-57159,
 CVE-2026-57160 y CVE-2026-57162. El workflow comprueba el commit exacto antes
@@ -319,5 +319,7 @@ Cada release debe conservar:
 - checklist funcional;
 - notas de cambios y limitaciones conocidas.
 
-Los assets de beta.37, incluido el SBOM, el manifiesto y el reporte Defender,
-se publican en la [Release v0.3.1-beta.37](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.1-beta.37). Beta.35 permanece disponible como evidencia histórica.
+Los artefactos de beta.38 —instalador, portable, SBOM, manifiesto y reporte
+Defender— fueron generados en el [workflow #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867).
+La Release v0.3.1-beta.37 y beta.35 permanecen disponibles como evidencia
+histórica; sus hashes no son intercambiables con beta.38.
