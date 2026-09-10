@@ -66,8 +66,8 @@ reproducibilidad, alcance e impacto.
 
 Beta.38 incorpora los parches oficiales de PJPROJECT para CVE-2026-57159,
 CVE-2026-57160 y CVE-2026-57162. La validación manual confirmó que portable,
-instalador y operación SIP mantienen el comportamiento esperado. La advertencia
-inicial de SmartScreen responde a la ausencia de una firma Authenticode pública
+instalador y operación SIP mantienen el comportamiento esperado. La advertencia de SmartScreen observada en la primera ejecución o instalación
+responde a la ausencia de una firma Authenticode pública
 y no queda resuelta por hashes, SBOM o atestaciones.
 
 ## Evidencia histórica de v0.3.1-beta.37
@@ -268,9 +268,9 @@ garantiza que una ejecución futura del workflow obtenga las mismas versiones.
 
 ## Dependencias y límites conocidos
 
-CgPhone procesa mensajes SDP/SIP y audio provenientes de la red. La versión
-actual utiliza PJPROJECT/PJSUA2 2.17, que requiere revisar advisories y parches
-aplicables antes de declarar una release productiva.
+CgPhone procesa mensajes SDP/SIP y audio provenientes de la red. La versión actual utiliza PJPROJECT/PJSUA2 2.17 fijado al commit parcheado
+`a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9`. Los advisories nuevos deben
+reevaluarse antes de cada publicación.
 
 La edición Free no integra Qt WebEngine ni Qt WebView. Los avisos de Chromium o
 Qt WebEngine no son automáticamente aplicables: sólo deben reevaluarse si esos
