@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - release/free-0.3.2
+      - fix/minimize-taskbar
       - fix/windows-installer-dependencies
       - fix/uninstaller-remove-settings
       - security/windows-defender-scan
@@ -219,7 +220,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-Free-0.3.2-beta.38-Microsoft-Defender-report
+          name: CgPhone-Free-0.3.2-taskbar-build.${{ github.run_number }}-Microsoft-Defender-report
           path: Microsoft-Defender-scan-report.txt
           if-no-files-found: error
           retention-days: 14
@@ -298,7 +299,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-Free-0.3.2-beta.38-Windows-x64
+          name: CgPhone-Free-0.3.2-taskbar-build.${{ github.run_number }}-Windows-x64
           path: |
             CgPhone-Setup-0.3.2-x64.exe
             CgPhone-Setup-0.3.2-x64.exe.sha256
@@ -312,7 +313,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-Free-0.3.2-beta.38-Windows-x64-portable
+          name: CgPhone-Free-0.3.2-taskbar-build.${{ github.run_number }}-Windows-x64-portable
           path: CgPhone-0.3.2-windows-x64-portable.zip
           if-no-files-found: error
           retention-days: 14

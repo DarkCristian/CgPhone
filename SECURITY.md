@@ -301,3 +301,10 @@ Los controles gratuitos pendientes —licencia explícita del proyecto, textos d
 terceros, CodeQL, análisis de CVE, secret scanning, ACL y sanitización de logs—
 se mantienen en el
 [checklist de compliance](docs/SECURITY_COMPLIANCE.md#controles-pendientes-que-no-requieren-pagar).
+
+
+## Cambio pendiente de validación: minimización
+
+La ventana principal conserva la minimización nativa en la barra de tareas. El system tray mantiene sus acciones y permite restaurar la misma instancia; las llamadas entrantes restauran la ventana. No se cambia el comportamiento del diagnóstico SIP, las credenciales ni la confirmación de cierre.
+
+Esta corrección de interfaz requiere una nueva compilación y prueba en Windows (minimizar, restaurar desde la barra de tareas y el tray, y recibir una llamada estando minimizado). Los SHA-256, SBOM y resultados antivirus de beta.38 corresponden exclusivamente a sus artefactos originales; no acreditan una compilación que incluya este cambio. Al generar el nuevo artefacto se deben regenerar sus evidencias y repetir los controles de publicación.

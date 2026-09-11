@@ -143,7 +143,7 @@ ApplicationWindow {
         function onToast(message) { toastText.text=message; toast.open(); toastTimer.restart() }
         function onCallChanged() {
             if (appController.incoming) {
-                window.show(); window.raise(); window.requestActivate(); incomingDialog.open()
+                window.showNormal(); window.raise(); window.requestActivate(); incomingDialog.open()
             } else incomingDialog.close()
         }
     }
