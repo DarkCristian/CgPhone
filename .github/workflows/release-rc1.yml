@@ -51,7 +51,7 @@ jobs:
           (cd dist && sha256sum -c LINUX-SHA256SUMS.txt)
           docker run --rm -v "$PWD/dist:/in:ro" debian:trixie bash -euc '
             apt-get update
-            apt-get install -y /in/cgphone_0.3.2-rc.1_linux-experimental_amd64.deb
+            apt-get install -y xz-utils /in/cgphone_0.3.2-rc.1_linux-experimental_amd64.deb
             useradd -m tester
             set +e
             runuser -u tester -- env QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software timeout 12 /usr/bin/CgPhone > /tmp/startup.log 2>&1
