@@ -323,3 +323,10 @@ Los artefactos de beta.38 —instalador, portable, SBOM, manifiesto y reporte
 Defender— fueron generados en el [workflow #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867).
 La Release v0.3.1-beta.37 y beta.35 permanecen disponibles como evidencia
 histórica; sus hashes no son intercambiables con beta.38.
+
+
+## Cambio pendiente de validación: minimización
+
+La ventana principal conserva la minimización nativa en la barra de tareas. El system tray mantiene sus acciones y permite restaurar la misma instancia; las llamadas entrantes restauran la ventana. No se cambia el comportamiento del diagnóstico SIP, las credenciales ni la confirmación de cierre.
+
+Esta corrección de interfaz requiere una nueva compilación y prueba en Windows (minimizar, restaurar desde la barra de tareas y el tray, y recibir una llamada estando minimizado). Los SHA-256, SBOM y resultados antivirus de beta.38 corresponden exclusivamente a sus artefactos originales; no acreditan una compilación que incluya este cambio. Al generar el nuevo artefacto se deben regenerar sus evidencias y repetir los controles de publicación.
