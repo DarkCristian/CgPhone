@@ -1,0 +1,101 @@
+name: Windows RC and Linux experimental release
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/release-rc1.yml
+      - scripts/build-linux-experimental.sh
+      - scripts/linux-sbom.py
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    timeout-minutes: 45
+    steps:
+      - name: Install build and QML dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git build-essential cmake ninja-build pkg-config python3 dpkg-dev xz-utils qt6-base-dev qt6-declarative-dev qt6-multimedia-dev qt6-svg-dev libasound2-dev libssl-dev libopus-dev libspeex-dev libspeexdsp-dev libsamplerate0-dev qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-window qml6-module-qtquick-templates qml6-module-qtqml-workerscript qml6-module-qtmultimedia qt6-qpa-plugins pulseaudio-utils
+      - uses: actions/checkout@v4
+      - name: Build and package real SIP engine
+        shell: bash
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          bash scripts/build-linux-experimental.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CgPhone-Linux-experimental-rc1
+          path: dist/*
+          if-no-files-found: error
+  publish:
+    needs: linux
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: CgPhone-Linux-experimental-rc1
+          path: dist
+      - name: Verify Linux package in clean Debian environment
+        run: |
+          set -euo pipefail
+          (cd dist && sha256sum -c LINUX-SHA256SUMS.txt)
+          docker run --rm -v "$PWD/dist:/in:ro" debian:trixie bash -euc '
+            apt-get update
+            apt-get install -y /in/cgphone_0.3.2-rc.1_linux-experimental_amd64.deb
+            useradd -m tester
+            set +e
+            runuser -u tester -- env QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software timeout 12 /usr/bin/CgPhone > /tmp/startup.log 2>&1
+            result=$?
+            set -e
+            cat /tmp/startup.log
+            test "$result" = 124
+            ! grep -E "failed to load component|is not installed|error while loading shared libraries|Segmentation fault" /tmp/startup.log
+            mkdir /tmp/archive
+            tar -xJf /in/CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz -C /tmp/archive
+            cmp /usr/bin/CgPhone /tmp/archive/usr/bin/CgPhone
+          '
+          printf '%s\n' 'Debian13-amd64=PASS' 'Deb-install=PASS' 'QML-offscreen-startup-without-SIP-account=PASS' 'Tar-payload-matches-installed-executable=PASS' 'SIP-and-hardware-audio=NOT_TESTED' > dist/Linux-smoke-report.txt
+      - name: Retrieve exact validated Windows artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 34619531060 -n CgPhone-Free-0.3.2-taskbar-build.39-Windows-x64 -D windows
+          gh run download 34619531060 -n CgPhone-Free-0.3.2-taskbar-build.39-Windows-x64-portable -D windows
+          (cd windows && sha256sum -c SHA256SUMS.txt)
+          echo '974ea9a0baad83e4c47300ae71668f3bcc75f7c36cce2437d46e01d1682be0b8  windows/CgPhone-Setup-0.3.2-x64.exe' | sha256sum -c -
+          echo '2c3417ba6f7029d800ba974dd70612a77fb2b70b1e6dccd997809dfb2bbf6b6e  windows/CgPhone-0.3.2-windows-x64-portable.zip' | sha256sum -c -
+          mv windows/SHA256SUMS.txt windows/WINDOWS-SHA256SUMS.txt
+          cp windows/* dist/
+          (cd dist && find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%f\n' | sort | xargs sha256sum > SHA256SUMS.txt)
+      - name: Attest Linux packages and combined manifest
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            dist/*linux-experimental*
+            dist/CgPhone-linux-sbom.spdx.json
+            dist/Linux-smoke-report.txt
+            dist/SHA256SUMS.txt
+      - name: Publish only when all four packages exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for f in CgPhone-Setup-0.3.2-x64.exe CgPhone-0.3.2-windows-x64-portable.zip cgphone_0.3.2-rc.1_linux-experimental_amd64.deb CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz; do test -s "dist/$f"; done
+          cp docs/RC1_RELEASE.md notes.md
+          printf '\n## SHA-256\n\n```text\n' >> notes.md
+          cat dist/SHA256SUMS.txt >> notes.md
+          printf '\n```\n' >> notes.md
+          gh release create v0.3.2-rc.1 --draft --target "$GITHUB_SHA" --title 'CgPhone 0.3.2 RC1 — Windows y Linux experimental' --prerelease --notes-file notes.md
+          gh release upload v0.3.2-rc.1 dist/*
+          gh release edit v0.3.2-rc.1 --draft=false
