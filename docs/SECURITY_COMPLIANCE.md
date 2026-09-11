@@ -1,6 +1,29 @@
 # Seguridad y compliance de CgPhone Free
 
-## v0.3.2-beta.39 — minimización en barra de tareas
+## Release actual: v0.3.2-rc.1
+
+[Descargar Windows y Linux](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-rc.1). Windows RC1 conserva los binarios exactos del build #39 validados por el mantenedor. Linux es EXPERIMENTAL para Debian 13 amd64, con .deb y .tar.xz; el archivo comprimido requiere bibliotecas del sistema y no es universal para todas las distribuciones.
+
+[Workflow de publicación y pruebas Linux](https://github.com/DarkCristian/CgPhone/actions/runs/34656431755). Linux pasó compilación con PJSUA2, ctest, instalación en Debian limpio, arranque QML como usuario normal y comparación del ejecutable del tar.xz con el instalado. No se probaron centrales SIP, hardware de audio, Wayland ni tray real en Linux. Se observaron avisos QML de tamaño implícito pendientes de revisión visual.
+
+La contraseña SIP Linux se guarda sin cifrar. No hay elevación gráfica integrada para Ajustes; usar únicamente cuentas de laboratorio. MP3 no está soportado en esta preview; usar WAV. Consultar [limitaciones e instalación Linux](LINUX_EXPERIMENTAL.md).
+
+Se adjuntan SBOM distintos por plataforma y manifiestos SHA-256. El SBOM Linux inventaría archivos y entorno de build; no certifica ausencia de CVE ni resuelve la revisión de licencias. Defender corresponde sólo a Windows #39. RC1 sigue sin Authenticode: SmartScreen puede advertir. Atestaciones y hashes no sustituyen esa firma.
+
+### Hashes de los paquetes y SBOM de RC1
+
+```text
+e6aa46ba4ff7654d3da65ac9f375d35447f8b6d4ede7e8ac704e2c30c4fa21cd  CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz
+aa4b55a9e524f228a34d84b9814824722e3b0822a39ccf2a7bd6c488bf02f0d5  CgPhone-0.3.2-sbom.spdx.json
+2c3417ba6f7029d800ba974dd70612a77fb2b70b1e6dccd997809dfb2bbf6b6e  CgPhone-0.3.2-windows-x64-portable.zip
+974ea9a0baad83e4c47300ae71668f3bcc75f7c36cce2437d46e01d1682be0b8  CgPhone-Setup-0.3.2-x64.exe
+217419f0d7c32c3836daa7d8504288b187cad5c4d6a4342b3c6652fbb10827ca  CgPhone-linux-sbom.spdx.json
+cf75890d85d160376a5cbc1137056b070454526dd05083dcfc33a1850dcf880c  cgphone_0.3.2-rc.1_linux-experimental_amd64.deb
+```
+
+[Manifiesto completo SHA256SUMS.txt](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.2-rc.1/SHA256SUMS.txt). Los paquetes anteriores se conservan como evidencia histórica; no mezclar sus hashes con Linux RC1.
+
+## Evidencia histórica v0.3.2-beta.39 — minimización en barra de tareas
 
 CgPhone permanece en la barra de tareas al minimizar. El system tray conserva sus acciones y permite restaurar la misma instancia. Las llamadas entrantes restauran la ventana.
 
@@ -23,11 +46,11 @@ cf4b3915f54a6084f08d6c3c0879862ab8c88a479c8d43c3f41b46806fc13ac8  Microsoft-Defe
 
 Descargar instalador, portable y evidencias en [v0.3.2-beta.39](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-beta.39).
 
-Última revisión: 2026-09-10 (beta.38, parches PJPROJECT y validación funcional).
+Última revisión: RC1 — Windows build #39 y Linux experimental Debian 13 amd64.
 
 ## Alcance actual
 
-CgPhone Free v0.3.2-beta.38 es la beta actual para laboratorio controlado,
+CgPhone Free v0.3.2-beta.38 es una referencia histórica para laboratorio controlado,
 validada con centrales SIP Asterisk y Neotel. Windows x64 dispone de instalador y
 portable. La versión nativa para Linux continúa en desarrollo y todavía no se
 distribuye como paquete soportado.
