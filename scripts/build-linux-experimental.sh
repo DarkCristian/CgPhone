@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 root="$(pwd)"
+apt-get install -y --no-install-recommends qml6-module-qtquick-dialogs
 pj_commit=a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9
 mkdir -p .linux-deps dist
 git clone --no-checkout https://github.com/pjsip/pjproject.git .linux-deps/pjproject
@@ -44,7 +45,7 @@ Description: Experimental CgPhone SIP softphone
 EOF
 deps="$(dpkg-shlibdeps -O -e"$stage/usr/bin/CgPhone" | sed -n 's/^shlibs:Depends=//p')"
 test -n "$deps"
-deps="$deps, qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-layouts, qml6-module-qtquick-window, qml6-module-qtquick-templates, qml6-module-qtqml-workerscript, qml6-module-qtmultimedia, qt6-qpa-plugins, pulseaudio-utils"
+deps="$deps, qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-layouts, qml6-module-qtquick-window, qml6-module-qtquick-templates, qml6-module-qtquick-dialogs, qml6-module-qtqml-workerscript, qml6-module-qtmultimedia, qt6-qpa-plugins, pulseaudio-utils"
 printf '%s\n' "$deps" > dist/Linux-runtime-dependencies.txt
 dpkg-query -W -f='${binary:Package}\t${Version}\n' > dist/Linux-build-packages.tsv
 {
