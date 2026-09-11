@@ -1,0 +1,106 @@
+name: Publish validated beta.39
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-beta39.yml]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: publish-beta39
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Download and verify validated build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api repos/DarkCristian/CgPhone/actions/runs/34619531060 > run.json
+          python3 - <<'PY'
+          import json
+          r=json.load(open("run.json"))
+          assert r["conclusion"]=="success"
+          assert r["head_sha"]=="7d1ec349afe4a8d52555cc6bc16a13d1308938cf"
+          PY
+          mkdir -p dist
+          gh run download 34619531060 -n CgPhone-Free-0.3.2-taskbar-build.39-Windows-x64 -D dist
+          gh run download 34619531060 -n CgPhone-Free-0.3.2-taskbar-build.39-Windows-x64-portable -D dist
+          cd dist
+          sha256sum -c SHA256SUMS.txt
+          sha256sum -c CgPhone-Setup-0.3.2-x64.exe.sha256
+          sha256sum -c CgPhone-0.3.2-sbom.spdx.json.sha256
+      - name: Document validation and prepare release notes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          d=Path("dist")
+          report=(d/"Microsoft-Defender-scan-report.txt").read_text()
+          assert "Result=CLEAN" in report and "DetectionCount=0" in report
+          assert "Commit=7d1ec349afe4a8d52555cc6bc16a13d1308938cf" in report
+          sbom=json.loads((d/"CgPhone-0.3.2-sbom.spdx.json").read_text(encoding="utf-8-sig"))
+          assert sbom["spdxVersion"]=="SPDX-2.3"
+          hashes=(d/"SHA256SUMS.txt").read_text().strip()
+          notes="""## v0.3.2-beta.39 — minimización en barra de tareas
+
+          CgPhone permanece en la barra de tareas al minimizar. El system tray conserva sus acciones y permite restaurar la misma instancia. Las llamadas entrantes restauran la ventana.
+
+          El mantenedor confirmó la validación funcional del build #39, incluidas las pruebas solicitadas de minimización, restauración y llamadas. Se conserva la base funcional y los parches de seguridad de beta.38. El diagnóstico SIP y la confirmación de cierre mantienen su comportamiento.
+
+          Se publican sin recompilar los artefactos del [build #39](https://github.com/DarkCristian/CgPhone/actions/runs/34619531060), commit fuente `7d1ec349afe4a8d52555cc6bc16a13d1308938cf`. La versión interna y los nombres de los binarios siguen siendo 0.3.2; el tag beta.39 y estos hashes identifican esta entrega.
+
+          Evidencia propia de esta compilación: SBOM SPDX 2.3, manifiesto SHA-256, atestaciones de GitHub Actions y reporte Microsoft Defender CLEAN, 0 detecciones. Los hashes y análisis de versiones anteriores no se atribuyen a estos binarios. La validación Trellix previa corresponde al entorno y políticas donde fue realizada; no constituye una certificación universal de este build. Ante una alerta, verificar hash y evento con Seguridad antes de autorizar una excepción específica. No desactivar la protección ni asumir que ejecutar desde Program Files evita las políticas.
+
+          Todavía sin firma Authenticode: SmartScreen puede advertir sobre el publicador desconocido. Las atestaciones no sustituyen esa firma. No se publican registros ni datos de equipos o empresas.
+
+          ### SHA-256 del build #39
+
+          ```text
+          """+hashes+"""
+          ```
+
+          Descargar instalador, portable y evidencias en [v0.3.2-beta.39](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-beta.39).
+          """
+          Path("release-notes.md").write_text(notes)
+          for name in ["README.md","SECURITY.md","docs/SECURITY_COMPLIANCE.md"]:
+              p=Path(name)
+              text=p.read_text()
+              marker="## Cambio pendiente de validación: minimización"
+              if marker in text:
+                  text=text.split(marker)[0].rstrip()+"\n"
+              first,sep,rest=text.partition("\n")
+              text=first+"\n\n"+notes+"\n"+rest.lstrip()
+              p.write_text(text)
+          PY
+      - name: Commit documentation and publish exact artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md SECURITY.md docs/SECURITY_COMPLIANCE.md
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: record validated beta.39 and exact build evidence"
+            git push origin HEAD:main
+          fi
+          gh release create v0.3.2-beta.39 \
+            --target "$(git rev-parse HEAD)" \
+            --title "CgPhone Free 0.3.2 beta.39 — minimización en barra de tareas" \
+            --prerelease --notes-file release-notes.md \
+            dist/CgPhone-Setup-0.3.2-x64.exe \
+            dist/CgPhone-Setup-0.3.2-x64.exe.sha256 \
+            dist/CgPhone-0.3.2-windows-x64-portable.zip \
+            dist/CgPhone-0.3.2-sbom.spdx.json \
+            dist/CgPhone-0.3.2-sbom.spdx.json.sha256 \
+            dist/Microsoft-Defender-scan-report.txt \
+            dist/SHA256SUMS.txt \
+            dist/LEEME-ANTES-DE-INSTALAR.txt
