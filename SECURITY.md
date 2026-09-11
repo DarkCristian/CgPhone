@@ -1,5 +1,28 @@
 # Política de seguridad de CgPhone Free
 
+## v0.3.2-beta.39 — minimización en barra de tareas
+
+CgPhone permanece en la barra de tareas al minimizar. El system tray conserva sus acciones y permite restaurar la misma instancia. Las llamadas entrantes restauran la ventana.
+
+El mantenedor confirmó la validación funcional del build #39, incluidas las pruebas solicitadas de minimización, restauración y llamadas. Se conserva la base funcional y los parches de seguridad de beta.38. El diagnóstico SIP y la confirmación de cierre mantienen su comportamiento.
+
+Se publican sin recompilar los artefactos del [build #39](https://github.com/DarkCristian/CgPhone/actions/runs/34619531060), commit fuente `7d1ec349afe4a8d52555cc6bc16a13d1308938cf`. La versión interna y los nombres de los binarios siguen siendo 0.3.2; el tag beta.39 y estos hashes identifican esta entrega.
+
+Evidencia propia de esta compilación: SBOM SPDX 2.3, manifiesto SHA-256, atestaciones de GitHub Actions y reporte Microsoft Defender CLEAN, 0 detecciones. Los hashes y análisis de versiones anteriores no se atribuyen a estos binarios. La validación Trellix previa corresponde al entorno y políticas donde fue realizada; no constituye una certificación universal de este build. Ante una alerta, verificar hash y evento con Seguridad antes de autorizar una excepción específica. No desactivar la protección ni asumir que ejecutar desde Program Files evita las políticas.
+
+Todavía sin firma Authenticode: SmartScreen puede advertir sobre el publicador desconocido. Las atestaciones no sustituyen esa firma. No se publican registros ni datos de equipos o empresas.
+
+### SHA-256 del build #39
+
+```text
+974ea9a0baad83e4c47300ae71668f3bcc75f7c36cce2437d46e01d1682be0b8  CgPhone-Setup-0.3.2-x64.exe
+2c3417ba6f7029d800ba974dd70612a77fb2b70b1e6dccd997809dfb2bbf6b6e  CgPhone-0.3.2-windows-x64-portable.zip
+aa4b55a9e524f228a34d84b9814824722e3b0822a39ccf2a7bd6c488bf02f0d5  CgPhone-0.3.2-sbom.spdx.json
+cf4b3915f54a6084f08d6c3c0879862ab8c88a479c8d43c3f41b46806fc13ac8  Microsoft-Defender-scan-report.txt
+```
+
+Descargar instalador, portable y evidencias en [v0.3.2-beta.39](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-beta.39).
+
 Última revisión: 2026-09-10 (beta.38 validada con Asterisk/Neotel y Defender).
 
 ## Versiones soportadas
@@ -301,10 +324,3 @@ Los controles gratuitos pendientes —licencia explícita del proyecto, textos d
 terceros, CodeQL, análisis de CVE, secret scanning, ACL y sanitización de logs—
 se mantienen en el
 [checklist de compliance](docs/SECURITY_COMPLIANCE.md#controles-pendientes-que-no-requieren-pagar).
-
-
-## Cambio pendiente de validación: minimización
-
-La ventana principal conserva la minimización nativa en la barra de tareas. El system tray mantiene sus acciones y permite restaurar la misma instancia; las llamadas entrantes restauran la ventana. No se cambia el comportamiento del diagnóstico SIP, las credenciales ni la confirmación de cierre.
-
-Esta corrección de interfaz requiere una nueva compilación y prueba en Windows (minimizar, restaurar desde la barra de tareas y el tray, y recibir una llamada estando minimizado). Los SHA-256, SBOM y resultados antivirus de beta.38 corresponden exclusivamente a sus artefactos originales; no acreditan una compilación que incluya este cambio. Al generar el nuevo artefacto se deben regenerar sus evidencias y repetir los controles de publicación.
