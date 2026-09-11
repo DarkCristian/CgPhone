@@ -41,7 +41,7 @@ llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 - Ajustes administrativos accesibles únicamente mediante elevación UAC.
 - Contraseña SIP protegida con DPAPI de máquina en Windows.
 - Inicio automático con Windows, opción de mantener la ventana siempre visible y funcionamiento en el system tray.
-- Al minimizar, CgPhone continúa registrado y disponible para recibir llamadas.
+- Al minimizar, CgPhone permanece en la barra de tareas, continúa registrado y disponible para recibir llamadas. El icono y las acciones del system tray siguen disponibles; «Abrir CgPhone» restaura la misma ventana. Una llamada entrante también restaura la ventana.
 - Historial persistente con filtros de llamadas entrantes, salientes y perdidas, además de rellamada y borrado.
 - Accesos directos instalados en el escritorio público y el menú Inicio para que estén disponibles a todos los usuarios del equipo.
 - Diagnóstico SIP mediante `Shift+F12`, con lectura del log nativo de PJSIP; puede mostrarse u ocultarse sin cerrar CgPhone.
