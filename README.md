@@ -1,6 +1,29 @@
 # CgPhone Free
 
-## v0.3.2-beta.39 — minimización en barra de tareas
+## Release actual: v0.3.2-rc.1
+
+[Descargar Windows y Linux](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-rc.1). Windows RC1 conserva los binarios exactos del build #39 validados por el mantenedor. Linux es EXPERIMENTAL para Debian 13 amd64, con .deb y .tar.xz; el archivo comprimido requiere bibliotecas del sistema y no es universal para todas las distribuciones.
+
+[Workflow de publicación y pruebas Linux](https://github.com/DarkCristian/CgPhone/actions/runs/34656431755). Linux pasó compilación con PJSUA2, ctest, instalación en Debian limpio, arranque QML como usuario normal y comparación del ejecutable del tar.xz con el instalado. No se probaron centrales SIP, hardware de audio, Wayland ni tray real en Linux. Se observaron avisos QML de tamaño implícito pendientes de revisión visual.
+
+La contraseña SIP Linux se guarda sin cifrar. No hay elevación gráfica integrada para Ajustes; usar únicamente cuentas de laboratorio. MP3 no está soportado en esta preview; usar WAV. Consultar [limitaciones e instalación Linux](docs/LINUX_EXPERIMENTAL.md).
+
+Se adjuntan SBOM distintos por plataforma y manifiestos SHA-256. El SBOM Linux inventaría archivos y entorno de build; no certifica ausencia de CVE ni resuelve la revisión de licencias. Defender corresponde sólo a Windows #39. RC1 sigue sin Authenticode: SmartScreen puede advertir. Atestaciones y hashes no sustituyen esa firma.
+
+### Hashes de los paquetes y SBOM de RC1
+
+```text
+e6aa46ba4ff7654d3da65ac9f375d35447f8b6d4ede7e8ac704e2c30c4fa21cd  CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz
+aa4b55a9e524f228a34d84b9814824722e3b0822a39ccf2a7bd6c488bf02f0d5  CgPhone-0.3.2-sbom.spdx.json
+2c3417ba6f7029d800ba974dd70612a77fb2b70b1e6dccd997809dfb2bbf6b6e  CgPhone-0.3.2-windows-x64-portable.zip
+974ea9a0baad83e4c47300ae71668f3bcc75f7c36cce2437d46e01d1682be0b8  CgPhone-Setup-0.3.2-x64.exe
+217419f0d7c32c3836daa7d8504288b187cad5c4d6a4342b3c6652fbb10827ca  CgPhone-linux-sbom.spdx.json
+cf75890d85d160376a5cbc1137056b070454526dd05083dcfc33a1850dcf880c  cgphone_0.3.2-rc.1_linux-experimental_amd64.deb
+```
+
+[Manifiesto completo SHA256SUMS.txt](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.2-rc.1/SHA256SUMS.txt). Los paquetes anteriores se conservan como evidencia histórica; no mezclar sus hashes con Linux RC1.
+
+## Evidencia histórica v0.3.2-beta.39 — minimización en barra de tareas
 
 CgPhone permanece en la barra de tareas al minimizar. El system tray conserva sus acciones y permite restaurar la misma instancia. Las llamadas entrantes restauran la ventana.
 
@@ -24,18 +47,15 @@ cf4b3915f54a6084f08d6c3c0879862ab8c88a479c8d43c3f41b46806fc13ac8  Microsoft-Defe
 Descargar instalador, portable y evidencias en [v0.3.2-beta.39](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-beta.39).
 
 CgPhone Free es un softphone SIP de escritorio construido con Qt 6/QML para
-Windows y, próximamente, Linux. El objetivo es ofrecer una aplicación simple,
+Windows y Linux experimental. El objetivo es ofrecer una aplicación simple,
 liviana y transparente para registrar una cuenta SIP, realizar y recibir
 llamadas y disponer de herramientas básicas de telefonía sin telemetría.
 
-> **Estado actual:** `v0.3.2-beta.38`, validada para laboratorio controlado
-> con Asterisk y Neotel. El [build #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867)
-> incorporó los parches de PJPROJECT para CVE-2026-57159, CVE-2026-57160 y
-> CVE-2026-57162, y pasó compilación, Defender, hashes, SBOM y atestación.
-> Windows x64 dispone de instalador y portable; Linux continúa en desarrollo
-> experimental.
+> **Estado actual:** `v0.3.2-rc.1`, candidata Windows con los binarios validados del build #39 y paquetes Linux experimentales para Debian 13 amd64. No es una aprobación productiva. Las validaciones de Windows no se atribuyen a Linux.
 
 ## Funciones actuales
+
+Funciones validadas en Windows. La edición Linux experimental requiere su propia validación; consultar las limitaciones de plataforma antes de usarla.
 
 ### Operación de llamadas
 
@@ -79,28 +99,17 @@ preservar esta base simple, auditable y orientada al uso operacional.
 
 ## Descargar y probar
 
-La compilación actual es **CgPhone Free v0.3.2-beta.38** para Windows x64:
+La release [v0.3.2-rc.1](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-rc.1) reúne:
 
-- Instalador: `CgPhone-Setup-0.3.2-x64.exe`.
-- Portable: `CgPhone-0.3.2-windows-x64-portable.zip`.
-- Commit exacto compilado: `6d752cbbf5115a3a1f1f30db6d4eeddc41c06cf5`.
-- Workflow validado: [#38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867).
-- SBOM: SPDX 2.3, 231 archivos y 16 paquetes.
+- Windows: instalador EXE y portable ZIP exactos del build #39.
+- Linux: paquete .deb y archivo .tar.xz experimentales para Debian 13 amd64. El tar.xz requiere dependencias del sistema.
+- SBOM separados por plataforma, hashes SHA-256 y reportes con su alcance explícito.
 
-```text
-cf3224819d10e892c250efb35f961b36caa9ac30c0dd377ef6d8e4777161eb09  CgPhone-Setup-0.3.2-x64.exe
-e6fb2a737a0729b642d5d3e4d7285d8ef153d5586be03493536d9d255a50c7d3  CgPhone-0.3.2-windows-x64-portable.zip
-68b4afae287052cba2f0be05808a3b668c1e599d04e835798301e9d59e2d59aa  CgPhone-0.3.2-sbom.spdx.json
-0f100027a17286a6ec3b9cfe1619b784a963021740a3418dd0e837eacc32ce40  Microsoft-Defender-scan-report.txt
-e1e9adbf001bdb6da0ab3efced9d3a9318723e4bf319f5a84b8c2024af505491  SHA256SUMS.txt
-```
-
-Descargá CgPhone únicamente desde el workflow/release oficial y verificá el
-archivo individual, no sólo el ZIP contenedor generado por GitHub.
+Verificar cada archivo contra el [manifiesto combinado](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.2-rc.1/SHA256SUMS.txt). Los hashes históricos de beta.38/39 sólo identifican sus archivos; Windows RC1 reutiliza exactamente los de beta.39.
 
 ### Aviso de Microsoft SmartScreen
 
-El instalador de beta.38 todavía no posee una firma Authenticode pública.
+El instalador Windows de RC1 todavía no posee una firma Authenticode pública.
 Windows puede mostrar el aviso **“Windows protegió su PC”**. La presencia o
 ausencia de ese aviso no reemplaza la verificación del SHA-256.
 
@@ -110,7 +119,7 @@ Para verificar el archivo en PowerShell:
 Get-FileHash .\CgPhone-Setup-0.3.2-x64.exe -Algorithm SHA256
 ```
 
-El resultado debe coincidir exactamente con el hash publicado arriba. Esta
+El resultado debe coincidir exactamente con el hash del manifiesto de RC1. Esta
 beta está destinada a pruebas controladas; no es una release aprobada para
 producción.
 
@@ -179,8 +188,9 @@ buena parte del código son multiplataforma, pero todavía deben validarse
 PJPROJECT, PipeWire/PulseAudio, el almacenamiento seguro de credenciales, la
 integración de escritorio y el empaquetado en cada distribución.
 
-Las instrucciones siguientes permiten compilar y comenzar las pruebas; no
-representan todavía un paquete Linux oficialmente soportado.
+RC1 incorpora paquetes experimentales .deb y .tar.xz para Debian 13 amd64. Consultá [instalación, limitaciones y credenciales Linux](docs/LINUX_EXPERIMENTAL.md). No son binarios universales para todos los derivados ni una edición validada para producción.
+
+Para evitar la colisión entre el ejecutable y el módulo QML en Linux, agregá `-DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$PWD/build/bin"` al comando de configuración y ejecutá `./build/bin/CgPhone`.
 
 ## Compilar
 
