@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
         refreshTrayTooltip();
     });
     QObject::connect(&tray, &QSystemTrayIcon::activated, &app, [&trayMenu](QSystemTrayIcon::ActivationReason reason){ if (reason == QSystemTrayIcon::Trigger) trayMenu.popup(QCursor::pos()); });
-    if (window) QObject::connect(window, &QWindow::visibilityChanged, &app, [window](QWindow::Visibility visibility){ if (visibility == QWindow::Minimized) window->hide(); });
+    // Keep native minimization in the taskbar; the tray remains available independently.
     refreshTrayTooltip();
     tray.show();
     return app.exec();
