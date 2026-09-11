@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 root="$(pwd)"
-apt-get install -y --no-install-recommends qml6-module-qtquick-dialogs
+apt-get install -y --no-install-recommends qml6-module-qtquick-dialogs uuid-dev
 pj_commit=a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9
 mkdir -p .linux-deps dist
 git clone --no-checkout https://github.com/pjsip/pjproject.git .linux-deps/pjproject
@@ -21,11 +21,11 @@ make -j2
 make install
 popd
 export PKG_CONFIG_PATH="$root/.linux-deps/install/lib/pkgconfig"
-cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release -DCGPHONE_WITH_PJSIP=ON
+cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release -DCGPHONE_WITH_PJSIP=ON -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$root/build-linux/bin" -DCMAKE_SKIP_RPATH=ON
 cmake --build build-linux --parallel 2
 QT_QPA_PLATFORM=offscreen ctest --test-dir build-linux --output-on-failure | tee dist/Linux-tests.txt
 stage="$root/linux-stage"
-install -Dm755 build-linux/CgPhone "$stage/usr/bin/CgPhone"
+install -Dm755 build-linux/bin/CgPhone "$stage/usr/bin/CgPhone"
 install -Dm644 assets/app/cgphone.desktop "$stage/usr/share/applications/cgphone.desktop"
 install -Dm644 assets/app/CgPhone.png "$stage/usr/share/icons/hicolor/512x512/apps/cgphone.png"
 install -Dm644 docs/LINUX_EXPERIMENTAL.md "$stage/usr/share/doc/cgphone/LINUX_EXPERIMENTAL.md"
