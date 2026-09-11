@@ -22,3 +22,5 @@ Se adjuntan SBOM separados para Windows y Linux, versiones del entorno Linux, re
 SmartScreen puede advertir. SignPath sigue pendiente; MSIX no está implementado. Trellix y otras políticas empresariales pueden requerir aprobación específica del hash por Seguridad; no se publican logs, rutas personales, IP ni datos empresariales.
 
 Se esperan aportes y PR de beta testers Linux, indicando distribución/versión, escritorio, X11/Wayland y resultados de llamadas/audio. Los aportes se revisarán antes de integrarse.
+
+Avisos observados en la prueba sin pantalla: bucles de tamaño implícito en algunos diálogos QML; requieren revisión visual. La ausencia de dispositivos de audio y tray en el contenedor impide validar esas funciones. El arranque satisfactorio no acredita paridad visual ni operacional con Windows.
