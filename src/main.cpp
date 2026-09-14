@@ -20,6 +20,43 @@
 #endif
 
 namespace {
+
+#ifdef Q_OS_WIN
+// Qt's PNG window icon and the executable's shell icon are separate.
+// Keep both native window icon sizes assigned across minimize/restore and HWND changes.
+class NativeWindowIconFilter final : public QObject {
+public:
+    NativeWindowIconFilter() {
+        const HINSTANCE instance = GetModuleHandleW(nullptr);
+        m_small = static_cast<HICON>(LoadImageW(instance, L"IDI_CGPHONE_ICON",
+            IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0));
+        m_large = static_cast<HICON>(LoadImageW(instance, L"IDI_CGPHONE_ICON",
+            IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0));
+    }
+    ~NativeWindowIconFilter() override {
+        if (m_small) DestroyIcon(m_small);
+        if (m_large) DestroyIcon(m_large);
+    }
+    void apply(QWindow *window) const {
+        if (!window || !window->handle()) return;
+        const HWND hwnd = reinterpret_cast<HWND>(window->winId());
+        if (m_small) SendMessageW(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(m_small));
+        if (m_large) SendMessageW(hwnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(m_large));
+    }
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override {
+        if (event->type() == QEvent::Show || event->type() == QEvent::WinIdChange ||
+            event->type() == QEvent::WindowStateChange) {
+            if (auto *window = qobject_cast<QWindow *>(watched)) apply(window);
+        }
+        return false;
+    }
+private:
+    HICON m_small = nullptr;
+    HICON m_large = nullptr;
+};
+#endif
+
 class DiagnosticShortcutFilter final : public QObject {
 public:
     explicit DiagnosticShortcutFilter(AppController *controller) : m_controller(controller) {}
@@ -71,6 +108,9 @@ int main(int argc, char *argv[]) {
     DiagnosticWindow diagnosticWindow;
     QObject::connect(&controller, &AppController::debugConsoleToggleRequested,
                      &diagnosticWindow, &DiagnosticWindow::toggleVisibility);
+    #ifdef Q_OS_WIN
+    NativeWindowIconFilter nativeWindowIcon;
+    #endif
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("appController", &controller);
     engine.rootContext()->setContextProperty("systemAudio", &systemAudio);
@@ -78,14 +118,21 @@ int main(int argc, char *argv[]) {
     engine.loadFromModule("CgPhone", "Main");
     if (engine.rootObjects().isEmpty()) return -1;
 
+    auto *window = qobject_cast<QWindow *>(engine.rootObjects().constFirst());
+    if (window) {
+        window->setIcon(appIcon);
+#ifdef Q_OS_WIN
+        window->installEventFilter(&nativeWindowIcon);
+        nativeWindowIcon.apply(window);
+#endif
+    }
+
     if (controller.configurationMode()) {
         app.setQuitOnLastWindowClosed(true);
         return app.exec();
     }
 
-    auto *window = qobject_cast<QWindow *>(engine.rootObjects().constFirst());
     if (window) {
-        window->setIcon(appIcon);
         window->show();
         applyAlwaysOnTop(window, controller.alwaysVisible());
     }
