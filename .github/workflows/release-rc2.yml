@@ -27,7 +27,7 @@ jobs:
           gh run download 35939426270 -n CgPhone-Free-0.3.2-taskbar-build.44-Windows-x64-portable -D windows
           (cd windows && sha256sum -c SHA256SUMS.txt)
           cp windows/CgPhone-Setup-0.3.2-x64.exe windows/CgPhone-0.3.2-windows-x64-portable.zip windows/CgPhone-0.3.2-sbom.spdx.json windows/Microsoft-Defender-scan-report.txt dist/
-          gh release download v0.3.2-rc.1 -D dist -p 'cgphone_0.3.2-rc.1_linux-experimental_amd64.deb' -p 'CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz' -p 'CgPhone-linux-sbom.spdx.json' -p 'LINUX-SHA256SUMS.txt' -p 'Linux-smoke-report.txt' -p 'LINUX-EXPERIMENTAL.md'
+          gh release download v0.3.2-rc.1 -D dist -p 'cgphone_0.3.2-rc.1_linux-experimental_amd64.deb' -p 'CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz' -p 'CgPhone-linux-sbom.spdx.json' -p 'LINUX-SHA256SUMS.txt' -p 'Linux-smoke-report.txt' -p 'LINUX-EXPERIMENTAL.md' -p 'Linux-build-info.txt' -p 'Linux-build-packages.tsv' -p 'Linux-runtime-dependencies.txt' -p 'Linux-tests.txt'
           (cd dist && sha256sum -c LINUX-SHA256SUMS.txt)
           (cd dist && sha256sum CgPhone-Setup-0.3.2-x64.exe CgPhone-0.3.2-windows-x64-portable.zip CgPhone-0.3.2-sbom.spdx.json Microsoft-Defender-scan-report.txt cgphone_0.3.2-rc.1_linux-experimental_amd64.deb CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz CgPhone-linux-sbom.spdx.json > SHA256SUMS.txt)
       - name: Attest the combined RC2 manifest
