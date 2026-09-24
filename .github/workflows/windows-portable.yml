@@ -20,6 +20,7 @@ on:
       - src/**
       - qml/**
       - tests/**
+      - docs/QT_SECURITY_2026-09.md
 
 permissions:
   id-token: write
