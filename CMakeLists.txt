@@ -7,7 +7,12 @@ set(CMAKE_AUTOMOC ON)
 
 option(CGPHONE_WITH_PJSIP "Build the PJSUA2 SIP adapter" OFF)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Multimedia Svg Widgets Concurrent Test)
+if(WIN32)
+    # Qt 6.11.2 includes fixes for CVE-2026-78253, CVE-2026-79616 and CVE-2026-76151.
+    find_package(Qt6 6.11.2 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Multimedia Svg Widgets Concurrent Test)
+else()
+    find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Multimedia Svg Widgets Concurrent Test)
+endif()
 qt_standard_project_setup(REQUIRES 6.5)
 
 qt_add_executable(CgPhone

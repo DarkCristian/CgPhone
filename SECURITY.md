@@ -1,5 +1,10 @@
 # Política de seguridad de CgPhone Free
 
+## Avisos Qt — septiembre de 2026
+
+Windows exige Qt 6.11.2 en el build, versión que incluye las correcciones de CVE-2026-78253, CVE-2026-79616 y CVE-2026-76151. Linux experimental enlaza con Qt del sistema Debian 13: la versión base 6.8.2 está en los rangos afectados, aunque CgPhone no invoca las rutas descritas. [Evaluación, alcance y fuentes oficiales](docs/QT_SECURITY_2026-09.md). Los hashes indicados abajo pertenecen a la RC1 histórica y no identifican el nuevo workflow.
+
+
 ## Release actual: v0.3.2-rc.1
 
 [Descargar Windows y Linux](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-rc.1). Windows RC1 conserva los binarios exactos del build #39 validados por el mantenedor. Linux es EXPERIMENTAL para Debian 13 amd64, con .deb y .tar.xz; el archivo comprimido requiere bibliotecas del sistema y no es universal para todas las distribuciones.

@@ -10,12 +10,17 @@ on:
       - fix/uninstaller-remove-settings
       - security/windows-defender-scan
       - security/pjproject-cve-fixes-beta-38
+      - security/qt-advisories-2026-09
     paths:
       - .github/workflows/windows-portable.yml
       - installer/CgPhone.iss
       - scripts/build-windows-portable-msys2.sh
       - scripts/generate-compliance-manifest.sh
       - CMakeLists.txt
+      - src/**
+      - qml/**
+      - tests/**
+      - docs/QT_SECURITY_2026-09.md
 
 permissions:
   id-token: write
@@ -45,6 +50,10 @@ jobs:
             mingw-w64-x86_64-qt6-declarative
             mingw-w64-x86_64-qt6-multimedia
             mingw-w64-x86_64-qt6-svg
+
+      - name: Verificar rutas de advisories Qt
+        shell: bash
+        run: python3 tests/check_qt_advisory_entrypoints.py
 
       - name: Compilar CgPhone y PJPROJECT
         shell: msys2 {0}
