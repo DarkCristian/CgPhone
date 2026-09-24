@@ -1,0 +1,48 @@
+name: Publish CgPhone 0.3.2 RC2
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/release-rc2.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      actions: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download exact Windows build 44 and unchanged Linux RC1 packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p windows dist
+          gh run download 35939426270 -n CgPhone-Free-0.3.2-taskbar-build.44-Windows-x64 -D windows
+          gh run download 35939426270 -n CgPhone-Free-0.3.2-taskbar-build.44-Windows-x64-portable -D windows
+          (cd windows && sha256sum -c SHA256SUMS.txt)
+          cp windows/CgPhone-Setup-0.3.2-x64.exe windows/CgPhone-0.3.2-windows-x64-portable.zip windows/CgPhone-0.3.2-sbom.spdx.json windows/Microsoft-Defender-scan-report.txt dist/
+          gh release download v0.3.2-rc.1 -D dist -p 'cgphone_0.3.2-rc.1_linux-experimental_amd64.deb' -p 'CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz' -p 'CgPhone-linux-sbom.spdx.json' -p 'LINUX-SHA256SUMS.txt' -p 'Linux-smoke-report.txt' -p 'LINUX-EXPERIMENTAL.md'
+          (cd dist && sha256sum -c LINUX-SHA256SUMS.txt)
+          (cd dist && sha256sum CgPhone-Setup-0.3.2-x64.exe CgPhone-0.3.2-windows-x64-portable.zip CgPhone-0.3.2-sbom.spdx.json Microsoft-Defender-scan-report.txt cgphone_0.3.2-rc.1_linux-experimental_amd64.deb CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz CgPhone-linux-sbom.spdx.json > SHA256SUMS.txt)
+      - name: Attest the combined RC2 manifest
+        uses: actions/attest@v4
+        with:
+          subject-path: dist/SHA256SUMS.txt
+      - name: Publish RC2 only with all four packages and evidence present
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for f in CgPhone-Setup-0.3.2-x64.exe CgPhone-0.3.2-windows-x64-portable.zip cgphone_0.3.2-rc.1_linux-experimental_amd64.deb CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz CgPhone-0.3.2-sbom.spdx.json CgPhone-linux-sbom.spdx.json SHA256SUMS.txt; do test -s "dist/$f"; done
+          printf '%s\n' '# CgPhone Free v0.3.2-rc.2 (prerelease)' '' 'Windows: artefactos exactos del workflow #44, commit eb3843fa6986cc806fac513f73d212a867e40f23. Compilación, empaquetado y control Defender automáticos; pruebas SIP manuales de esta compilación todavía pendientes.' '' 'Linux: paquetes Debian 13 experimentales reutilizados SIN modificaciones desde RC1; su nombre rc.1 es intencional. No contienen una actualización de Qt: dependen de Qt del sistema (6.8.2 base; estado de parches Debian no verificado). No se validaron SIP, audio ni tray en Linux. La contraseña SIP se guarda sin cifrar; sólo usar cuentas de laboratorio.' '' 'Windows requiere Qt 6.11.2 e incorpora los controles de CI para CVE-2026-78253, CVE-2026-79616 y CVE-2026-76151. Esto no implica que las rutas vulnerables estén expuestas en la aplicación ni certifica el runtime Linux. Sin firma Authenticode; SmartScreen puede advertir. Atestaciones y hashes no sustituyen la firma.' '' 'Documentación: https://github.com/DarkCristian/CgPhone/blob/main/docs/QT_SECURITY_2026-09.md' '' '## SHA-256 de los adjuntos' '' '```text' > notes.md
+          cat dist/SHA256SUMS.txt >> notes.md
+          printf '%s\n' '```' >> notes.md
+          gh release create v0.3.2-rc.2 --draft --target eb3843fa6986cc806fac513f73d212a867e40f23 --title 'CgPhone 0.3.2 RC2 — Windows build #44 y Linux experimental RC1' --prerelease --notes-file notes.md
+          gh release upload v0.3.2-rc.2 dist/*
+          gh release edit v0.3.2-rc.2 --draft=false
