@@ -1,5 +1,10 @@
 # Linux experimental — CgPhone 0.3.2-rc.1
 
+## Avisos Qt vigentes
+
+Debian 13 distribuye Qt 6.8.2; ver [evaluación de CVE-2026-78253, CVE-2026-79616 y CVE-2026-76151](QT_SECURITY_2026-09.md). Las rutas afectadas no aparecen en el código de CgPhone, pero esta documentación no atribuye los parches a las bibliotecas Qt del sistema. No mezclar paquetes de Debian unstable para intentar actualizar el runtime de trixie.
+
+
 Esta release incluye Windows RC validado y Linux experimental. No implica paridad de validación entre plataformas.
 
 ## Compatibilidad
