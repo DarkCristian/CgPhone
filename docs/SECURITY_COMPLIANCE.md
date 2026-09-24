@@ -6,7 +6,7 @@
 
 Windows: instalador y portable nuevos del commit compilado `eb3843fa6986cc806fac513f73d212a867e40f23` (PR #16 fusionado en `main`). El build exige Qt 6.11.2 y ejecuta controles de CI para CVE-2026-78253, CVE-2026-79616 y CVE-2026-76151; Defender finalizó sin detecciones en ese workflow. **Aún falta probar manualmente estos binarios con Asterisk y Neotel, audio, instalación, minimización e icono en barra de tareas y tray.** Las pruebas anteriores no se atribuyen a RC2.
 
-Linux: se adjuntan sin modificar los mismos .deb y .tar.xz de RC1; conservan el nombre `rc.1` para identificar su origen. No fueron recompilados ni recibieron un parche Qt con RC2. En Debian 13 dependen de la versión Qt provista por el sistema; no se verificó el estado de backports de esa instalación. Sigue pendiente validar SIP, audio y tray; la contraseña SIP se guarda sin cifrar y debe usarse sólo una cuenta de laboratorio. Véase [alcance técnico](docs/QT_SECURITY_2026-09.md).
+Linux: se adjuntan sin modificar los mismos .deb y .tar.xz de RC1; conservan el nombre `rc.1` para identificar su origen. No fueron recompilados ni recibieron un parche Qt con RC2. En Debian 13 dependen de la versión Qt provista por el sistema; no se verificó el estado de backports de esa instalación. Sigue pendiente validar SIP, audio y tray; la contraseña SIP se guarda sin cifrar y debe usarse sólo una cuenta de laboratorio. Véase [alcance técnico](QT_SECURITY_2026-09.md).
 
 El SBOM Windows de RC2 es distinto del de RC1; el Linux es el mismo. `SHA256SUMS.txt` identifica los adjuntos exactos de esta prerelease. La atestación del nuevo manifiesto no reemplaza la firma Authenticode: SmartScreen todavía puede advertir y SignPath sigue pendiente. No se publicó telemetría ni registros empresariales.
 
