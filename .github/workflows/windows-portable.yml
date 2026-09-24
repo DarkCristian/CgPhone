@@ -10,12 +10,16 @@ on:
       - fix/uninstaller-remove-settings
       - security/windows-defender-scan
       - security/pjproject-cve-fixes-beta-38
+      - security/qt-advisories-2026-09
     paths:
       - .github/workflows/windows-portable.yml
       - installer/CgPhone.iss
       - scripts/build-windows-portable-msys2.sh
       - scripts/generate-compliance-manifest.sh
       - CMakeLists.txt
+      - src/**
+      - qml/**
+      - tests/**
 
 permissions:
   id-token: write
