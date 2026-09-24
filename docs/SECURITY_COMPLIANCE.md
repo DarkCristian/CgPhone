@@ -1,11 +1,33 @@
 # Seguridad y compliance de CgPhone Free
 
+## Prerelease actual: v0.3.2-rc.2 — 24 de septiembre de 2026
+
+[Descargar RC2 (Windows y Linux experimental)](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-rc.2) · [workflow de publicación](https://github.com/DarkCristian/CgPhone/actions/runs/36015304726) · [workflow Windows #44](https://github.com/DarkCristian/CgPhone/actions/runs/35939426270).
+
+Windows: instalador y portable nuevos del commit compilado `eb3843fa6986cc806fac513f73d212a867e40f23` (PR #16 fusionado en `main`). El build exige Qt 6.11.2 y ejecuta controles de CI para CVE-2026-78253, CVE-2026-79616 y CVE-2026-76151; Defender finalizó sin detecciones en ese workflow. **Aún falta probar manualmente estos binarios con Asterisk y Neotel, audio, instalación, minimización e icono en barra de tareas y tray.** Las pruebas anteriores no se atribuyen a RC2.
+
+Linux: se adjuntan sin modificar los mismos .deb y .tar.xz de RC1; conservan el nombre `rc.1` para identificar su origen. No fueron recompilados ni recibieron un parche Qt con RC2. En Debian 13 dependen de la versión Qt provista por el sistema; no se verificó el estado de backports de esa instalación. Sigue pendiente validar SIP, audio y tray; la contraseña SIP se guarda sin cifrar y debe usarse sólo una cuenta de laboratorio. Véase [alcance técnico](docs/QT_SECURITY_2026-09.md).
+
+El SBOM Windows de RC2 es distinto del de RC1; el Linux es el mismo. `SHA256SUMS.txt` identifica los adjuntos exactos de esta prerelease. La atestación del nuevo manifiesto no reemplaza la firma Authenticode: SmartScreen todavía puede advertir y SignPath sigue pendiente. No se publicó telemetría ni registros empresariales.
+
+```text
+91c81e02185063bf41daece983760a4f5655511a9b67e31cac7e90800918cdbe  CgPhone-Setup-0.3.2-x64.exe
+e41d1ad423998c7a34267b7e304dc57c6bcccffa9e1e3ab5f7f05915f23ea1af  CgPhone-0.3.2-windows-x64-portable.zip
+5360de211a17adb91e09fe0643394294f58b9d977d6cd9b556eb6520126c863f  CgPhone-0.3.2-sbom.spdx.json
+84cfc9b331d3d29afcce3f8f576a1e928e082805972bf5f8174ec1718fbe77a1  Microsoft-Defender-scan-report.txt
+cf75890d85d160376a5cbc1137056b070454526dd05083dcfc33a1850dcf880c  cgphone_0.3.2-rc.1_linux-experimental_amd64.deb
+e6aa46ba4ff7654d3da65ac9f375d35447f8b6d4ede7e8ac704e2c30c4fa21cd  CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz
+217419f0d7c32c3836daa7d8504288b187cad5c4d6a4342b3c6652fbb10827ca  CgPhone-linux-sbom.spdx.json
+```
+
+[Manifiesto completo de RC2](https://github.com/DarkCristian/CgPhone/releases/download/v0.3.2-rc.2/SHA256SUMS.txt). SHA-256 del manifiesto: `55367395e8ba5f2fce7c8115ecd528f94882a83891ff91ef9956b1ed5286d70b`.
+
 ## Avisos Qt — septiembre de 2026
 
 Windows exige Qt 6.11.2 en el build, versión que incluye las correcciones de CVE-2026-78253, CVE-2026-79616 y CVE-2026-76151. Linux experimental enlaza con Qt del sistema Debian 13: la versión base 6.8.2 está en los rangos afectados, aunque CgPhone no invoca las rutas descritas. [Evaluación, alcance y fuentes oficiales](QT_SECURITY_2026-09.md). Los hashes indicados abajo pertenecen a la RC1 histórica y no identifican el nuevo workflow.
 
 
-## Release actual: v0.3.2-rc.1
+## Release anterior: v0.3.2-rc.1
 
 [Descargar Windows y Linux](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-rc.1). Windows RC1 conserva los binarios exactos del build #39 validados por el mantenedor. Linux es EXPERIMENTAL para Debian 13 amd64, con .deb y .tar.xz; el archivo comprimido requiere bibliotecas del sistema y no es universal para todas las distribuciones.
 
