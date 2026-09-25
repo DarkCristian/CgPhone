@@ -396,3 +396,8 @@ instaladores.
 El icono oficial utiliza un teléfono blanco sobre el emblema azul de CgPhone y
 se incluye como recurso multirresolución para aplicación, tray, accesos directos
 e instalador.
+
+
+### Corrección del icono en barra de tareas (pendiente de validación)
+
+La rama `fix/taskbar-window-icon` asigna el icono ICO nativo de Windows a la ventana al mostrarla y cambiar de estado. Conserva la minimización en barra de tareas y la apertura desde el system tray. Probar portable e instalador: minimizar/restaurar varias veces, abrir desde tray y alternar Siempre visible. El PR #15 no constituye una release validada.

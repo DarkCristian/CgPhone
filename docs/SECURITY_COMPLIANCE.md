@@ -396,3 +396,8 @@ Los artefactos de beta.38 —instalador, portable, SBOM, manifiesto y reporte
 Defender— fueron generados en el [workflow #38](https://github.com/DarkCristian/CgPhone/actions/runs/34388740867).
 La Release v0.3.1-beta.37 y beta.35 permanecen disponibles como evidencia
 histórica; sus hashes no son intercambiables con beta.38.
+
+
+### Evidencia pendiente: corrección del icono de Windows (PR #15)
+
+El cambio `fix/taskbar-window-icon` requiere una nueva compilación y validación visual de minimización/restauración, apertura desde tray y Siempre visible en portable e instalado. El workflow genera SHA-256, SBOM, análisis Defender y atestaciones propios del nuevo build; no deben reutilizarse los hashes ni resultados de releases anteriores. No cambia el estado de firma Authenticode ni garantiza ausencia de avisos SmartScreen. No se agregan permisos, telemetría ni dependencias externas.

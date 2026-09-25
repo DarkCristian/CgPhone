@@ -375,3 +375,8 @@ Los controles gratuitos pendientes —licencia explícita del proyecto, textos d
 terceros, CodeQL, análisis de CVE, secret scanning, ACL y sanitización de logs—
 se mantienen en el
 [checklist de compliance](docs/SECURITY_COMPLIANCE.md#controles-pendientes-que-no-requieren-pagar).
+
+
+### Evidencia pendiente: corrección del icono de Windows (PR #15)
+
+El cambio `fix/taskbar-window-icon` requiere una nueva compilación y validación visual de minimización/restauración, apertura desde tray y Siempre visible en portable e instalado. El workflow genera SHA-256, SBOM, análisis Defender y atestaciones propios del nuevo build; no deben reutilizarse los hashes ni resultados de releases anteriores. No cambia el estado de firma Authenticode ni garantiza ausencia de avisos SmartScreen. No se agregan permisos, telemetría ni dependencias externas.
