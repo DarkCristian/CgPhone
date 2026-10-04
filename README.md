@@ -1,5 +1,13 @@
 # CgPhone Free
 
+## RC3 security update (pending workflow publication)
+
+Windows: preventive OpenSSL update to 3.6.5 or newer reviewed 3.6 patch; fresh build, SBOM, SHA-256 and attestations. Linux RC1 packages retained unchanged, with a separate Debian 13 runtime validation requiring the security backport in libssl3t64 3.5.7-1~deb13u3 or newer. Update the Linux host; its old build SBOM is historical.
+
+[Technical assessment and validation scope](docs/OPENSSL_SECURITY_2026-09.md). RC3 remains a prerelease with manual SIP/audio tests pending and no Authenticode signature. The workflow publishes only after its gates succeed.
+
+
+
 ## Prerelease actual: v0.3.2-rc.2 — 24 de septiembre de 2026
 
 [Descargar RC2 (Windows y Linux experimental)](https://github.com/DarkCristian/CgPhone/releases/tag/v0.3.2-rc.2) · [workflow de publicación](https://github.com/DarkCristian/CgPhone/actions/runs/36015304726) · [workflow Windows #44](https://github.com/DarkCristian/CgPhone/actions/runs/35939426270).

@@ -11,6 +11,7 @@ on:
       - security/windows-defender-scan
       - security/pjproject-cve-fixes-beta-38
       - security/qt-advisories-2026-09
+      - security/openssl-2026-09-rc3
     paths:
       - .github/workflows/windows-portable.yml
       - installer/CgPhone.iss
@@ -45,6 +46,7 @@ jobs:
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-pkgconf
             mingw-w64-x86_64-ntldd
+            mingw-w64-x86_64-openssl
             mingw-w64-x86_64-lame
             mingw-w64-x86_64-qt6-base
             mingw-w64-x86_64-qt6-declarative
@@ -229,7 +231,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-Free-0.3.2-taskbar-build.${{ github.run_number }}-Microsoft-Defender-report
+          name: CgPhone-Free-0.3.2-security-rc3-build.${{ github.run_number }}-Microsoft-Defender-report
           path: Microsoft-Defender-scan-report.txt
           if-no-files-found: error
           retention-days: 14
@@ -256,8 +258,8 @@ jobs:
           Descargue CgPhone únicamente desde el repositorio oficial y verifique el SHA-256.
 
           LINUX
-          La versión nativa para Linux se encuentra en desarrollo y será publicada
-          después de completar las pruebas de compatibilidad y empaquetado.
+          La versión Linux experimental RC1 se conserva sin recompilar.
+          Actualice Debian 13 y consulte el informe de runtime de la Release.
 
           Proyecto gratuito y de código abierto.
           "@ | Set-Content "LEEME-ANTES-DE-INSTALAR.txt" -Encoding utf8
@@ -308,7 +310,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-Free-0.3.2-taskbar-build.${{ github.run_number }}-Windows-x64
+          name: CgPhone-Free-0.3.2-security-rc3-build.${{ github.run_number }}-Windows-x64
           path: |
             CgPhone-Setup-0.3.2-x64.exe
             CgPhone-Setup-0.3.2-x64.exe.sha256
@@ -322,7 +324,89 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: CgPhone-Free-0.3.2-taskbar-build.${{ github.run_number }}-Windows-x64-portable
+          name: CgPhone-Free-0.3.2-security-rc3-build.${{ github.run_number }}-Windows-x64-portable
           path: CgPhone-0.3.2-windows-x64-portable.zip
           if-no-files-found: error
           retention-days: 14
+
+  publish_rc3:
+    if: github.ref == 'refs/heads/security/openssl-2026-09-rc3'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      actions: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: CgPhone-Free-0.3.2-security-rc3-build.${{ github.run_number }}-Windows-x64
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: CgPhone-Free-0.3.2-security-rc3-build.${{ github.run_number }}-Windows-x64-portable
+          path: dist
+      - name: Verify Windows and preserve Linux RC1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd dist && sha256sum -c SHA256SUMS.txt)
+          mv dist/SHA256SUMS.txt dist/WINDOWS-SHA256SUMS.txt
+          mkdir linux
+          gh release download v0.3.2-rc.1 -D linux -p '*linux*' -p 'Linux-*' -p 'LINUX-*'
+          (cd linux && sha256sum -c LINUX-SHA256SUMS.txt)
+          echo 'cf75890d85d160376a5cbc1137056b070454526dd05083dcfc33a1850dcf880c  linux/cgphone_0.3.2-rc.1_linux-experimental_amd64.deb' | sha256sum -c -
+          echo 'e6aa46ba4ff7654d3da65ac9f375d35447f8b6d4ede7e8ac704e2c30c4fa21cd  linux/CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz' | sha256sum -c -
+          cp linux/* dist/
+      - name: Validate unchanged Linux with patched system OpenSSL
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir evidence
+          docker run --rm -v "$PWD/dist:/in:ro" -v "$PWD/evidence:/out" debian:trixie bash -euc '
+            apt-get update
+            apt-get install -y xz-utils openssl /in/cgphone_0.3.2-rc.1_linux-experimental_amd64.deb
+            version=$(dpkg-query -W -f="\${Version}" libssl3t64)
+            dpkg --compare-versions "$version" ge "3.5.7-1~deb13u3"
+            dpkg-query -W > /out/Linux-RC3-runtime-packages.tsv
+            openssl version > /out/Linux-RC3-openssl.txt
+            useradd -m tester
+            set +e
+            runuser -u tester -- env QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software timeout 12 /usr/bin/CgPhone > /tmp/startup.log 2>&1
+            result=$?
+            set -e
+            test "$result" = 124
+            ! grep -Ei "failed to load component|is not installed|error while loading shared libraries|Segmentation fault" /tmp/startup.log
+            mkdir /tmp/archive
+            tar -xJf /in/CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz -C /tmp/archive
+            cmp /usr/bin/CgPhone /tmp/archive/usr/bin/CgPhone
+          '
+          printf '%s\n' 'Debian13-amd64=PASS' 'Packages=unchanged-RC1' 'Patched-system-OpenSSL=PASS' 'Offscreen-startup=PASS' 'Tar-executable-parity=PASS' 'SIP-and-hardware-audio=NOT_TESTED' 'Historical-SBOM=RC1-build-only' > evidence/Linux-RC3-runtime-report.txt
+          cp evidence/* dist/
+          cp docs/OPENSSL_SECURITY_2026-09.md dist/
+          (cd dist && find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%f\n' | sort | xargs sha256sum > SHA256SUMS.txt)
+      - name: Attest current validation evidence and combined manifest
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            dist/Linux-RC3-*
+            dist/SHA256SUMS.txt
+      - name: Publish complete RC3 prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in CgPhone-Setup-0.3.2-x64.exe CgPhone-0.3.2-windows-x64-portable.zip cgphone_0.3.2-rc.1_linux-experimental_amd64.deb CgPhone-0.3.2-rc.1-linux-experimental-amd64.tar.xz; do test -s "dist/$f"; done
+          cp docs/OPENSSL_SECURITY_2026-09.md notes.md
+          printf '\nBuild commit: %s\nWorkflow: https://github.com/%s/actions/runs/%s\n\n## SHA-256\n\n\x60\x60\x60text\n' "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" >> notes.md
+          cat dist/SHA256SUMS.txt >> notes.md
+          printf '\n\x60\x60\x60\n' >> notes.md
+          gh release create v0.3.2-rc.3 --draft --target "$GITHUB_SHA" --title 'CgPhone 0.3.2 RC3 — OpenSSL security update' --prerelease --notes-file notes.md
+          gh release upload v0.3.2-rc.3 dist/*
+          gh release edit v0.3.2-rc.3 --draft=false
