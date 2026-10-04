@@ -7,6 +7,12 @@ pj_dir="$work_dir/pjproject"
 pj_commit="a1b707c0c9b0506faf2a8a438b60f11ffd6a6fd9"
 export CGPHONE_VERSION="0.3.2"
 
+# Fail closed if a mirror still serves a pre-advisory OpenSSL package.
+openssl_version="$(pacman -Q mingw-w64-x86_64-openssl | awk '{print $2}')"
+[[ "$openssl_version" == 3.6.* ]] || { echo "Review OpenSSL branch: $openssl_version" >&2; exit 1; }
+[[ "$(vercmp "$openssl_version" 3.6.5-1)" -ge 0 ]] || { echo "OpenSSL >= 3.6.5-1 required" >&2; exit 1; }
+/mingw64/bin/openssl version
+
 mkdir -p "$work_dir"
 if [[ ! -d "$pj_dir/.git" ]]; then
   mkdir -p "$pj_dir"
@@ -178,6 +184,11 @@ for required_dll in "${required_transitive_dlls[@]}"; do
     echo "Falta una dependencia transitiva obligatoria: $required_dll" >&2
     exit 1
   fi
+done
+
+# Verify the packaged libraries are exactly the patched package's DLLs.
+for dll in libssl-3-x64.dll libcrypto-3-x64.dll; do
+  cmp "/mingw64/bin/$dll" "$portable_dir/bin/$dll"
 done
 
 # Qt's CMake install script already ran windeployqt and created qt.conf,
